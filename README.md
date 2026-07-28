@@ -22,9 +22,11 @@ Completed:
 - Referrer link and referred-application API routes.
 - Login and registration pages.
 - Referrer dashboard UI for links and referred applications.
+- Admin job and application management APIs.
+- Admin screens for jobs, applications, status changes, and progress logging.
 
 Next:
-- Add admin job and application management.
+- Add payout eligibility worker and wallet ledger.
 
 ## Stack
 
@@ -101,6 +103,20 @@ Authentication is implemented through Auth.js credentials. The v1 authentication
 - `/login`
 - `/register`
 - `/dashboard`
+
+## Admin
+
+Implemented:
+
+- `GET /api/v1/admin/jobs`
+- `POST /api/v1/admin/jobs`
+- `PATCH /api/v1/admin/jobs/:id`
+- `GET /api/v1/admin/applications`
+- `PATCH /api/v1/admin/applications/:id/status`
+- `PATCH /api/v1/admin/applications/:id/hours`
+- `/admin`
+- `/admin/jobs`
+- `/admin/applications`
 
 ## Public Jobs
 

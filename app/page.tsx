@@ -53,6 +53,12 @@ export default function Home() {
               >
                 Dashboard
               </Link>
+              <Link
+                className="inline-flex h-11 items-center justify-center border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-950 transition hover:border-teal-700 hover:text-teal-700"
+                href="/admin"
+              >
+                Admin
+              </Link>
             </div>
           </nav>
           <div className="grid gap-4 md:grid-cols-3">
