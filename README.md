@@ -26,9 +26,11 @@ Completed:
 - Admin screens for jobs, applications, status changes, and progress logging.
 - Wallet API and ledger-backed wallet page.
 - Payout eligibility service with a runnable worker entrypoint.
+- Payout-provider interface with a mock provider for local withdrawal processing.
+- Withdrawal request API, transactional wallet debits, and processing worker.
 
 Next:
-- Add withdrawal request flow and payout provider abstraction.
+- Replace the mock payout provider with Stripe Connect test mode.
 
 ## Stack
 
@@ -88,6 +90,7 @@ npm run lint
 npm run typecheck
 npm run db:validate
 npm run jobs:payout-eligibility
+npm run jobs:withdrawals
 npm run build
 ```
 
@@ -126,11 +129,19 @@ Implemented:
 Implemented:
 
 - `GET /api/v1/wallet`
+- `POST /api/v1/wallet/payout-account`
+- `GET /api/v1/wallet/payout-account/status`
+- `POST /api/v1/withdrawals`
+- `GET /api/v1/withdrawals`
 - `POST /api/v1/admin/payout-eligibility/run`
+- `POST /api/v1/admin/withdrawals/process`
 - `/wallet`
 - `npm run jobs:payout-eligibility`
+- `npm run jobs:withdrawals`
 
 The payout eligibility service credits referrers through `LedgerEntry` rows and updates `walletBalanceCents` inside the same database transaction.
+
+Withdrawal requests debit the wallet and create a negative ledger entry inside a single transaction. The current payout provider is a local mock behind the provider interface; Stripe Connect is the next integration checkpoint.
 
 ## Public Jobs
 

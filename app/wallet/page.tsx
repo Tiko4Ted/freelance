@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { WithdrawalForm } from "@/components/wallet/withdrawal-form";
 import { requireSession } from "@/lib/auth/session";
 import { LedgerService } from "@/lib/services/ledger-service";
+import { WithdrawalService } from "@/lib/services/withdrawal-service";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +18,10 @@ export default async function WalletPage() {
     redirect("/login");
   }
 
-  const wallet = await LedgerService.getWallet(userId);
+  const [wallet, withdrawals] = await Promise.all([
+    LedgerService.getWallet(userId),
+    WithdrawalService.listWithdrawals(userId),
+  ]);
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-950">
@@ -34,7 +39,7 @@ export default async function WalletPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-6 py-8 md:px-8">
+      <section className="mx-auto grid max-w-6xl gap-8 px-6 py-8 md:grid-cols-[1fr_22rem] md:px-8">
         <div className="divide-y divide-slate-200 border border-slate-200 bg-white">
           {wallet.ledgerEntries.length ? (
             wallet.ledgerEntries.map((entry) => (
@@ -63,6 +68,40 @@ export default async function WalletPage() {
             ))
           ) : (
             <p className="p-5 text-sm text-slate-600">No ledger entries yet.</p>
+          )}
+        </div>
+        <aside className="border border-slate-200 bg-white p-5">
+          <h2 className="text-xl font-semibold text-slate-950">Withdraw</h2>
+          <div className="mt-5">
+            <WithdrawalForm />
+          </div>
+        </aside>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-6 pb-10 md:px-8">
+        <h2 className="text-xl font-semibold text-slate-950">Withdrawals</h2>
+        <div className="mt-4 divide-y divide-slate-200 border border-slate-200 bg-white">
+          {withdrawals.length ? (
+            withdrawals.map((withdrawal) => (
+              <article
+                className="grid gap-3 p-5 md:grid-cols-[1fr_auto]"
+                key={withdrawal.id}
+              >
+                <div>
+                  <h3 className="font-semibold text-slate-950">
+                    {withdrawal.status}
+                  </h3>
+                  <p className="mt-1 text-sm text-slate-500">
+                    {withdrawal.requestedAt}
+                  </p>
+                </div>
+                <p className="font-semibold text-slate-950">
+                  ${(withdrawal.amountCents / 100).toFixed(2)}
+                </p>
+              </article>
+            ))
+          ) : (
+            <p className="p-5 text-sm text-slate-600">No withdrawals yet.</p>
           )}
         </div>
       </section>
