@@ -16,10 +16,11 @@ Completed:
 - Implementation plan saved in `IMPLEMENTATION_PLAN.md`.
 - Auth.js credentials configuration with v1 registration, login, and refresh routes.
 - Reusable authorization helpers for session and role checks.
+- Public jobs API routes and active job listing/detail pages.
 
 Next:
-- Add public job listing and job detail routes.
 - Add referral-cookie capture.
+- Add candidate application submission.
 
 ## Stack
 
@@ -93,3 +94,12 @@ Authentication is implemented through Auth.js credentials. The v1 authentication
 - `POST /api/v1/auth/register`
 - `POST /api/v1/auth/login`
 - `POST /api/v1/auth/refresh`
+
+## Public Jobs
+
+Implemented:
+
+- `GET /api/v1/jobs`
+- `GET /api/v1/jobs/:id`
+- `/jobs`
+- `/jobs/[jobId]`

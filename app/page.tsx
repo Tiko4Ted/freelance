@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const workstreams = [
   {
     name: "Referral Capture",
@@ -38,12 +40,12 @@ export default function Home() {
                 Referral hiring with locked attribution and auditable payouts.
               </h1>
             </div>
-            <a
+            <Link
               className="inline-flex h-11 items-center justify-center border border-slate-950 bg-slate-950 px-5 text-sm font-semibold text-white transition hover:bg-teal-700"
               href="/jobs"
             >
               View jobs
-            </a>
+            </Link>
           </nav>
           <div className="grid gap-4 md:grid-cols-3">
             {workstreams.map((stream) => (
