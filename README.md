@@ -17,10 +17,13 @@ Completed:
 - Auth.js credentials configuration with v1 registration, login, and refresh routes.
 - Reusable authorization helpers for session and role checks.
 - Public jobs API routes and active job listing/detail pages.
+- First-touch referral cookie capture through Next.js proxy.
+- Candidate application form and `/api/v1/applications` submission route.
+- Referrer link and referred-application API routes.
 
 Next:
-- Add referral-cookie capture.
-- Add candidate application submission.
+- Add referrer dashboard UI.
+- Add admin job and application management.
 
 ## Stack
 
@@ -103,3 +106,14 @@ Implemented:
 - `GET /api/v1/jobs/:id`
 - `/jobs`
 - `/jobs/[jobId]`
+- `/jobs/[jobId]/apply`
+
+## Referrals and Applications
+
+Implemented:
+
+- `GET /api/v1/referrals/me`
+- `GET /api/v1/referrals/me/applications`
+- `POST /api/v1/applications`
+
+Referral links use `/jobs/[jobId]?ref=<referralCode>`. The proxy stores the first referral touch in an HTTP-only cookie and the application route validates it server-side.

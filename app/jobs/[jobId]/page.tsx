@@ -63,10 +63,12 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
         </div>
         <div className="border border-slate-200 bg-white p-5">
           <h2 className="text-xl font-semibold text-slate-950">Application</h2>
-          <p className="mt-3 text-sm leading-6 text-slate-600">
-            Candidate application submission is scheduled for the next
-            checkpoint.
-          </p>
+          <Link
+            className="mt-4 inline-flex h-10 w-full items-center justify-center border border-slate-950 bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-teal-700"
+            href={`/jobs/${job.id}/apply`}
+          >
+            Apply
+          </Link>
         </div>
       </section>
     </main>
