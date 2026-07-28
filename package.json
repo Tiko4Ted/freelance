@@ -11,7 +11,8 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
-    "db:validate": "prisma validate"
+    "db:validate": "prisma validate",
+    "jobs:payout-eligibility": "tsx workers/payout-eligibility.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",

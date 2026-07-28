@@ -41,6 +41,12 @@ export default async function DashboardPage() {
             >
               Jobs
             </Link>
+            <Link
+              className="inline-flex h-10 items-center justify-center border border-slate-950 px-4 text-sm font-semibold text-slate-950 transition hover:border-teal-700 hover:text-teal-700"
+              href="/wallet"
+            >
+              Wallet
+            </Link>
           </nav>
           <div>
             <p className="text-sm font-medium text-slate-500">

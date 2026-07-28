@@ -24,9 +24,11 @@ Completed:
 - Referrer dashboard UI for links and referred applications.
 - Admin job and application management APIs.
 - Admin screens for jobs, applications, status changes, and progress logging.
+- Wallet API and ledger-backed wallet page.
+- Payout eligibility service with a runnable worker entrypoint.
 
 Next:
-- Add payout eligibility worker and wallet ledger.
+- Add withdrawal request flow and payout provider abstraction.
 
 ## Stack
 
@@ -85,6 +87,7 @@ npm run dev
 npm run lint
 npm run typecheck
 npm run db:validate
+npm run jobs:payout-eligibility
 npm run build
 ```
 
@@ -117,6 +120,17 @@ Implemented:
 - `/admin`
 - `/admin/jobs`
 - `/admin/applications`
+
+## Wallet and Payout Eligibility
+
+Implemented:
+
+- `GET /api/v1/wallet`
+- `POST /api/v1/admin/payout-eligibility/run`
+- `/wallet`
+- `npm run jobs:payout-eligibility`
+
+The payout eligibility service credits referrers through `LedgerEntry` rows and updates `walletBalanceCents` inside the same database transaction.
 
 ## Public Jobs
 
