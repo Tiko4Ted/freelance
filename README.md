@@ -7,22 +7,23 @@ The implementation is built as a single Next.js app with route handlers for the 
 ## Current Checkpoint
 
 Completed:
-- Next.js 14 App Router scaffold with TypeScript, Tailwind, ESLint, and strict type checking.
+- Next.js App Router scaffold with TypeScript, Tailwind, ESLint, and strict type checking.
 - Prisma schema for users, jobs, referrals, applications, candidate identities, ledger entries, and withdrawals.
 - Seed script with five demo jobs and one admin user.
 - Shared Prisma client setup.
 - Environment variable template.
 - Project-specific landing shell.
 - Implementation plan saved in `IMPLEMENTATION_PLAN.md`.
+- Auth.js credentials configuration with v1 registration, login, and refresh routes.
+- Reusable authorization helpers for session and role checks.
 
 Next:
-- Implement authentication and authorization.
 - Add public job listing and job detail routes.
 - Add referral-cookie capture.
 
 ## Stack
 
-- Next.js 14 App Router
+- Next.js 16 App Router
 - TypeScript
 - Tailwind CSS
 - Prisma
@@ -87,4 +88,8 @@ The seed script creates:
 - Email: `admin@referraljobs.test`
 - Password: `admin-password`
 
-Authentication is not implemented yet, so these credentials become usable in the next checkpoint.
+Authentication is implemented through Auth.js credentials. The v1 authentication endpoints are:
+
+- `POST /api/v1/auth/register`
+- `POST /api/v1/auth/login`
+- `POST /api/v1/auth/refresh`
