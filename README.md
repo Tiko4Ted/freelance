@@ -20,9 +20,10 @@ Completed:
 - First-touch referral cookie capture through Next.js proxy.
 - Candidate application form and `/api/v1/applications` submission route.
 - Referrer link and referred-application API routes.
+- Login and registration pages.
+- Referrer dashboard UI for links and referred applications.
 
 Next:
-- Add referrer dashboard UI.
 - Add admin job and application management.
 
 ## Stack
@@ -97,6 +98,9 @@ Authentication is implemented through Auth.js credentials. The v1 authentication
 - `POST /api/v1/auth/register`
 - `POST /api/v1/auth/login`
 - `POST /api/v1/auth/refresh`
+- `/login`
+- `/register`
+- `/dashboard`
 
 ## Public Jobs
 

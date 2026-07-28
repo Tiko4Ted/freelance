@@ -40,12 +40,20 @@ export default function Home() {
                 Referral hiring with locked attribution and auditable payouts.
               </h1>
             </div>
-            <Link
-              className="inline-flex h-11 items-center justify-center border border-slate-950 bg-slate-950 px-5 text-sm font-semibold text-white transition hover:bg-teal-700"
-              href="/jobs"
-            >
-              View jobs
-            </Link>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                className="inline-flex h-11 items-center justify-center border border-slate-950 bg-slate-950 px-5 text-sm font-semibold text-white transition hover:bg-teal-700"
+                href="/jobs"
+              >
+                View jobs
+              </Link>
+              <Link
+                className="inline-flex h-11 items-center justify-center border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-950 transition hover:border-teal-700 hover:text-teal-700"
+                href="/dashboard"
+              >
+                Dashboard
+              </Link>
+            </div>
           </nav>
           <div className="grid gap-4 md:grid-cols-3">
             {workstreams.map((stream) => (
