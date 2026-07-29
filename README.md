@@ -9,6 +9,7 @@ The implementation is built as a single Next.js app with route handlers for the 
 Completed:
 - Next.js App Router scaffold with TypeScript, Tailwind, ESLint, and strict type checking.
 - Prisma schema for users, jobs, referrals, applications, candidate identities, ledger entries, and withdrawals.
+- Initial Prisma migration for the production PostgreSQL schema.
 - Seed script with five demo jobs and one admin user.
 - Shared Prisma client setup.
 - Environment variable template.
