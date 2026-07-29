@@ -10,6 +10,7 @@ Completed:
 - Next.js App Router scaffold with TypeScript, Tailwind, ESLint, and strict type checking.
 - Prisma schema for users, jobs, referrals, applications, candidate identities, ledger entries, and withdrawals.
 - Initial Prisma migration for the production PostgreSQL schema.
+- Vercel-compatible build script that generates Prisma Client before `next build`.
 - Seed script with five demo jobs and one admin user.
 - Shared Prisma client setup.
 - Environment variable template.
