@@ -18,12 +18,24 @@ const workstreams = [
   },
 ];
 
-const demoJobs = [
-  "Senior Full-Stack Engineer",
-  "AI Workflow Automation Specialist",
-  "Product Designer",
-  "Data Engineer",
-  "One-Task Security Reviewer",
+const howItWorks = [
+  {
+    step: "01",
+    title: "Get your link",
+    detail: "Every referrer gets a unique code appended to each job's URL.",
+  },
+  {
+    step: "02",
+    title: "Candidate applies",
+    detail:
+      "Attribution locks to whichever link the candidate clicked first, before they ever apply.",
+  },
+  {
+    step: "03",
+    title: "Get paid",
+    detail:
+      "Once the candidate clears the payout threshold, the locked amount lands in your wallet.",
+  },
 ];
 
 export default function Home() {
@@ -53,12 +65,6 @@ export default function Home() {
               >
                 Dashboard
               </Link>
-              <Link
-                className="inline-flex h-11 items-center justify-center border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-950 transition hover:border-teal-700 hover:text-teal-700"
-                href="/admin"
-              >
-                Admin
-              </Link>
             </div>
           </nav>
           <div className="grid gap-4 md:grid-cols-3">
@@ -82,49 +88,36 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-6xl gap-8 px-6 py-10 md:grid-cols-[1.3fr_0.7fr] md:px-8">
-        <div>
-          <h2 className="text-xl font-semibold text-slate-950">Demo jobs</h2>
-          <div className="mt-4 divide-y divide-slate-200 border border-slate-200 bg-white">
-            {demoJobs.map((job) => (
-              <div
-                className="flex items-center justify-between gap-4 px-5 py-4"
-                key={job}
-              >
-                <span className="text-sm font-medium text-slate-900">
-                  {job}
-                </span>
-                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-700">
-                  Seeded
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <aside className="border border-slate-200 bg-white p-5">
+      <section className="mx-auto max-w-6xl px-6 py-10 md:px-8">
+        <div className="flex flex-wrap items-end justify-between gap-4">
           <h2 className="text-xl font-semibold text-slate-950">
-            Build checkpoint
+            How it works
           </h2>
-          <dl className="mt-5 space-y-4 text-sm">
-            <div className="flex justify-between gap-4">
-              <dt className="text-slate-500">Framework</dt>
-              <dd className="font-medium text-slate-950">Next.js 14</dd>
-            </div>
-            <div className="flex justify-between gap-4">
-              <dt className="text-slate-500">Database</dt>
-              <dd className="font-medium text-slate-950">PostgreSQL</dd>
-            </div>
-            <div className="flex justify-between gap-4">
-              <dt className="text-slate-500">ORM</dt>
-              <dd className="font-medium text-slate-950">Prisma</dd>
-            </div>
-            <div className="flex justify-between gap-4">
-              <dt className="text-slate-500">Status</dt>
-              <dd className="font-medium text-teal-700">Foundation</dd>
-            </div>
-          </dl>
-        </aside>
+          <Link
+            className="text-sm font-semibold text-teal-700 hover:underline"
+            href="/jobs"
+          >
+            View open roles →
+          </Link>
+        </div>
+        <div className="mt-4 grid gap-4 md:grid-cols-3">
+          {howItWorks.map((item) => (
+            <article
+              className="border border-slate-200 bg-white p-5"
+              key={item.step}
+            >
+              <p className="text-sm font-semibold text-teal-700">
+                {item.step}
+              </p>
+              <p className="mt-3 text-lg font-semibold text-slate-950">
+                {item.title}
+              </p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                {item.detail}
+              </p>
+            </article>
+          ))}
+        </div>
       </section>
     </main>
   );

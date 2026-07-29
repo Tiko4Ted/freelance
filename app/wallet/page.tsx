@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { StatusBadge } from "@/components/status-badge";
 import { WithdrawalForm } from "@/components/wallet/withdrawal-form";
 import { requireSession } from "@/lib/auth/session";
 import { LedgerService } from "@/lib/services/ledger-service";
+import { PayoutAccountService } from "@/lib/services/payout-account-service";
 import { WithdrawalService } from "@/lib/services/withdrawal-service";
 
 export const dynamic = "force-dynamic";
@@ -18,9 +20,10 @@ export default async function WalletPage() {
     redirect("/login");
   }
 
-  const [wallet, withdrawals] = await Promise.all([
+  const [wallet, withdrawals, payoutAccount] = await Promise.all([
     LedgerService.getWallet(userId),
     WithdrawalService.listWithdrawals(userId),
+    PayoutAccountService.getStatus(userId),
   ]);
 
   return (
@@ -72,8 +75,23 @@ export default async function WalletPage() {
         </div>
         <aside className="border border-slate-200 bg-white p-5">
           <h2 className="text-xl font-semibold text-slate-950">Withdraw</h2>
+          <p className="mt-2 text-sm text-slate-600">
+            Available: {wallet.formattedBalance} · Minimum withdrawal: $10
+          </p>
+          <p className="mt-2 text-sm font-medium">
+            Payout account:{" "}
+            <span
+              className={
+                payoutAccount.payoutAccountReady
+                  ? "text-teal-700"
+                  : "text-amber-700"
+              }
+            >
+              {payoutAccount.payoutAccountReady ? "Ready" : "Not set up"}
+            </span>
+          </p>
           <div className="mt-5">
-            <WithdrawalForm />
+            <WithdrawalForm payoutAccountReady={payoutAccount.payoutAccountReady} />
           </div>
         </aside>
       </section>
@@ -88,10 +106,8 @@ export default async function WalletPage() {
                 key={withdrawal.id}
               >
                 <div>
-                  <h3 className="font-semibold text-slate-950">
-                    {withdrawal.status}
-                  </h3>
-                  <p className="mt-1 text-sm text-slate-500">
+                  <StatusBadge status={withdrawal.status} />
+                  <p className="mt-2 text-sm text-slate-500">
                     {withdrawal.requestedAt}
                   </p>
                 </div>
