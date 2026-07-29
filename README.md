@@ -146,6 +146,15 @@ The payout eligibility service credits referrers through `LedgerEntry` rows and 
 
 Withdrawal requests debit the wallet and create a negative ledger entry inside a single transaction. The current payout provider is a local mock behind the provider interface; Stripe Connect is the next integration checkpoint.
 
+## Deployment
+
+Production:
+
+- URL: `https://freelance-nu-swart.vercel.app`
+- Platform: Vercel
+- Database: Neon PostgreSQL
+- Status: deployed and smoke-tested
+
 ## Public Jobs
 
 Implemented:
