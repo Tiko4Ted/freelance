@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { ApplicationActions } from "@/components/admin/application-actions";
+import { StatusBadge } from "@/components/status-badge";
 import { requireRole } from "@/lib/auth/session";
 import { AdminApplicationService } from "@/lib/services/admin-application-service";
 
@@ -43,9 +44,7 @@ export default async function AdminApplicationsPage() {
                     <h2 className="font-semibold text-slate-950">
                       {application.candidateName}
                     </h2>
-                    <span className="text-sm font-semibold text-teal-700">
-                      {application.status}
-                    </span>
+                    <StatusBadge status={application.status} />
                   </div>
                   <p className="mt-2 text-sm text-slate-600">
                     {application.candidateEmail}

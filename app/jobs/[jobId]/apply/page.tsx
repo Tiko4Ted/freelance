@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -5,6 +6,8 @@ import { ApplicationForm } from "@/components/application-form";
 import { JobService } from "@/lib/services/job-service";
 
 export const dynamic = "force-dynamic";
+
+const REFERRAL_COOKIE_NAME = "ref_code";
 
 type ApplyPageProps = {
   params: Promise<{
@@ -19,6 +22,12 @@ export default async function ApplyPage({ params }: ApplyPageProps) {
   if (!job) {
     notFound();
   }
+
+  const cookieStore = await cookies();
+  const referralCookie = cookieStore.get(REFERRAL_COOKIE_NAME)?.value;
+  const referralDetected = Boolean(
+    referralCookie && referralCookie.startsWith(`${job.id}:`),
+  );
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-950">
@@ -37,6 +46,17 @@ export default async function ApplyPage({ params }: ApplyPageProps) {
       </section>
 
       <section className="mx-auto max-w-2xl px-6 py-8 md:px-8">
+        <div
+          className={
+            referralDetected
+              ? "mb-5 border border-teal-700 bg-teal-50 p-4 text-sm font-medium text-teal-800"
+              : "mb-5 border border-amber-300 bg-amber-50 p-4 text-sm font-medium text-amber-800"
+          }
+        >
+          {referralDetected
+            ? "Referred by a link ✓ — this application will be credited to that referrer."
+            : "No referral detected — you'll be applying directly, with no referrer credited."}
+        </div>
         <div className="border border-slate-200 bg-white p-5">
           <ApplicationForm jobId={job.id} />
         </div>

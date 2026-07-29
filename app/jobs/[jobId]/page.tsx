@@ -51,14 +51,30 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
       </section>
 
       <section className="mx-auto grid max-w-5xl gap-6 px-6 py-8 md:grid-cols-[1fr_18rem] md:px-8">
-        <div>
-          <h2 className="text-xl font-semibold text-slate-950">Role summary</h2>
-          <div className="mt-4 border border-slate-200 bg-white p-5">
-            <p className="text-sm leading-7 text-slate-700">
-              Referral attribution is captured from the first referral link used
-              before application submission. The payout amount shown here is
-              locked for candidates at application time.
-            </p>
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-xl font-semibold text-slate-950">
+              About this role
+            </h2>
+            <div className="mt-4 border border-slate-200 bg-white p-5">
+              <p className="text-sm leading-7 text-slate-700">
+                {job.description}
+              </p>
+            </div>
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold text-slate-950">
+              How the payout works
+            </h2>
+            <div className="mt-4 border border-slate-200 bg-white p-5">
+              <p className="text-sm leading-7 text-slate-700">
+                Referral attribution is captured from the first referral link
+                used before application submission. The payout amount shown
+                here is locked for candidates at application time, so later
+                changes to this job&apos;s payout won&apos;t affect anyone who
+                already applied.
+              </p>
+            </div>
           </div>
         </div>
         <div className="border border-slate-200 bg-white p-5">

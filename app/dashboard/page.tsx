@@ -3,6 +3,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
+import { CopyReferralLink } from "@/components/dashboard/copy-referral-link";
+import { StatusBadge } from "@/components/status-badge";
 import { ReferralService } from "@/lib/services/referral-service";
 
 export const dynamic = "force-dynamic";
@@ -76,12 +78,7 @@ export default async function DashboardPage() {
                       {link.job.formattedPayout}, {link.job.payoutTriggerLabel}
                     </p>
                   </div>
-                  <Link
-                    className="inline-flex h-10 items-center justify-center border border-slate-950 bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-teal-700"
-                    href={link.url}
-                  >
-                    Open link
-                  </Link>
+                  <CopyReferralLink url={link.url} />
                 </div>
                 <input
                   className="mt-4 h-10 w-full border border-slate-300 bg-slate-50 px-3 text-sm text-slate-700"
@@ -134,9 +131,7 @@ export default async function DashboardPage() {
                     {item.job.title}
                   </p>
                 </div>
-                <p className="text-sm font-semibold text-teal-700">
-                  {item.application?.status ?? "CLICKED"}
-                </p>
+                <StatusBadge status={item.application?.status ?? "CLICKED"} />
               </article>
             ))
           ) : (
