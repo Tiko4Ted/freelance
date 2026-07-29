@@ -66,13 +66,30 @@ model Job {
   payoutType        PayoutTrigger @default(HOURS_10)
   currency          String        @default("USD")
   isActive          Boolean       @default(true)
+  companyName       String        @default("ReferralJobs")
+  openings          Int           @default(1)
+  hourlyMinCents    Int?
+  hourlyMaxCents    Int?
+  postedAt          DateTime      @default(now())
+  isHighDemand      Boolean       @default(false)
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
   applications      Application[]
   referrals         Referral[]
+  skills            JobSkill[]
 
   @@index([isActive])
+  @@index([postedAt])
+}
+
+model JobSkill {
+  id     String @id @default(uuid())
+  jobId  String
+  job    Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  label  String
+
+  @@index([jobId])
 }
 
 model Application {

@@ -10,8 +10,23 @@ const publicJobSelect = {
   payoutType: true,
   currency: true,
   isActive: true,
+  companyName: true,
+  openings: true,
+  hourlyMinCents: true,
+  hourlyMaxCents: true,
+  postedAt: true,
+  isHighDemand: true,
   createdAt: true,
   updatedAt: true,
+  skills: {
+    select: {
+      id: true,
+      label: true,
+    },
+    orderBy: {
+      label: "asc",
+    },
+  },
 } satisfies Prisma.JobSelect;
 
 export type PublicJob = Prisma.JobGetPayload<{
@@ -22,7 +37,7 @@ export const JobRepository = {
   listActive() {
     return prisma.job.findMany({
       where: { isActive: true },
-      orderBy: { createdAt: "desc" },
+      orderBy: { postedAt: "desc" },
       select: publicJobSelect,
     });
   },

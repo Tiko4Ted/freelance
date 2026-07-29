@@ -1,71 +1,82 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 
+import { JobBoard } from "@/components/jobs/job-board";
 import { JobService } from "@/lib/services/job-service";
+import { ReferralContextService } from "@/lib/services/referral-context-service";
 
 export const dynamic = "force-dynamic";
 
-export default async function JobsPage() {
-  const jobs = await JobService.listActiveJobs();
+type JobsPageProps = {
+  searchParams: Promise<{
+    ref?: string;
+    referralCode?: string;
+  }>;
+};
+
+function getHeaderCopy(firstName?: string) {
+  if (firstName) {
+    return `${firstName} wants you to see these open roles.`;
+  }
+
+  return "You were invited to apply for these roles.";
+}
+
+function getLookupKey(headerStore: Headers) {
+  const forwardedFor = headerStore.get("x-forwarded-for")?.split(",")[0]?.trim();
+  return (
+    forwardedFor ??
+    headerStore.get("x-real-ip") ??
+    headerStore.get("cf-connecting-ip") ??
+    "anonymous"
+  );
+}
+
+export default async function JobsPage({ searchParams }: JobsPageProps) {
+  const [params, headerStore] = await Promise.all([searchParams, headers()]);
+  const referralCode = params.ref ?? params.referralCode;
+  const lookupKey = getLookupKey(headerStore);
+  const [jobs, referralContext] = await Promise.all([
+    JobService.listActiveJobs(),
+    ReferralContextService.getPublicContext(referralCode, lookupKey),
+  ]);
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-950">
-      <section className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-6xl flex-col gap-5 px-6 py-8 md:px-8">
-          <Link className="text-sm font-medium text-teal-700" href="/">
-            ReferralJobs
-          </Link>
-          <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
-            <div>
-              <h1 className="text-3xl font-semibold text-slate-950 md:text-5xl">
-                Open referral jobs
-              </h1>
-              <p className="mt-3 max-w-2xl text-base leading-7 text-slate-600">
-                Active roles with fixed referral payouts locked when a candidate
-                applies.
-              </p>
-            </div>
-            <div className="border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
-              <span className="font-semibold text-slate-950">
-                {jobs.length}
-              </span>{" "}
-              active roles
-            </div>
+    <main className="min-h-screen bg-[#f3f6ff] text-[#202235]">
+      <section className="relative overflow-hidden border-b border-[#d9def7]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_10%,rgba(255,255,255,0.9),transparent_28%),linear-gradient(135deg,#eaf7ff_0%,#f8fbff_46%,#eef1ff_100%)]" />
+        <div className="absolute left-1/2 top-0 h-44 w-[42rem] -translate-x-1/2 rounded-b-[50%] bg-[#dbe7ff]/70 blur-3xl" />
+        <div className="relative mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
+          <nav className="flex items-center justify-between">
+            <Link
+              className="text-lg font-black tracking-tight text-[#111427]"
+              href="/"
+            >
+              ReferralJobs.
+            </Link>
+            <Link
+              className="rounded-full border border-[#cfd7ff] bg-white/80 px-4 py-2 text-sm font-semibold text-[#3f4665] transition hover:border-[#727bff] hover:text-[#262cff]"
+              href="/dashboard"
+            >
+              Referrer dashboard
+            </Link>
+          </nav>
+
+          <div className="mx-auto max-w-5xl py-10 sm:py-14">
+            <h1 className="max-w-4xl text-3xl font-black leading-tight tracking-tight text-[#111427] sm:text-5xl">
+              {getHeaderCopy(referralContext?.firstName)}
+            </h1>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-[#5f687f]">
+              Browse verified referral roles, compare candidate pay with the
+              fixed referral payout, and apply with attribution preserved.
+            </p>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-6 py-8 md:px-8">
-        <div className="divide-y divide-slate-200 border border-slate-200 bg-white">
-          {jobs.map((job) => (
-            <article className="grid gap-5 p-5 md:grid-cols-[1fr_auto]" key={job.id}>
-              <div>
-                <h2 className="text-xl font-semibold text-slate-950">
-                  {job.title}
-                </h2>
-                <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600">
-                  {job.description}
-                </p>
-              </div>
-              <div className="flex min-w-52 flex-col items-start gap-3 md:items-end">
-                <div>
-                  <p className="text-2xl font-semibold text-slate-950">
-                    {job.formattedPayout}
-                  </p>
-                  <p className="mt-1 text-sm text-slate-500">
-                    {job.payoutTriggerLabel}
-                  </p>
-                </div>
-                <Link
-                  className="inline-flex h-10 items-center justify-center border border-slate-950 bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-teal-700"
-                  href={`/jobs/${job.id}`}
-                >
-                  View role
-                </Link>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
+      <div className="-mt-6">
+        <JobBoard jobs={jobs} referralCode={referralCode} />
+      </div>
     </main>
   );
 }

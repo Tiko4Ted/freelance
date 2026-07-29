@@ -12,7 +12,7 @@ Completed:
 - Initial Prisma migration for the production PostgreSQL schema.
 - Vercel-compatible build script that generates Prisma Client before `next build`.
 - Vercel upload ignore rules so local env files are not included in deployments.
-- Seed script with five demo jobs and one admin user.
+- Seed script with 25 idempotent demo jobs, skill chips, display pay ranges, high-demand flags, and one admin user.
 - Shared Prisma client setup.
 - Environment variable template.
 - Project-specific landing shell.
@@ -31,6 +31,8 @@ Completed:
 - Payout eligibility service with a runnable worker entrypoint.
 - Payout-provider interface with a mock provider for local withdrawal processing.
 - Withdrawal request API, transactional wallet debits, and processing worker.
+- Micro1-inspired public jobs board with dense responsive cards, search, posted-date badges, skill chips, job pay, and locked referral payout display.
+- Privacy-safe referral board personalization that supports both `?ref=` and `?referralCode=` without exposing emails or last names.
 
 Next:
 - Replace the mock payout provider with Stripe Connect test mode.
@@ -174,3 +176,5 @@ Implemented:
 - `POST /api/v1/applications`
 
 Referral links use `/jobs/[jobId]?ref=<referralCode>`. The proxy stores the first referral touch in an HTTP-only cookie and the application route validates it server-side.
+
+Board-level referral links can also use `/jobs?referralCode=<referralCode>`. The jobs board treats `ref` and `referralCode` as aliases, personalizes with the referrer's first name when available, and falls back to neutral invited-copy for unknown or missing codes.
