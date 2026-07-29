@@ -11,6 +11,7 @@ Completed:
 - Prisma schema for users, jobs, referrals, applications, candidate identities, ledger entries, and withdrawals.
 - Initial Prisma migration for the production PostgreSQL schema.
 - Vercel-compatible build script that generates Prisma Client before `next build`.
+- Vercel upload ignore rules so local env files are not included in deployments.
 - Seed script with five demo jobs and one admin user.
 - Shared Prisma client setup.
 - Environment variable template.
