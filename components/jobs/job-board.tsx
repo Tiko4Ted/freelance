@@ -1,6 +1,6 @@
 "use client";
 
-import { Eye, Search } from "lucide-react";
+import { Eye } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
@@ -140,27 +140,15 @@ export function JobBoard({ jobs, referralCode }: JobBoardProps) {
   }, [jobs, normalizedQuery]);
 
   return (
-    <section className="mx-auto max-w-7xl px-4 pb-14 sm:px-6 lg:px-8">
-      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm font-medium text-[#69728a]">
-          {filteredJobs.length} of {jobs.length} roles shown
-        </p>
-        <label className="relative block w-full sm:max-w-xs">
-          <span className="sr-only">Search by job title</span>
-          <Search
-            aria-hidden="true"
-            className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7c85a2]"
-            strokeWidth={2}
-          />
-          <input
-            className="h-11 w-full rounded-full border border-[#d3d9f7] bg-white px-11 text-sm text-[#202235] outline-none transition placeholder:text-[#949bb0] focus:border-[#727bff] focus:ring-4 focus:ring-[#dfe3ff]"
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search by job title..."
-            type="search"
-            value={query}
-          />
-        </label>
-      </div>
+    <section className="mx-auto max-w-[1128px] px-4 pb-14 lg:px-0">
+      <label className="sr-only">
+        Search by job title
+        <input
+          onChange={(event) => setQuery(event.target.value)}
+          type="search"
+          value={query}
+        />
+      </label>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {filteredJobs.map((job) => (

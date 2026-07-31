@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { headers } from "next/headers";
+import { Search } from "lucide-react";
 
 import { JobBoard } from "@/components/jobs/job-board";
 import { JobService } from "@/lib/services/job-service";
@@ -42,36 +43,37 @@ export default async function JobsPage({ searchParams }: JobsPageProps) {
   ]);
 
   return (
-    <main className="min-h-screen bg-[#f3f6ff] text-[#202235]">
-      <section className="relative overflow-hidden border-b border-[#d9def7]">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_10%,rgba(255,255,255,0.9),transparent_28%),linear-gradient(135deg,#eaf7ff_0%,#f8fbff_46%,#eef1ff_100%)]" />
-        <div className="absolute left-1/2 top-0 h-44 w-[42rem] -translate-x-1/2 rounded-b-[50%] bg-[#dbe7ff]/70 blur-3xl" />
-        <div className="relative mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
-          <nav className="flex items-center justify-between">
-            <Link className="text-lg font-black tracking-tight text-[#111427]" href="/">
-              micro1
-            </Link>
-            <Link
-              className="rounded-full border border-[#cfd7ff] bg-white/80 px-4 py-2 text-sm font-semibold text-[#3f4665] transition hover:border-[#727bff] hover:text-[#262cff]"
-              href="/dashboard"
-            >
-              Referrer dashboard
-            </Link>
-          </nav>
+    <main className="min-h-screen bg-[#f8f8ff] text-[#202235]">
+      <header className="sticky top-0 z-30 h-[58px] border-b border-[#e2e4f4] bg-white/95 backdrop-blur">
+        <div className="mx-auto flex h-full max-w-[1128px] items-center px-4 lg:px-0">
+          <Link
+            className="text-[24px] font-black tracking-[-0.03em] text-[#05060b]"
+            href="/"
+          >
+            micro1.
+          </Link>
+        </div>
+      </header>
 
-          <div className="mx-auto max-w-5xl py-10 sm:py-14">
-            <h1 className="max-w-4xl text-3xl font-black leading-tight tracking-tight text-[#111427] sm:text-5xl">
+      <section className="relative overflow-hidden border-b border-[#dfe2f5]">
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.18)_0%,rgba(248,248,255,0.92)_76%,#f8f8ff_100%),radial-gradient(ellipse_at_47%_10%,rgba(93,117,142,0.34)_0%,rgba(93,117,142,0.15)_23%,transparent_45%),radial-gradient(ellipse_at_53%_14%,rgba(255,255,255,0.95)_0%,rgba(255,255,255,0.28)_16%,transparent_32%),linear-gradient(135deg,#e7f0f8_0%,#d8e3ed_34%,#f3f5fb_68%,#eef0fb_100%)]" />
+        <div className="relative mx-auto min-h-[178px] max-w-[1128px] px-4 pt-[35px] lg:px-0">
+          <div className="flex items-start justify-between gap-6">
+            <h1 className="max-w-[760px] text-[28px] font-semibold leading-[1.18] tracking-[-0.015em] text-[#090b12]">
               {getHeaderCopy(referralContext?.firstName)}
             </h1>
-            <p className="mt-4 max-w-2xl text-base leading-7 text-[#5f687f]">
-              Browse remote contract roles, review required skills, and apply
-              to the projects that match your background.
-            </p>
+            <button
+              aria-label="Search jobs"
+              className="mt-[-6px] hidden h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#dde1ee] bg-white text-[#4b5160] shadow-[0_4px_14px_rgba(37,44,70,0.08)] md:flex"
+              type="button"
+            >
+              <Search aria-hidden="true" className="h-5 w-5" strokeWidth={2} />
+            </button>
           </div>
         </div>
       </section>
 
-      <div className="-mt-6">
+      <div className="-mt-[1px]">
         <JobBoard jobs={jobs} referralCode={referralCode} />
       </div>
     </main>
