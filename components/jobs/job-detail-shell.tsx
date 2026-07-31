@@ -12,14 +12,23 @@ type JobDetailShellProps = {
 
 export function JobDetailShell({ children, closeHref }: JobDetailShellProps) {
   const router = useRouter();
+  const shellRef = useRef<HTMLElement | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    const frame = requestAnimationFrame(() => setIsOpen(true));
+    const previousBodyOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    shellRef.current?.scrollTo({ top: 0 });
+
+    const frame = requestAnimationFrame(() => {
+      shellRef.current?.scrollTo({ top: 0 });
+      setIsOpen(true);
+    });
 
     return () => {
       cancelAnimationFrame(frame);
+      document.body.style.overflow = previousBodyOverflow;
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
@@ -35,10 +44,11 @@ export function JobDetailShell({ children, closeHref }: JobDetailShellProps) {
 
   return (
     <main
-      className="min-h-screen bg-[#f7f6fb] px-5 py-14 text-[#242536] sm:px-8"
+      className="fixed inset-0 z-50 overflow-y-auto bg-[#f7f6fb] px-5 py-14 text-[#242536] sm:px-8"
+      ref={shellRef}
       style={{
-        transform: isOpen ? "translateY(0)" : "translateY(100%)",
-        transition: `transform ${TRANSITION_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`,
+        transform: isOpen ? "translate3d(0, 0, 0)" : "translate3d(0, 100dvh, 0)",
+        transition: `transform ${TRANSITION_MS}ms cubic-bezier(0.16, 1, 0.3, 1)`,
         willChange: "transform",
       }}
     >
