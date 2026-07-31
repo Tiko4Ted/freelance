@@ -1,8 +1,8 @@
 "use client";
 
-import { Eye, Search } from "lucide-react";
+import { Eye, Search, X } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import { JobDetailContent } from "@/components/jobs/job-detail-content";
 import { JobDetailShell } from "@/components/jobs/job-detail-shell";
@@ -128,8 +128,11 @@ function JobCard({
 
 export function JobBoard({ jobs, referralCode }: JobBoardProps) {
   const [query, setQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState<PublicJobView | null>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const normalizedQuery = query.trim().toLowerCase();
+  const showSearchInput = searchOpen || Boolean(query);
   const filteredJobs = useMemo(() => {
     if (!normalizedQuery) {
       return jobs;
@@ -149,24 +152,59 @@ export function JobBoard({ jobs, referralCode }: JobBoardProps) {
   }, [jobs, normalizedQuery]);
 
   return (
-    <section className="mx-auto max-w-[1128px] px-4 pb-14 lg:px-0">
-      <label className="-mt-[56px] mb-4 block w-full max-w-[248px]">
-        <span className="sr-only">Search by job title</span>
-        <span className="relative block">
-          <Search
-            aria-hidden="true"
-            className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#3f4654]"
-            strokeWidth={2}
-          />
-          <input
-            className="h-10 w-full rounded-full border border-[#d8dbe7] bg-white px-11 text-sm text-[#202235] outline-none placeholder:text-[#707684] focus:border-[#b9bee7] focus:ring-2 focus:ring-[#e5e7fb]"
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search by job title..."
-            type="search"
-            value={query}
-          />
-        </span>
-      </label>
+    <section className="relative z-10 mx-auto max-w-[1128px] px-4 pb-14 lg:px-0">
+      <div className="-mt-4 mb-4 flex min-h-10 justify-end">
+        {showSearchInput ? (
+          <label className="block w-full max-w-[248px]">
+            <span className="sr-only">Search by job title</span>
+            <span className="relative block">
+              <Search
+                aria-hidden="true"
+                className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#3f4654]"
+                strokeWidth={2}
+              />
+              <input
+                className="h-10 w-full rounded-full border border-[#d8dbe7] bg-white px-11 text-sm text-[#202235] outline-none placeholder:text-[#707684] focus:border-[#b9bee7] focus:ring-2 focus:ring-[#e5e7fb]"
+                onChange={(event) => setQuery(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Escape" && !query) {
+                    setSearchOpen(false);
+                  }
+                }}
+                placeholder="Search by job title..."
+                ref={searchInputRef}
+                type="search"
+                value={query}
+              />
+              {query ? (
+                <button
+                  aria-label="Clear job search"
+                  className="absolute right-3 top-1/2 inline-flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full text-[#707684] transition hover:bg-[#eef0ff] hover:text-[#202235]"
+                  onClick={() => {
+                    setQuery("");
+                    searchInputRef.current?.focus();
+                  }}
+                  type="button"
+                >
+                  <X aria-hidden="true" className="h-3.5 w-3.5" />
+                </button>
+              ) : null}
+            </span>
+          </label>
+        ) : (
+          <button
+            aria-label="Open job search"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#d8dbe7] bg-white text-[#3f4654] shadow-[0_1px_2px_rgba(16,24,40,0.08)] transition hover:border-[#b9bee7] hover:bg-[#fbfbff] focus:outline-none focus:ring-2 focus:ring-[#e5e7fb]"
+            onClick={() => {
+              setSearchOpen(true);
+              requestAnimationFrame(() => searchInputRef.current?.focus());
+            }}
+            type="button"
+          >
+            <Search aria-hidden="true" className="h-5 w-5" strokeWidth={2} />
+          </button>
+        )}
+      </div>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {filteredJobs.map((job) => (
           <JobCard
