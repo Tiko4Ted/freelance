@@ -1,6 +1,6 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { Eye, Search } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
@@ -99,9 +99,18 @@ function JobCard({
         </div>
       </div>
 
-      <div className="border-t border-[#d7dce8] bg-[#fbfcff] p-4">
+      <div className="grid grid-cols-[3.25rem_1fr] border-t border-[#cfd7ff] bg-[#f5f7ff]">
         <Link
-          className="flex h-11 items-center justify-center rounded-md bg-[#1d2433] px-4 text-sm font-semibold text-white transition hover:bg-[#3c465f]"
+          aria-label={`View details for ${job.title}`}
+          className="flex h-11 items-center justify-center border-r border-[#cfd7ff] text-[#6470ff] transition hover:bg-white"
+          href={withReferral(`/jobs/${job.id}`, referralCode)}
+          title="View details"
+        >
+          <Eye aria-hidden="true" className="h-4 w-4" strokeWidth={2.25} />
+          <span className="sr-only">View details</span>
+        </Link>
+        <Link
+          className="flex h-11 items-center justify-center text-sm font-semibold text-[#2d3150] transition hover:bg-white"
           href={withReferral(`/jobs/${job.id}/apply`, referralCode)}
         >
           Apply now
