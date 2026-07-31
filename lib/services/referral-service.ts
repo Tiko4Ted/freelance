@@ -1,13 +1,43 @@
+import { ApplicationStatus } from "@prisma/client";
+
 import { prisma } from "@/lib/db/prisma";
-import { JobService } from "@/lib/services/job-service";
 
 function toShareUrl(origin: string, referralCode: string) {
-  const url = new URL("/referral/jobs/", origin);
+  const url = new URL("/referral/jobs", origin);
   url.searchParams.set("referralCode", referralCode);
   url.searchParams.set("utm_source", "referral");
   url.searchParams.set("utm_medium", "share");
   url.searchParams.set("utm_campaign", "job_referral");
   return url.toString();
+}
+
+function toDashboardDate(date: Date) {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(date);
+}
+
+function applicationBucket(status: ApplicationStatus) {
+  if (
+    status === ApplicationStatus.EXPIRED ||
+    status === ApplicationStatus.REJECTED
+  ) {
+    return "failed" as const;
+  }
+
+  if (
+    status === ApplicationStatus.CERTIFIED ||
+    status === ApplicationStatus.MATCHED ||
+    status === ApplicationStatus.ACTIVE ||
+    status === ApplicationStatus.PAYOUT_ELIGIBLE ||
+    status === ApplicationStatus.PAID
+  ) {
+    return "successful" as const;
+  }
+
+  return "pending" as const;
 }
 
 export const ReferralService = {
@@ -21,15 +51,48 @@ export const ReferralService = {
       throw new Error("USER_NOT_FOUND");
     }
 
-    const jobs = await JobService.listActiveJobs();
-
     return {
       referralCode: user.referralCode,
-      links: jobs.map((job) => ({
-        job,
-        url: toShareUrl(origin, user.referralCode),
-      })),
+      url: toShareUrl(origin, user.referralCode),
     };
+  },
+
+  async getCandidateApplications(candidateEmail: string) {
+    const normalizedEmail = candidateEmail.trim().toLowerCase();
+    const applications = await prisma.application.findMany({
+      where: { candidateEmail: normalizedEmail },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        status: true,
+        hoursLogged: true,
+        tasksCompleted: true,
+        createdAt: true,
+        updatedAt: true,
+        job: {
+          select: {
+            id: true,
+            title: true,
+            payoutType: true,
+          },
+        },
+      },
+    });
+
+    return applications.map((application) => ({
+      id: application.id,
+      status: application.status,
+      bucket: applicationBucket(application.status),
+      hoursLogged: application.hoursLogged,
+      tasksCompleted: application.tasksCompleted,
+      appliedAt: toDashboardDate(application.createdAt),
+      updatedAt: toDashboardDate(application.updatedAt),
+      job: {
+        id: application.job.id,
+        title: application.job.title,
+        payoutType: application.job.payoutType,
+      },
+    }));
   },
 
   async getMyApplications(userId: string) {

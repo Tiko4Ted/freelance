@@ -9,11 +9,33 @@ import { ReferralService } from "@/lib/services/referral-service";
 
 export const dynamic = "force-dynamic";
 
+const successfulStatuses = new Set([
+  "CERTIFIED",
+  "MATCHED",
+  "ACTIVE",
+  "PAYOUT_ELIGIBLE",
+  "PAID",
+]);
+
 async function getOrigin() {
   const headerStore = await headers();
   const host = headerStore.get("host") ?? "localhost:3000";
   const protocol = headerStore.get("x-forwarded-proto") ?? "http";
   return `${protocol}://${host}`;
+}
+
+function countByBucket(
+  applications: Awaited<
+    ReturnType<typeof ReferralService.getCandidateApplications>
+  >,
+) {
+  return applications.reduce(
+    (counts, application) => ({
+      ...counts,
+      [application.bucket]: counts[application.bucket] + 1,
+    }),
+    { pending: 0, successful: 0, failed: 0 },
+  );
 }
 
 export default async function DashboardPage() {
@@ -24,10 +46,21 @@ export default async function DashboardPage() {
   }
 
   const origin = await getOrigin();
-  const [referrals, applications] = await Promise.all([
+  const [referrals, referredApplications, candidateApplications] =
+    await Promise.all([
     ReferralService.getMyLinks(session.user.id, origin),
     ReferralService.getMyApplications(session.user.id),
-  ]);
+      ReferralService.getCandidateApplications(session.user.email ?? ""),
+    ]);
+  const taskCounts = countByBucket(candidateApplications);
+  const totalTasks = candidateApplications.length;
+  const referredApplicantCount = referredApplications.filter(
+    (item) => item.application,
+  ).length;
+  const successfulReferralCount = referredApplications.filter(
+    (item) =>
+      item.application && successfulStatuses.has(item.application.status),
+  ).length;
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-950">
@@ -37,26 +70,38 @@ export default async function DashboardPage() {
             <Link className="text-sm font-medium text-teal-700" href="/">
               ReferralJobs
             </Link>
-            <Link
-              className="inline-flex h-10 items-center justify-center border border-slate-950 px-4 text-sm font-semibold text-slate-950 transition hover:border-teal-700 hover:text-teal-700"
-              href="/jobs"
-            >
-              Jobs
-            </Link>
-            <Link
-              className="inline-flex h-10 items-center justify-center border border-slate-950 px-4 text-sm font-semibold text-slate-950 transition hover:border-teal-700 hover:text-teal-700"
-              href="/wallet"
-            >
-              Wallet
-            </Link>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                className="inline-flex h-10 items-center justify-center border border-slate-950 px-4 text-sm font-semibold text-slate-950 transition hover:border-teal-700 hover:text-teal-700"
+                href="/jobs"
+              >
+                Jobs
+              </Link>
+              <Link
+                className="inline-flex h-10 items-center justify-center border border-slate-300 px-4 text-sm font-semibold text-slate-950 transition hover:border-teal-700 hover:text-teal-700"
+                href="#referrals"
+              >
+                Referrals
+              </Link>
+              <Link
+                className="inline-flex h-10 items-center justify-center border border-slate-300 px-4 text-sm font-semibold text-slate-950 transition hover:border-teal-700 hover:text-teal-700"
+                href="/wallet"
+              >
+                Wallet
+              </Link>
+            </div>
           </nav>
           <div>
             <p className="text-sm font-medium text-slate-500">
               {session.user.email}
             </p>
             <h1 className="mt-2 text-3xl font-semibold text-slate-950 md:text-5xl">
-              Referrer dashboard
+              Dashboard
             </h1>
+            <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600">
+              Track every role you have applied for, review pending eligibility
+              decisions, and share one referral link for the full app.
+            </p>
           </div>
         </div>
       </section>
@@ -64,61 +109,157 @@ export default async function DashboardPage() {
       <section className="mx-auto grid max-w-6xl gap-8 px-6 py-8 md:grid-cols-[1fr_20rem] md:px-8">
         <div>
           <h2 className="text-xl font-semibold text-slate-950">
-            Referral links
+            Job activity
           </h2>
-          <div className="mt-4 divide-y divide-slate-200 border border-slate-200 bg-white">
-            {referrals.links.map((link) => (
-              <article className="p-5" key={link.job.id}>
-                <div className="flex flex-col justify-between gap-4 md:flex-row">
-                  <div>
-                    <h3 className="font-semibold text-slate-950">
-                      {link.job.title}
-                    </h3>
-                    <p className="mt-1 text-sm text-slate-600">
-                      {link.job.formattedPayout}, {link.job.payoutTriggerLabel}
-                    </p>
-                  </div>
-                  <CopyReferralLink url={link.url} />
-                </div>
-                <input
-                  className="mt-4 h-10 w-full border border-slate-300 bg-slate-50 px-3 text-sm text-slate-700"
-                  readOnly
-                  value={link.url}
-                />
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {[
+              {
+                label: "Total tasks",
+                value: totalTasks,
+                detail: "All applications",
+              },
+              {
+                label: "Pending",
+                value: taskCounts.pending,
+                detail: "Awaiting eligibility email",
+              },
+              {
+                label: "Successful",
+                value: taskCounts.successful,
+                detail: "Matched or active work",
+              },
+              {
+                label: "Failed",
+                value: taskCounts.failed,
+                detail: "Rejected or expired",
+              },
+            ].map((item) => (
+              <article
+                className="border border-slate-200 bg-white p-4"
+                key={item.label}
+              >
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                  {item.label}
+                </p>
+                <p className="mt-3 text-3xl font-semibold text-slate-950">
+                  {item.value}
+                </p>
+                <p className="mt-1 text-sm text-slate-600">{item.detail}</p>
               </article>
             ))}
+          </div>
+
+          <div className="mt-5 divide-y divide-slate-200 border border-slate-200 bg-white">
+            {candidateApplications.length ? (
+              candidateApplications.map((application) => (
+                <article
+                  className="grid gap-4 p-5 lg:grid-cols-[1fr_auto]"
+                  key={application.id}
+                >
+                  <div>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <h3 className="font-semibold text-slate-950">
+                        {application.job.title}
+                      </h3>
+                      <StatusBadge status={application.status} />
+                    </div>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">
+                      Applied {application.appliedAt}. Last updated{" "}
+                      {application.updatedAt}.
+                    </p>
+                  </div>
+                  <div className="grid min-w-48 grid-cols-2 gap-3 text-sm">
+                    <div className="border border-slate-200 bg-slate-50 p-3">
+                      <p className="text-slate-500">Hours</p>
+                      <p className="mt-1 font-semibold text-slate-950">
+                        {application.hoursLogged}
+                      </p>
+                    </div>
+                    <div className="border border-slate-200 bg-slate-50 p-3">
+                      <p className="text-slate-500">Tasks</p>
+                      <p className="mt-1 font-semibold text-slate-950">
+                        {application.tasksCompleted}
+                      </p>
+                    </div>
+                  </div>
+                </article>
+              ))
+            ) : (
+              <div className="p-5">
+                <h3 className="font-semibold text-slate-950">
+                  No job activity yet
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  Applications you submit will appear here as pending while the
+                  team reviews your documents and confirms eligibility by email.
+                </p>
+                <Link
+                  className="mt-4 inline-flex h-10 items-center justify-center border border-slate-950 bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-teal-700"
+                  href="/jobs"
+                >
+                  Browse jobs
+                </Link>
+              </div>
+            )}
           </div>
         </div>
 
         <aside className="border border-slate-200 bg-white p-5">
-          <h2 className="text-xl font-semibold text-slate-950">Code</h2>
-          <p className="mt-3 break-all text-2xl font-semibold text-teal-700">
-            {referrals.referralCode}
+          <h2 className="text-xl font-semibold text-slate-950">
+            Referral link
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            Share this one app-wide invite link. Applicants choose the role after
+            they open it.
           </p>
+          <div className="mt-5">
+            <CopyReferralLink url={referrals.url} />
+          </div>
+          <input
+            className="mt-4 h-10 w-full border border-slate-300 bg-slate-50 px-3 text-sm text-slate-700"
+            readOnly
+            value={referrals.url}
+          />
           <dl className="mt-6 space-y-4 text-sm">
             <div className="flex justify-between gap-4">
-              <dt className="text-slate-500">Links</dt>
+              <dt className="text-slate-500">Referral code</dt>
               <dd className="font-medium text-slate-950">
-                {referrals.links.length}
+                {referrals.referralCode}
               </dd>
             </div>
             <div className="flex justify-between gap-4">
-              <dt className="text-slate-500">Applications</dt>
+              <dt className="text-slate-500">Referrals</dt>
               <dd className="font-medium text-slate-950">
-                {applications.length}
+                {referredApplications.length}
+              </dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt className="text-slate-500">Applied referrals</dt>
+              <dd className="font-medium text-slate-950">
+                {referredApplicantCount}
+              </dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt className="text-slate-500">Successful referrals</dt>
+              <dd className="font-medium text-slate-950">
+                {successfulReferralCount}
               </dd>
             </div>
           </dl>
         </aside>
       </section>
 
-      <section className="mx-auto max-w-6xl px-6 pb-10 md:px-8">
+      <section className="mx-auto max-w-6xl px-6 pb-10 md:px-8" id="referrals">
         <h2 className="text-xl font-semibold text-slate-950">
-          Referred applications
+          Referrals
         </h2>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+          Use this section to see who entered through your invite link, whether
+          they applied, and the current status of their application.
+        </p>
         <div className="mt-4 divide-y divide-slate-200 border border-slate-200 bg-white">
-          {applications.length ? (
-            applications.map((item) => (
+          {referredApplications.length ? (
+            referredApplications.map((item) => (
               <article
                 className="grid gap-3 p-5 md:grid-cols-[1fr_auto]"
                 key={item.id}
@@ -135,7 +276,10 @@ export default async function DashboardPage() {
               </article>
             ))
           ) : (
-            <p className="p-5 text-sm text-slate-600">No referrals yet.</p>
+            <p className="p-5 text-sm text-slate-600">
+              No referrals yet. Share your single referral link to invite people
+              into the job board.
+            </p>
           )}
         </div>
       </section>

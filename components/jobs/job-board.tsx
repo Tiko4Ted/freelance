@@ -176,13 +176,13 @@ export function JobBoard({ headerCopy, jobs, referralCode }: JobBoardProps) {
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.18)_0%,rgba(248,248,255,0.92)_76%,#f8f8ff_100%),radial-gradient(ellipse_at_47%_10%,rgba(93,117,142,0.34)_0%,rgba(93,117,142,0.15)_23%,transparent_45%),radial-gradient(ellipse_at_53%_14%,rgba(255,255,255,0.95)_0%,rgba(255,255,255,0.28)_16%,transparent_32%),linear-gradient(135deg,#e7f0f8_0%,#d8e3ed_34%,#f3f5fb_68%,#eef0fb_100%)]" />
         <div className="relative mx-auto max-w-[1128px] px-4 py-[35px] lg:px-0">
-          <div className="flex min-h-10 items-center justify-between gap-6">
+          <div className="flex min-h-10 flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
             <h1 className="max-w-[760px] text-[28px] font-semibold leading-[1.18] tracking-[-0.015em] text-[#090b12]">
               {headerCopy}
             </h1>
 
             <div
-              className="flex min-h-10 shrink-0 justify-end"
+              className="hidden min-h-10 shrink-0 justify-end lg:flex"
               ref={searchContainerRef}
             >
               {searchOpen ? (
@@ -237,6 +237,34 @@ export function JobBoard({ headerCopy, jobs, referralCode }: JobBoardProps) {
                 </button>
               )}
             </div>
+
+            <label className="block w-full max-w-[248px] self-end lg:hidden">
+              <span className="sr-only">Search by job title</span>
+              <span className="relative block">
+                <Search
+                  aria-hidden="true"
+                  className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#3f4654]"
+                  strokeWidth={2}
+                />
+                <input
+                  className="h-10 w-full rounded-full border border-[#d8dbe7] bg-white px-11 text-sm text-[#202235] outline-none placeholder:text-[#707684] focus:border-[#b9bee7] focus:ring-2 focus:ring-[#e5e7fb]"
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="Search by job title..."
+                  type="search"
+                  value={query}
+                />
+                {query ? (
+                  <button
+                    aria-label="Clear job search"
+                    className="absolute right-3 top-1/2 inline-flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full text-[#707684] transition hover:bg-[#eef0ff] hover:text-[#202235]"
+                    onClick={() => setQuery("")}
+                    type="button"
+                  >
+                    <X aria-hidden="true" className="h-3.5 w-3.5" />
+                  </button>
+                ) : null}
+              </span>
+            </label>
           </div>
         </div>
       </section>
@@ -258,12 +286,12 @@ export function JobBoard({ headerCopy, jobs, referralCode }: JobBoardProps) {
             No roles match that search.
           </div>
         ) : null}
-        {selectedJob ? (
-          <JobDetailShell onCloseComplete={() => setSelectedJob(null)}>
-            <JobDetailContent job={selectedJob} />
-          </JobDetailShell>
-        ) : null}
       </section>
+      {selectedJob ? (
+        <JobDetailShell onCloseComplete={() => setSelectedJob(null)}>
+          <JobDetailContent job={selectedJob} />
+        </JobDetailShell>
+      ) : null}
     </>
   );
 }

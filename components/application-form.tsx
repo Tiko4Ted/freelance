@@ -1,10 +1,21 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { ChevronDown, Minus, Plus, Upload, X } from "lucide-react";
+import {
+  CheckCircle2,
+  ChevronDown,
+  FileText,
+  LoaderCircle,
+  Minus,
+  Plus,
+  Upload,
+  X,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
 
 type ApplicationFormProps = {
   jobId: string;
+  listingsHref?: string;
 };
 
 type FormStep = "details" | "questions";
@@ -161,7 +172,103 @@ function NumberStepper({
   );
 }
 
-export function ApplicationForm({ jobId }: ApplicationFormProps) {
+function ApplicationSubmissionPage({
+  status,
+  message,
+  onClose,
+}: {
+  status: Extract<SubmitState["status"], "submitting" | "success">;
+  message: string;
+  onClose: () => void;
+}) {
+  const isSuccess = status === "success";
+
+  return (
+    <section className="fixed inset-0 z-50 min-h-screen overflow-y-auto bg-[#f8f8ff] px-5 py-8 text-[#151625] sm:px-8">
+      <div className="mx-auto flex min-h-[calc(100dvh-4rem)] max-w-[760px] flex-col justify-center py-8">
+        <div className="rounded-lg border border-[#dfe2f4] bg-white px-5 py-7 shadow-[0_24px_80px_rgba(28,34,76,0.12)] sm:px-8 sm:py-9">
+          <div className="flex items-center gap-3">
+            <span
+              className={
+                isSuccess
+                  ? "inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-[#e8f8f3] text-[#087c66]"
+                  : "inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-[#eef0ff] text-[#2d3fe5]"
+              }
+            >
+              {isSuccess ? (
+                <CheckCircle2 aria-hidden="true" className="h-6 w-6" />
+              ) : (
+                <FileText aria-hidden="true" className="h-6 w-6" />
+              )}
+            </span>
+            <div>
+              <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[#60677c]">
+                Application documents
+              </p>
+              <h1 className="mt-1 text-[24px] font-semibold leading-tight text-[#10121f] sm:text-[30px]">
+                {isSuccess ? "Submission received" : "Preparing your submission"}
+              </h1>
+            </div>
+          </div>
+
+          {isSuccess ? (
+            <div className="mt-8 space-y-4 text-[15px] leading-[1.65] text-[#343849]">
+              <p>{message}</p>
+              <p>
+                Your application documents have been received and placed in our
+                review queue for formal assessment. Our recruiting operations
+                team will evaluate the information you provided, including your
+                resume, contact details, availability, rate expectations, and
+                role-specific responses, against the requirements of this
+                opening and any other relevant opportunities.
+              </p>
+              <p>
+                No additional action is required from you at this stage. Please
+                allow the team sufficient time to complete the review process.
+                Once there is an update regarding your application, next steps,
+                or a suitable match, you will be notified through the email
+                address submitted with your application. We recommend monitoring
+                your inbox for official communication from our team.
+              </p>
+            </div>
+          ) : (
+            <div className="mt-8">
+              <div className="flex items-center gap-3 rounded-md border border-[#dfe2f4] bg-[#fbfbff] px-4 py-4">
+                <LoaderCircle
+                  aria-hidden="true"
+                  className="h-5 w-5 animate-spin text-[#3142ff]"
+                />
+                <p className="text-[14px] font-medium text-[#2c3041]">
+                  {message}. Please keep this page open while we securely submit
+                  your application documents.
+                </p>
+              </div>
+              <div className="mt-5 h-2 overflow-hidden rounded-full bg-[#e4e7f7]">
+                <div className="h-full w-2/3 animate-pulse rounded-full bg-[#3142ff]" />
+              </div>
+            </div>
+          )}
+
+          {isSuccess ? (
+            <button
+              className="mt-8 inline-flex h-11 w-full items-center justify-center rounded-md bg-[#1723a7] px-5 text-[15px] font-semibold text-white shadow-sm transition hover:bg-[#101a91] sm:w-auto"
+              onClick={onClose}
+              type="button"
+            >
+              Close
+            </button>
+          ) : null}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export function ApplicationForm({
+  jobId,
+  listingsHref = "/jobs",
+}: ApplicationFormProps) {
+  const router = useRouter();
   const [step, setStep] = useState<FormStep>("details");
   const [state, setState] = useState<SubmitState>({
     status: "idle",
@@ -176,6 +283,8 @@ export function ApplicationForm({ jobId }: ApplicationFormProps) {
   const [weeklyAvailabilityHours, setWeeklyAvailabilityHours] = useState(1);
   const [strongestTools, setStrongestTools] = useState<string[]>([]);
   const [toolsOpen, setToolsOpen] = useState(false);
+  const isSubmissionPage =
+    state.status === "submitting" || state.status === "success";
 
   function handleDetailsNext(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -217,26 +326,38 @@ export function ApplicationForm({ jobId }: ApplicationFormProps) {
 
     setState({ status: "submitting", message: "Submitting application" });
 
-    const response = await fetch("/api/v1/applications", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        jobId,
-        ...draft,
-        startAvailabilityDays,
-        expectedHourlyRateUsd,
-        weeklyAvailabilityHours,
-        strongestTools,
-      }),
-    });
-    const payload: unknown = await response.json();
+    try {
+      const response = await fetch("/api/v1/applications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jobId,
+          ...draft,
+          startAvailabilityDays,
+          expectedHourlyRateUsd,
+          weeklyAvailabilityHours,
+          strongestTools,
+        }),
+      });
+      const payload: unknown = await response.json();
 
-    if (!response.ok) {
-      setState({ status: "error", message: getErrorMessage(payload) });
+      if (!response.ok) {
+        setState({ status: "error", message: getErrorMessage(payload) });
+        return;
+      }
+    } catch {
+      setState({
+        status: "error",
+        message: "Unable to submit application",
+      });
       return;
     }
 
-    setState({ status: "success", message: "Application submitted" });
+    setState({
+      status: "success",
+      message:
+        "Thank you for completing your application. Please await the review of your submitted documents; you will be notified by email once our team has completed the assessment and determined the appropriate next steps.",
+    });
   }
 
   function toggleTool(tool: string) {
@@ -246,6 +367,16 @@ export function ApplicationForm({ jobId }: ApplicationFormProps) {
         : [...currentTools, tool],
     );
     setToolsOpen(false);
+  }
+
+  if (isSubmissionPage) {
+    return (
+      <ApplicationSubmissionPage
+        message={state.message}
+        onClose={() => router.push(listingsHref)}
+        status={state.status}
+      />
+    );
   }
 
   if (step === "questions") {
@@ -368,7 +499,6 @@ export function ApplicationForm({ jobId }: ApplicationFormProps) {
           </button>
           <button
             className="inline-flex h-11 items-center justify-center rounded-md bg-gradient-to-r from-[#3e52ff] to-[#1723a7] px-5 text-[15px] font-semibold text-white shadow-sm transition hover:from-[#3345f0] hover:to-[#101a91] disabled:cursor-not-allowed disabled:opacity-65"
-            disabled={state.status === "submitting"}
             type="submit"
           >
             Submit
