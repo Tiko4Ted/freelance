@@ -38,6 +38,13 @@ function toApplicationResponse(application: {
   jobId: string;
   candidateEmail: string;
   candidateName: string;
+  candidateFirstName: string | null;
+  candidateLastName: string | null;
+  candidatePhoneCountry: string | null;
+  candidatePhoneCountryCode: string | null;
+  candidatePhoneNumber: string | null;
+  candidateLinkedinUrl: string | null;
+  resumeFileName: string | null;
   status: ApplicationStatus;
   lockedPayoutCents: number | null;
   referralId: string | null;
@@ -48,6 +55,13 @@ function toApplicationResponse(application: {
     jobId: application.jobId,
     candidateEmail: application.candidateEmail,
     candidateName: application.candidateName,
+    candidateFirstName: application.candidateFirstName,
+    candidateLastName: application.candidateLastName,
+    candidatePhoneCountry: application.candidatePhoneCountry,
+    candidatePhoneCountryCode: application.candidatePhoneCountryCode,
+    candidatePhoneNumber: application.candidatePhoneNumber,
+    candidateLinkedinUrl: application.candidateLinkedinUrl,
+    resumeFileName: application.resumeFileName,
     status: application.status,
     lockedPayoutCents: application.lockedPayoutCents,
     referralId: application.referralId,
@@ -107,6 +121,13 @@ export const ApplicationService = {
             jobId: job.id,
             candidateEmail: normalizedEmail,
             candidateName: input.candidateName.trim(),
+            candidateFirstName: input.candidateFirstName ?? null,
+            candidateLastName: input.candidateLastName ?? null,
+            candidatePhoneCountry: input.candidatePhoneCountry ?? null,
+            candidatePhoneCountryCode: input.candidatePhoneCountryCode ?? null,
+            candidatePhoneNumber: input.candidatePhoneNumber ?? null,
+            candidateLinkedinUrl: input.candidateLinkedinUrl ?? null,
+            resumeFileName: input.resumeFileName ?? null,
             lockedPayoutCents: job.payoutAmountCents,
             referralId,
           },
@@ -115,6 +136,13 @@ export const ApplicationService = {
             jobId: true,
             candidateEmail: true,
             candidateName: true,
+            candidateFirstName: true,
+            candidateLastName: true,
+            candidatePhoneCountry: true,
+            candidatePhoneCountryCode: true,
+            candidatePhoneNumber: true,
+            candidateLinkedinUrl: true,
+            resumeFileName: true,
             status: true,
             lockedPayoutCents: true,
             referralId: true,

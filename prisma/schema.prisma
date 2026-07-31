@@ -93,23 +93,30 @@ model JobSkill {
 }
 
 model Application {
-  id                String            @id @default(uuid())
-  jobId             String
-  job               Job               @relation(fields: [jobId], references: [id])
-  candidateEmail    String
-  candidateName     String
-  referralId        String?           @unique
-  referral          Referral?         @relation(fields: [referralId], references: [id])
-  status            ApplicationStatus @default(APPLIED)
-  lockedPayoutCents Int?
-  hoursLogged       Float             @default(0)
-  tasksCompleted    Int               @default(0)
-  onboardedAt       DateTime?
-  payoutDeadline    DateTime?
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
+  id                        String            @id @default(uuid())
+  jobId                     String
+  job                       Job               @relation(fields: [jobId], references: [id])
+  candidateEmail            String
+  candidateName             String
+  candidateFirstName        String?
+  candidateLastName         String?
+  candidatePhoneCountry     String?
+  candidatePhoneCountryCode String?
+  candidatePhoneNumber      String?
+  candidateLinkedinUrl      String?
+  resumeFileName            String?
+  referralId                String?           @unique
+  referral                  Referral?         @relation(fields: [referralId], references: [id])
+  status                    ApplicationStatus @default(APPLIED)
+  lockedPayoutCents         Int?
+  hoursLogged               Float             @default(0)
+  tasksCompleted            Int               @default(0)
+  onboardedAt               DateTime?
+  payoutDeadline            DateTime?
+  createdAt                 DateTime          @default(now())
+  updatedAt                 DateTime          @updatedAt
 
-  ledgerEntry       LedgerEntry?
+  ledgerEntry               LedgerEntry?
 
   @@unique([candidateEmail, jobId])
   @@index([candidateEmail])

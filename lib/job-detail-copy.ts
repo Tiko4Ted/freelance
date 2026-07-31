@@ -20,6 +20,10 @@ function isAudioRole(job: PublicJobView) {
   return searchable.includes("audio") || searchable.includes("voice");
 }
 
+function isCrmOperationsRole(job: PublicJobView) {
+  return job.title.toLowerCase().includes("crm operations specialist");
+}
+
 function sentenceList(items: string[]) {
   if (!items.length) {
     return "relevant domain tools and workflows";
@@ -38,6 +42,30 @@ function sentenceList(items: string[]) {
 export function buildJobDetailCopy(job: PublicJobView): JobDetailCopy {
   const primarySkill = getPrimarySkill(job);
   const skillSummary = sentenceList(getSkillLabels(job).slice(0, 4));
+
+  if (isCrmOperationsRole(job)) {
+    return {
+      intro:
+        "micro1 is engaging CRM Operations Specialists to support a customer's project focused on optimizing sales and customer relationship management processes. In this role, you'll apply your expertise to help train next-generation AI systems. Your work will shape how models learn, reason, and perform through high-quality, real-world input. No prior experience in AI is required - your domain knowledge is what matters. This is an opportunity to leverage your CRM operations skills and deep knowledge of platforms like Salesforce and HubSpot, directly impacting the way leading organizations manage and grow customer relationships.",
+      scope: [
+        "Evaluate and provide input on CRM workflows, sales processes, and automation logic using Salesforce, HubSpot, and other leading platforms.",
+        "Document current sales operations practices, identifying pain points and opportunities for process improvement.",
+        "Contribute real-world examples, scenarios, and feedback reflecting best practices in CRM operations and sales enablement.",
+        "Review, analyze, and annotate CRM data, records, and user interactions to support AI training objectives.",
+        "Assess and validate AI system outputs for accuracy and alignment with actual sales operations.",
+        "Collaborate on content generation and review for documentation, training materials, and process guides related to CRM tools.",
+      ],
+      qualifications: [
+        "3+ years of hands-on experience in CRM and sales operations, with demonstrated expertise in Salesforce and HubSpot.",
+        "Proficiency with additional platforms such as Close, Apollo, Salesloft, Intercom, Freshdesk, Shopify, Crayon, or Funnel is highly valued.",
+        "Track record of optimizing sales processes, implementing automations, and managing CRM data integrity.",
+        "Strong analytical and process-mapping abilities, with a detail-oriented approach to complex business workflows.",
+        "Effective written and verbal communication skills to deliver clear documentation and actionable feedback.",
+        "Experience providing feedback or training in process improvement or software implementation contexts is a plus.",
+        "No formal degree required; practical expertise and platform fluency are the primary criteria.",
+      ],
+    };
+  }
 
   if (isAudioRole(job)) {
     return {

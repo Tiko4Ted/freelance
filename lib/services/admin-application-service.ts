@@ -16,6 +16,11 @@ function toApplicationResponse(application: {
   id: string;
   candidateName: string;
   candidateEmail: string;
+  candidatePhoneCountry: string | null;
+  candidatePhoneCountryCode: string | null;
+  candidatePhoneNumber: string | null;
+  candidateLinkedinUrl: string | null;
+  resumeFileName: string | null;
   status: ApplicationStatus;
   lockedPayoutCents: number | null;
   hoursLogged: number;
@@ -40,6 +45,11 @@ function toApplicationResponse(application: {
     id: application.id,
     candidateName: application.candidateName,
     candidateEmail: application.candidateEmail,
+    candidatePhoneCountry: application.candidatePhoneCountry,
+    candidatePhoneCountryCode: application.candidatePhoneCountryCode,
+    candidatePhoneNumber: application.candidatePhoneNumber,
+    candidateLinkedinUrl: application.candidateLinkedinUrl,
+    resumeFileName: application.resumeFileName,
     status: application.status,
     lockedPayoutCents: application.lockedPayoutCents,
     hoursLogged: application.hoursLogged,
@@ -56,6 +66,11 @@ const applicationSelect = {
   id: true,
   candidateName: true,
   candidateEmail: true,
+  candidatePhoneCountry: true,
+  candidatePhoneCountryCode: true,
+  candidatePhoneNumber: true,
+  candidateLinkedinUrl: true,
+  resumeFileName: true,
   status: true,
   lockedPayoutCents: true,
   hoursLogged: true,

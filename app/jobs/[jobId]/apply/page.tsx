@@ -1,80 +1,140 @@
-import { cookies } from "next/headers";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { ApplicationForm } from "@/components/application-form";
+import { buildJobDetailCopy } from "@/lib/job-detail-copy";
 import { JobService } from "@/lib/services/job-service";
 
 export const dynamic = "force-dynamic";
-
-const REFERRAL_COOKIE_NAME = "ref_code";
 
 type ApplyPageProps = {
   params: Promise<{
     jobId: string;
   }>;
-  searchParams: Promise<{
-    ref?: string;
-    referralCode?: string;
-  }>;
 };
 
-function withReferral(href: string, referralCode?: string) {
-  if (!referralCode) {
-    return href;
+const ABOUT_MICRO1 = [
+  "micro1 is the leading AI data lab for training frontier models and evaluating AI agents. Experts contribute their diverse subject matter knowledge across domains such as finance, healthcare, STEM engineering, and more. micro1 transforms that real-world expertise into high-quality training data, evaluations, and feedback loops that improve how AI systems learn, reason, and perform.",
+  "Our platform identifies and vets top talent through an AI recruiter, enabling high-quality expert contributions at scale. We aim to enable 1 billion people to do meaningful work by applying their expertise to AI. As our global expert network grows, micro1 is building the human intelligence layer for frontier AI.",
+];
+
+function formatApplyPay(formattedHourlyPay: string | null) {
+  if (!formattedHourlyPay) {
+    return "Pay discussed";
   }
 
-  return `${href}?referralCode=${encodeURIComponent(referralCode)}`;
+  return formattedHourlyPay.replace("/hr", "/hour");
 }
 
-export default async function ApplyPage({
-  params,
-  searchParams,
-}: ApplyPageProps) {
-  const [{ jobId }, query] = await Promise.all([params, searchParams]);
-  const referralCode = query.ref ?? query.referralCode;
+function formatSkillLabel(label: string) {
+  if (label.toLowerCase() === "crm") {
+    return "CRM";
+  }
+
+  return label;
+}
+
+export default async function ApplyPage({ params }: ApplyPageProps) {
+  const { jobId } = await params;
   const job = await JobService.getActiveJob(jobId);
 
   if (!job) {
     notFound();
   }
 
-  const cookieStore = await cookies();
-  const referralCookie = cookieStore.get(REFERRAL_COOKIE_NAME)?.value;
-  const referralDetected = Boolean(
-    (referralCookie && referralCookie.startsWith(`${job.id}:`)) ||
-      referralCode,
-  );
+  const detailCopy = buildJobDetailCopy(job);
+  const payLabel = formatApplyPay(job.formattedHourlyPay);
 
   return (
-    <main className="min-h-screen bg-[#f3f6ff] text-[#202235]">
-      <section className="border-b border-[#d9def7] bg-white">
-        <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-          <Link
-            className="text-sm font-semibold text-[#626cff]"
-            href={withReferral(`/jobs/${job.id}`, referralCode)}
-          >
-            {job.title}
-          </Link>
-          <h1 className="mt-5 text-3xl font-black tracking-tight text-[#111427] sm:text-5xl">
-            Candidate application
-          </h1>
-          <p className="mt-3 text-base text-[#5f687f]">
-            Pay: {job.formattedHourlyPay ?? "discussed during review"}.
+    <main className="min-h-screen bg-white text-[#0f1019]">
+      <div className="mx-auto grid max-w-[1050px] gap-10 px-5 pb-16 pt-6 sm:px-8 lg:grid-cols-[minmax(0,1fr)_24.25rem] lg:gap-11 lg:px-0">
+        <article className="min-w-0">
+          <p className="text-[30px] font-black leading-none tracking-normal text-black">
+            micro1.
           </p>
-        </div>
-      </section>
 
-      <section className="mx-auto max-w-2xl px-4 py-8 sm:px-6 lg:px-8">
-        {referralDetected ? (
-          <div className="mb-5 rounded-md border border-[#a8e3d8] bg-[#e8faf6] p-4 text-sm font-semibold text-[#096d5e]">
-            Invitation detected. Continue with your application below.
-          </div>
-        ) : null}
-        <div className="rounded-md border border-[#cfd7ff] bg-white p-5">
+          <header className="mt-7">
+            <h1 className="text-[30px] font-semibold leading-tight tracking-normal text-black">
+              {job.title}
+            </h1>
+
+            <div className="mt-4 inline-flex items-center rounded bg-[#f3f2fb] px-3 py-2 text-[14px] font-semibold text-[#202233]">
+              <span>{payLabel}</span>
+              {job.formattedHourlyPay ? (
+                <span className="ml-1 text-[12px] font-normal text-[#555869]">
+                  pay
+                </span>
+              ) : null}
+            </div>
+          </header>
+
+          <section className="mt-7">
+            <h2 className="text-[16px] font-semibold text-black">
+              Required Skills
+            </h2>
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {job.skills.map((skill) => (
+                <span
+                  className="rounded bg-[#eeeef6] px-3 py-2 text-[14px] leading-none text-[#272936]"
+                  key={skill.id}
+                >
+                  {formatSkillLabel(skill.label)}
+                </span>
+              ))}
+            </div>
+          </section>
+
+          <section className="mt-6 rounded-md bg-[#f2f1fb] px-4 py-4 text-[12px] leading-[1.45] text-[#303241] sm:px-5">
+            <h2 className="text-[14px] font-semibold text-black">
+              About micro1
+            </h2>
+            <div className="mt-2 space-y-3">
+              {ABOUT_MICRO1.map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
+            </div>
+          </section>
+
+          <section className="mt-9 max-w-[650px] text-[15px] leading-[1.55] text-black">
+            <div className="space-y-7">
+              <p>
+                <span className="font-medium">Role Title:</span> {job.title}
+              </p>
+              <p>
+                <span className="font-medium">Role Type:</span> Contractor
+              </p>
+              <p>
+                <span className="font-medium">Location:</span> Remote
+              </p>
+            </div>
+
+            <p className="mt-7">{detailCopy.intro}</p>
+
+            <section className="mt-7">
+              <h2 className="font-medium">Scope of Work</h2>
+              <ul className="mt-1 list-disc space-y-1 pl-7">
+                {detailCopy.scope.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </section>
+
+            <section className="mt-7">
+              <h2 className="font-medium">Preferred Qualifications</h2>
+              <ul className="mt-1 list-disc space-y-1 pl-7">
+                {detailCopy.qualifications.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </section>
+
+            {detailCopy.note ? <p className="mt-7">{detailCopy.note}</p> : null}
+          </section>
+        </article>
+
+        <aside className="lg:sticky lg:top-6 lg:self-start">
           <ApplicationForm jobId={job.id} />
-        </div>
-      </section>
+        </aside>
+      </div>
     </main>
   );
 }

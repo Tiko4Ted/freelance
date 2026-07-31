@@ -49,6 +49,28 @@ export default async function AdminApplicationsPage() {
                   <p className="mt-2 text-sm text-slate-600">
                     {application.candidateEmail}
                   </p>
+                  {application.candidatePhoneNumber ? (
+                    <p className="mt-2 text-sm text-slate-600">
+                      Phone:{" "}
+                      {[
+                        application.candidatePhoneCountry,
+                        application.candidatePhoneCountryCode,
+                        application.candidatePhoneNumber,
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                    </p>
+                  ) : null}
+                  {application.candidateLinkedinUrl ? (
+                    <p className="mt-2 break-all text-sm text-slate-600">
+                      LinkedIn: {application.candidateLinkedinUrl}
+                    </p>
+                  ) : null}
+                  {application.resumeFileName ? (
+                    <p className="mt-2 break-all text-sm text-slate-600">
+                      Resume: {application.resumeFileName}
+                    </p>
+                  ) : null}
                   <p className="mt-2 text-sm text-slate-600">
                     {application.job.title}
                   </p>
