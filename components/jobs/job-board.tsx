@@ -1,6 +1,6 @@
 "use client";
 
-import { Eye } from "lucide-react";
+import { Eye, Search } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
@@ -40,8 +40,8 @@ function JobCard({
   const skills = visibleSkills(job);
 
   return (
-    <article className="flex min-h-[20rem] flex-col overflow-hidden rounded-md border border-[#d7dce8] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.06)]">
-      <div className="flex flex-1 flex-col p-4">
+    <article className="relative flex min-h-[15.9rem] flex-col rounded-md border border-[#d7d8f5] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+      <div className="flex flex-1 flex-col p-3.5">
         <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
           <span className="text-[#65708a]">{job.postedAtLabel}</span>
           {job.isNew ? (
@@ -56,36 +56,39 @@ function JobCard({
           ) : null}
         </div>
 
-        <h2 className="mt-4 text-lg font-semibold leading-snug text-[#202235]">
+        <h2 className="mt-3 text-[17px] font-medium leading-snug text-[#202235]">
           {job.title}
         </h2>
-        <p className="mt-2 text-sm font-medium text-[#667085]">micro1</p>
-        <p className="mt-3 text-sm font-semibold text-[#3a4254]">
+        <p className="mt-2 text-xs font-medium text-[#4f5667]">
+          micro1 <span className="px-2 text-[#a8adba]">|</span>
           {openingLabel(job.openings)}
         </p>
 
-        <div className="mt-4">
-          <p className="text-xs font-semibold text-[#667085]">
+        <div className="mt-3">
+          <p className="text-[11px] font-medium text-[#4f5667]">
             Required skills
           </p>
-          <div className="mt-2 flex flex-wrap gap-2">
+          <div className="mt-2 flex flex-wrap gap-1.5">
             {skills.visible.map((skill) => (
               <span
-                className="rounded border border-[#d9deef] bg-white px-2.5 py-1 text-xs font-medium text-[#4c5875]"
+                className="rounded border border-[#d7dbe6] bg-white px-2.5 py-1 text-xs font-normal text-[#4c5261]"
                 key={skill.id}
               >
                 {skill.label}
               </span>
             ))}
             {skills.hiddenCount ? (
-              <span className="rounded border border-[#d9deef] bg-[#fbfcff] px-2.5 py-1 text-xs font-semibold text-[#6f78a8]">
+              <span className="group relative rounded border border-[#d7dbe6] bg-white px-2.5 py-1 text-xs font-normal text-[#4c5261]">
                 +{skills.hiddenCount}
+                <span className="pointer-events-none absolute left-1/2 top-full z-20 mt-2 hidden min-w-40 -translate-x-1/2 rounded-md bg-[#202235] px-3 py-2 text-left text-xs font-medium leading-5 text-white shadow-lg group-hover:block">
+                  {job.skills.slice(3).map((skill) => skill.label).join(", ")}
+                </span>
               </span>
             ) : null}
           </div>
         </div>
 
-        <div className="mt-auto pt-5 text-sm">
+        <div className="mt-auto pt-3 text-sm">
           {job.formattedHourlyPay ? (
             <p className="text-[#586279]">
               Pay:{" "}
@@ -97,10 +100,10 @@ function JobCard({
         </div>
       </div>
 
-      <div className="grid grid-cols-[3.25rem_1fr] border-t border-[#cfd7ff] bg-[#f5f7ff]">
+      <div className="grid grid-cols-[2.75rem_1fr] border-t border-[#d7d8f5] bg-[#f5f6ff]">
         <Link
           aria-label={`View details for ${job.title}`}
-          className="flex h-11 items-center justify-center border-r border-[#cfd7ff] text-[#6470ff] transition hover:bg-white"
+          className="flex h-10 items-center justify-center border-r border-[#d7d8f5] text-[#6470ff] transition hover:bg-white"
           href={withReferral(`/jobs/${job.id}`, referralCode)}
           title="View details"
         >
@@ -108,7 +111,7 @@ function JobCard({
           <span className="sr-only">View details</span>
         </Link>
         <Link
-          className="flex h-11 items-center justify-center text-sm font-semibold text-[#2d3150] transition hover:bg-white"
+          className="flex h-10 items-center justify-center text-sm font-semibold text-[#2d3150] transition hover:bg-white"
           href={withReferral(`/jobs/${job.id}/apply`, referralCode)}
         >
           Apply now
@@ -141,15 +144,23 @@ export function JobBoard({ jobs, referralCode }: JobBoardProps) {
 
   return (
     <section className="mx-auto max-w-[1128px] px-4 pb-14 lg:px-0">
-      <label className="sr-only">
-        Search by job title
-        <input
-          onChange={(event) => setQuery(event.target.value)}
-          type="search"
-          value={query}
-        />
+      <label className="-mt-[56px] mb-4 block w-full max-w-[248px]">
+        <span className="sr-only">Search by job title</span>
+        <span className="relative block">
+          <Search
+            aria-hidden="true"
+            className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#3f4654]"
+            strokeWidth={2}
+          />
+          <input
+            className="h-10 w-full rounded-full border border-[#d8dbe7] bg-white px-11 text-sm text-[#202235] outline-none placeholder:text-[#707684] focus:border-[#b9bee7] focus:ring-2 focus:ring-[#e5e7fb]"
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search by job title..."
+            type="search"
+            value={query}
+          />
+        </span>
       </label>
-
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {filteredJobs.map((job) => (
           <JobCard job={job} key={job.id} referralCode={referralCode} />
