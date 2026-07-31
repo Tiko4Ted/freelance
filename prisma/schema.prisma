@@ -105,6 +105,10 @@ model Application {
   candidatePhoneNumber      String?
   candidateLinkedinUrl      String?
   resumeFileName            String?
+  startAvailabilityDays     Int?
+  expectedHourlyRateUsd     Int?
+  weeklyAvailabilityHours   Int?
+  strongestTools            String[]          @default([])
   referralId                String?           @unique
   referral                  Referral?         @relation(fields: [referralId], references: [id])
   status                    ApplicationStatus @default(APPLIED)

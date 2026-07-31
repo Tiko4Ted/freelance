@@ -21,6 +21,10 @@ function toApplicationResponse(application: {
   candidatePhoneNumber: string | null;
   candidateLinkedinUrl: string | null;
   resumeFileName: string | null;
+  startAvailabilityDays: number | null;
+  expectedHourlyRateUsd: number | null;
+  weeklyAvailabilityHours: number | null;
+  strongestTools: string[];
   status: ApplicationStatus;
   lockedPayoutCents: number | null;
   hoursLogged: number;
@@ -50,6 +54,10 @@ function toApplicationResponse(application: {
     candidatePhoneNumber: application.candidatePhoneNumber,
     candidateLinkedinUrl: application.candidateLinkedinUrl,
     resumeFileName: application.resumeFileName,
+    startAvailabilityDays: application.startAvailabilityDays,
+    expectedHourlyRateUsd: application.expectedHourlyRateUsd,
+    weeklyAvailabilityHours: application.weeklyAvailabilityHours,
+    strongestTools: application.strongestTools,
     status: application.status,
     lockedPayoutCents: application.lockedPayoutCents,
     hoursLogged: application.hoursLogged,
@@ -71,6 +79,10 @@ const applicationSelect = {
   candidatePhoneNumber: true,
   candidateLinkedinUrl: true,
   resumeFileName: true,
+  startAvailabilityDays: true,
+  expectedHourlyRateUsd: true,
+  weeklyAvailabilityHours: true,
+  strongestTools: true,
   status: true,
   lockedPayoutCents: true,
   hoursLogged: true,

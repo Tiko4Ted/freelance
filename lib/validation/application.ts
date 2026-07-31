@@ -35,6 +35,10 @@ export const applicationSchema = z.object({
     z.string().url().max(300).optional(),
   ),
   resumeFileName: optionalTrimmedString(255),
+  startAvailabilityDays: z.coerce.number().int().min(0).max(365).optional(),
+  expectedHourlyRateUsd: z.coerce.number().int().min(1).max(10000).optional(),
+  weeklyAvailabilityHours: z.coerce.number().int().min(1).max(168).optional(),
+  strongestTools: z.array(z.string().trim().min(1).max(80)).optional().default([]),
 });
 
 export type ApplicationInput = z.infer<typeof applicationSchema>;

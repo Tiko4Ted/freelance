@@ -71,6 +71,26 @@ export default async function AdminApplicationsPage() {
                       Resume: {application.resumeFileName}
                     </p>
                   ) : null}
+                  {application.startAvailabilityDays !== null ? (
+                    <p className="mt-2 text-sm text-slate-600">
+                      Starts in: {application.startAvailabilityDays} days
+                    </p>
+                  ) : null}
+                  {application.expectedHourlyRateUsd !== null ? (
+                    <p className="mt-2 text-sm text-slate-600">
+                      Expected rate: ${application.expectedHourlyRateUsd}/hour
+                    </p>
+                  ) : null}
+                  {application.weeklyAvailabilityHours !== null ? (
+                    <p className="mt-2 text-sm text-slate-600">
+                      Availability: {application.weeklyAvailabilityHours} hours/week
+                    </p>
+                  ) : null}
+                  {application.strongestTools.length ? (
+                    <p className="mt-2 text-sm text-slate-600">
+                      Tools: {application.strongestTools.join(", ")}
+                    </p>
+                  ) : null}
                   <p className="mt-2 text-sm text-slate-600">
                     {application.job.title}
                   </p>
