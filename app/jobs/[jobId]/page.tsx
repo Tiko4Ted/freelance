@@ -20,7 +20,7 @@ function withReferral(href: string, referralCode?: string) {
     return href;
   }
 
-  return `${href}?ref=${encodeURIComponent(referralCode)}`;
+  return `${href}?referralCode=${encodeURIComponent(referralCode)}`;
 }
 
 function openingLabel(openings: number) {
@@ -65,7 +65,9 @@ export default async function JobDetailPage({
                 {job.title}
               </h1>
               <p className="mt-3 text-sm font-medium text-[#667085]">
-                {job.companyName} <span className="px-2 text-[#b3b8ca]">|</span>
+                Posted by {job.companyName}
+              </p>
+              <p className="mt-3 text-sm font-semibold text-[#3a4254]">
                 {openingLabel(job.openings)}
               </p>
               <p className="mt-5 max-w-3xl text-base leading-7 text-[#5f687f]">
@@ -73,21 +75,10 @@ export default async function JobDetailPage({
               </p>
             </div>
             <aside className="rounded-md border border-[#cfd7ff] bg-[#f8faff] p-5">
-              <p className="text-sm font-semibold text-[#667085]">Job pay</p>
+              <p className="text-sm font-semibold text-[#667085]">Pay</p>
               <p className="mt-2 text-2xl font-black text-[#202235]">
                 {job.formattedHourlyPay ?? "Discussed during review"}
               </p>
-              <div className="mt-5 border-t border-[#d9def7] pt-5">
-                <p className="text-sm font-semibold text-[#667085]">
-                  Referral payout
-                </p>
-                <p className="mt-2 text-3xl font-black text-[#126d61]">
-                  {job.formattedPayout}
-                </p>
-                <p className="mt-1 text-sm text-[#69728a]">
-                  {job.payoutTriggerLabel}
-                </p>
-              </div>
               <Link
                 className="mt-5 flex h-11 items-center justify-center rounded-md bg-[#202235] px-4 text-sm font-semibold text-white transition hover:bg-[#626cff]"
                 href={withReferral(`/jobs/${job.id}/apply`, referralCode)}
@@ -102,22 +93,9 @@ export default async function JobDetailPage({
       <section className="mx-auto grid max-w-6xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[1fr_20rem] lg:px-8">
         <div className="space-y-6">
           <div className="rounded-md border border-[#cfd7ff] bg-white p-5">
-            <h2 className="text-xl font-black text-[#202235]">
-              About this role
-            </h2>
+            <h2 className="text-xl font-black text-[#202235]">Job Description</h2>
             <p className="mt-4 text-sm leading-7 text-[#5f687f]">
               {job.description}
-            </p>
-          </div>
-          <div className="rounded-md border border-[#cfd7ff] bg-white p-5">
-            <h2 className="text-xl font-black text-[#202235]">
-              How the payout works
-            </h2>
-            <p className="mt-4 text-sm leading-7 text-[#5f687f]">
-              Referral attribution is captured from the first referral link used
-              before application submission. The referral payout shown here is
-              locked when a candidate applies, so later payout changes do not
-              affect existing applications.
             </p>
           </div>
         </div>

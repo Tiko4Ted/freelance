@@ -4,7 +4,7 @@ const REFERRAL_COOKIE_NAME = "ref_code";
 const THIRTY_DAYS_SECONDS = 60 * 60 * 24 * 30;
 
 function getJobIdFromPath(pathname: string) {
-  const match = /^\/jobs\/([^/]+)(?:\/apply)?$/.exec(pathname);
+  const match = /^\/jobs\/([^/]+)(?:\/apply)?\/?$/.exec(pathname);
   return match?.[1] ?? null;
 }
 
@@ -32,5 +32,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/jobs/:path*"],
+  matcher: ["/jobs/:path*", "/referral/jobs/:path*"],
 };

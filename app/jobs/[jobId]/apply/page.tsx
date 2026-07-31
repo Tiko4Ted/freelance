@@ -24,7 +24,7 @@ function withReferral(href: string, referralCode?: string) {
     return href;
   }
 
-  return `${href}?ref=${encodeURIComponent(referralCode)}`;
+  return `${href}?referralCode=${encodeURIComponent(referralCode)}`;
 }
 
 export default async function ApplyPage({
@@ -60,24 +60,17 @@ export default async function ApplyPage({
             Candidate application
           </h1>
           <p className="mt-3 text-base text-[#5f687f]">
-            Job pay: {job.formattedHourlyPay ?? "discussed during review"}.
-            Referral payout: {job.formattedPayout}, {job.payoutTriggerLabel}.
+            Pay: {job.formattedHourlyPay ?? "discussed during review"}.
           </p>
         </div>
       </section>
 
       <section className="mx-auto max-w-2xl px-4 py-8 sm:px-6 lg:px-8">
-        <div
-          className={
-            referralDetected
-              ? "mb-5 rounded-md border border-[#a8e3d8] bg-[#e8faf6] p-4 text-sm font-semibold text-[#096d5e]"
-              : "mb-5 rounded-md border border-[#f3d79a] bg-[#fff8e8] p-4 text-sm font-semibold text-[#8a5a00]"
-          }
-        >
-          {referralDetected
-            ? "Referral link detected. This application will be credited to the referrer after eligibility is met."
-            : "No referral detected. The candidate can still apply, but no referrer will be credited."}
-        </div>
+        {referralDetected ? (
+          <div className="mb-5 rounded-md border border-[#a8e3d8] bg-[#e8faf6] p-4 text-sm font-semibold text-[#096d5e]">
+            Invitation detected. Continue with your application below.
+          </div>
+        ) : null}
         <div className="rounded-md border border-[#cfd7ff] bg-white p-5">
           <ApplicationForm jobId={job.id} />
         </div>

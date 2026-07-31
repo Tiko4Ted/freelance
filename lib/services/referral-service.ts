@@ -1,9 +1,12 @@
-import { JobService } from "@/lib/services/job-service";
 import { prisma } from "@/lib/db/prisma";
+import { JobService } from "@/lib/services/job-service";
 
-function toShareUrl(origin: string, jobId: string, referralCode: string) {
-  const url = new URL(`/jobs/${jobId}`, origin);
-  url.searchParams.set("ref", referralCode);
+function toShareUrl(origin: string, referralCode: string) {
+  const url = new URL("/referral/jobs/", origin);
+  url.searchParams.set("referralCode", referralCode);
+  url.searchParams.set("utm_source", "referral");
+  url.searchParams.set("utm_medium", "share");
+  url.searchParams.set("utm_campaign", "job_referral");
   return url.toString();
 }
 
@@ -24,7 +27,7 @@ export const ReferralService = {
       referralCode: user.referralCode,
       links: jobs.map((job) => ({
         job,
-        url: toShareUrl(origin, job.id, user.referralCode),
+        url: toShareUrl(origin, user.referralCode),
       })),
     };
   },

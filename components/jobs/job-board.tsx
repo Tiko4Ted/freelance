@@ -1,6 +1,6 @@
 "use client";
 
-import { Eye, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
@@ -16,7 +16,7 @@ function withReferral(href: string, referralCode?: string) {
     return href;
   }
 
-  return `${href}?ref=${encodeURIComponent(referralCode)}`;
+  return `${href}?referralCode=${encodeURIComponent(referralCode)}`;
 }
 
 function openingLabel(openings: number) {
@@ -40,7 +40,7 @@ function JobCard({
   const skills = visibleSkills(job);
 
   return (
-    <article className="flex min-h-[21rem] flex-col overflow-hidden rounded-md border border-[#cfd7ff] bg-white shadow-[0_1px_0_rgba(91,104,180,0.08)]">
+    <article className="flex min-h-[20rem] flex-col overflow-hidden rounded-md border border-[#d7dce8] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.06)]">
       <div className="flex flex-1 flex-col p-4">
         <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
           <span className="text-[#65708a]">{job.postedAtLabel}</span>
@@ -59,8 +59,10 @@ function JobCard({
         <h2 className="mt-4 text-lg font-semibold leading-snug text-[#202235]">
           {job.title}
         </h2>
-        <p className="mt-2 text-xs font-medium text-[#667085]">
-          {job.companyName} <span className="px-2 text-[#b3b8ca]">|</span>
+        <p className="mt-2 text-sm font-medium text-[#667085]">
+          {job.companyName}
+        </p>
+        <p className="mt-3 text-sm font-semibold text-[#3a4254]">
           {openingLabel(job.openings)}
         </p>
 
@@ -88,36 +90,18 @@ function JobCard({
         <div className="mt-auto pt-5 text-sm">
           {job.formattedHourlyPay ? (
             <p className="text-[#586279]">
-              Job pay:{" "}
+              Pay:{" "}
               <span className="font-semibold text-[#202235]">
                 {job.formattedHourlyPay}
               </span>
             </p>
           ) : null}
-          <p className="mt-1 text-[#586279]">
-            Referral payout:{" "}
-            <span className="font-semibold text-[#126d61]">
-              {job.formattedPayout}
-            </span>
-          </p>
-          <p className="mt-1 text-xs text-[#7a8298]">
-            {job.payoutTriggerLabel}
-          </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-[3.25rem_1fr] border-t border-[#cfd7ff] bg-[#f5f7ff]">
+      <div className="border-t border-[#d7dce8] bg-[#fbfcff] p-4">
         <Link
-          aria-label={`View details for ${job.title}`}
-          className="flex h-11 items-center justify-center border-r border-[#cfd7ff] text-[#6470ff] transition hover:bg-white"
-          href={withReferral(`/jobs/${job.id}`, referralCode)}
-          title="View details"
-        >
-          <Eye aria-hidden="true" className="h-4 w-4" strokeWidth={2.25} />
-          <span className="sr-only">View details</span>
-        </Link>
-        <Link
-          className="flex h-11 items-center justify-center text-sm font-semibold text-[#2d3150] transition hover:bg-white"
+          className="flex h-11 items-center justify-center rounded-md bg-[#1d2433] px-4 text-sm font-semibold text-white transition hover:bg-[#3c465f]"
           href={withReferral(`/jobs/${job.id}/apply`, referralCode)}
         >
           Apply now
