@@ -10,6 +10,10 @@ type ApplyPageProps = {
   params: Promise<{
     jobId: string;
   }>;
+  searchParams: Promise<{
+    ref?: string;
+    referralCode?: string;
+  }>;
 };
 
 const ABOUT_MICRO1 = [
@@ -33,8 +37,20 @@ function formatSkillLabel(label: string) {
   return label;
 }
 
-export default async function ApplyPage({ params }: ApplyPageProps) {
-  const { jobId } = await params;
+function listingsHref(referralCode?: string) {
+  if (!referralCode) {
+    return "/jobs";
+  }
+
+  return `/referral/jobs?referralCode=${encodeURIComponent(referralCode)}`;
+}
+
+export default async function ApplyPage({
+  params,
+  searchParams,
+}: ApplyPageProps) {
+  const [{ jobId }, query] = await Promise.all([params, searchParams]);
+  const referralCode = query.ref ?? query.referralCode;
   const job = await JobService.getActiveJob(jobId);
 
   if (!job) {
@@ -132,7 +148,10 @@ export default async function ApplyPage({ params }: ApplyPageProps) {
         </article>
 
         <aside className="lg:sticky lg:top-6 lg:self-start">
-          <ApplicationForm jobId={job.id} />
+          <ApplicationForm
+            jobId={job.id}
+            listingsHref={listingsHref(referralCode)}
+          />
         </aside>
       </div>
     </main>
