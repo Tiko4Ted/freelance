@@ -100,10 +100,10 @@ function JobCard({
         </div>
       </div>
 
-      <div className="grid grid-cols-[2.75rem_1fr] border-t border-[#d7d8f5] bg-[#f5f6ff]">
+      <div className="grid grid-cols-[2.75rem_1fr] gap-1 border-t border-[#d7d8f5] bg-[#f5f6ff] p-1">
         <Link
           aria-label={`View details for ${job.title}`}
-          className="flex h-10 items-center justify-center border-r border-[#d7d8f5] text-[#6470ff] transition hover:bg-white"
+          className="flex h-9 items-center justify-center rounded border border-[#d7d8f5] bg-[#f7f8ff] text-[#6470ff] transition hover:bg-white"
           href={withReferral(`/jobs/${job.id}`, referralCode)}
           title="View details"
         >
@@ -111,7 +111,7 @@ function JobCard({
           <span className="sr-only">View details</span>
         </Link>
         <Link
-          className="flex h-10 items-center justify-center text-sm font-semibold text-[#2d3150] transition hover:bg-white"
+          className="flex h-9 items-center justify-center rounded border border-[#d7d8f5] bg-[#f7f8ff] text-sm font-semibold text-[#2d3150] transition hover:bg-white"
           href={withReferral(`/jobs/${job.id}/apply`, referralCode)}
         >
           Apply now
