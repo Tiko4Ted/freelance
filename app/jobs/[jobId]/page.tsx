@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { JobDetailShell } from "@/components/jobs/job-detail-shell";
 import { buildJobDetailCopy } from "@/lib/job-detail-copy";
 import { JobService } from "@/lib/services/job-service";
 
@@ -43,16 +43,7 @@ export default async function JobDetailPage({
   const detailCopy = buildJobDetailCopy(job);
 
   return (
-    <main className="min-h-screen bg-[#f7f6fb] px-5 py-14 text-[#242536] sm:px-8">
-      <div className="fixed inset-x-0 top-0 z-10 h-10 bg-[#334856]/70 backdrop-blur-md" />
-      <Link
-        aria-label="Close job details"
-        className="fixed right-0 top-0 z-20 flex h-10 w-10 items-center justify-center text-3xl font-light leading-none text-white"
-        href={closeHref(referralCode)}
-      >
-        &times;
-      </Link>
-
+    <JobDetailShell closeHref={closeHref(referralCode)}>
       <section className="mx-auto max-w-[852px]">
         <h1 className="text-[32px] font-semibold leading-tight text-[#262735] sm:text-[34px]">
           {job.title}
@@ -124,6 +115,6 @@ export default async function JobDetailPage({
           </div>
         </article>
       </section>
-    </main>
+    </JobDetailShell>
   );
 }
