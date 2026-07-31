@@ -80,7 +80,7 @@ function JobCard({
             {skills.hiddenCount ? (
               <span className="group relative rounded border border-[#d7dbe6] bg-white px-2.5 py-1 text-xs font-normal text-[#4c5261]">
                 +{skills.hiddenCount}
-                <span className="pointer-events-none absolute left-1/2 top-full z-20 mt-2 hidden min-w-40 -translate-x-1/2 rounded-md bg-[#202235] px-3 py-2 text-left text-xs font-medium leading-5 text-white shadow-lg group-hover:block">
+                <span className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 hidden min-w-40 -translate-x-1/2 rounded-md border border-[#d7dbe6] bg-white px-3 py-2 text-left text-xs font-medium leading-5 text-[#3c4250] shadow-[0_8px_24px_rgba(39,44,68,0.14)] group-hover:block">
                   {job.skills.slice(3).map((skill) => skill.label).join(", ")}
                 </span>
               </span>
