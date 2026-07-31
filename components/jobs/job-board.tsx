@@ -4,6 +4,8 @@ import { Eye, Search } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
+import { JobDetailContent } from "@/components/jobs/job-detail-content";
+import { JobDetailShell } from "@/components/jobs/job-detail-shell";
 import type { PublicJobView } from "@/lib/services/job-service";
 
 type JobBoardProps = {
@@ -32,9 +34,11 @@ function visibleSkills(job: PublicJobView) {
 
 function JobCard({
   job,
+  onView,
   referralCode,
 }: {
   job: PublicJobView;
+  onView: (job: PublicJobView) => void;
   referralCode?: string;
 }) {
   const skills = visibleSkills(job);
@@ -101,15 +105,16 @@ function JobCard({
       </div>
 
       <div className="grid grid-cols-[2.75rem_1fr] gap-1">
-        <Link
+        <button
           aria-label={`View details for ${job.title}`}
           className="flex h-9 items-center justify-center rounded border border-[#d7d8f5] bg-[#f7f8ff] text-[#6470ff] transition hover:bg-white"
-          href={withReferral(`/jobs/${job.id}`, referralCode)}
+          onClick={() => onView(job)}
           title="View details"
+          type="button"
         >
           <Eye aria-hidden="true" className="h-4 w-4" strokeWidth={2.25} />
           <span className="sr-only">View details</span>
-        </Link>
+        </button>
         <Link
           className="flex h-9 items-center justify-center rounded border border-[#d7d8f5] bg-[#f7f8ff] text-sm font-semibold text-[#2d3150] transition hover:bg-white"
           href={withReferral(`/jobs/${job.id}/apply`, referralCode)}
@@ -123,6 +128,7 @@ function JobCard({
 
 export function JobBoard({ jobs, referralCode }: JobBoardProps) {
   const [query, setQuery] = useState("");
+  const [selectedJob, setSelectedJob] = useState<PublicJobView | null>(null);
   const normalizedQuery = query.trim().toLowerCase();
   const filteredJobs = useMemo(() => {
     if (!normalizedQuery) {
@@ -163,7 +169,12 @@ export function JobBoard({ jobs, referralCode }: JobBoardProps) {
       </label>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {filteredJobs.map((job) => (
-          <JobCard job={job} key={job.id} referralCode={referralCode} />
+          <JobCard
+            job={job}
+            key={job.id}
+            onView={setSelectedJob}
+            referralCode={referralCode}
+          />
         ))}
       </div>
 
@@ -171,6 +182,11 @@ export function JobBoard({ jobs, referralCode }: JobBoardProps) {
         <div className="mt-8 rounded-md border border-[#cfd7ff] bg-white p-6 text-sm font-medium text-[#586279]">
           No roles match that search.
         </div>
+      ) : null}
+      {selectedJob ? (
+        <JobDetailShell onCloseComplete={() => setSelectedJob(null)}>
+          <JobDetailContent job={selectedJob} />
+        </JobDetailShell>
       ) : null}
     </section>
   );
