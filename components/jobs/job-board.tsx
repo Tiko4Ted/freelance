@@ -258,12 +258,12 @@ export function JobBoard({ headerCopy, jobs, referralCode }: JobBoardProps) {
             No roles match that search.
           </div>
         ) : null}
-        {selectedJob ? (
-          <JobDetailShell onCloseComplete={() => setSelectedJob(null)}>
-            <JobDetailContent job={selectedJob} />
-          </JobDetailShell>
-        ) : null}
       </section>
+      {selectedJob ? (
+        <JobDetailShell onCloseComplete={() => setSelectedJob(null)}>
+          <JobDetailContent job={selectedJob} />
+        </JobDetailShell>
+      ) : null}
     </>
   );
 }
