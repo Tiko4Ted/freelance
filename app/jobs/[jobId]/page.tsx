@@ -57,7 +57,7 @@ export default async function JobDetailPage({
             {openingLabel(job.openings)}
           </span>
           {job.formattedHourlyPay ? (
-            <span className="rounded-md bg-[#effbf3] px-4 py-3 text-sm font-semibold text-[#008a45]">
+            <span className="rounded-md bg-[#effbf3] px-4 py-3 text-sm font-medium text-[#008a45]">
               {job.formattedHourlyPay}
             </span>
           ) : null}
