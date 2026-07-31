@@ -59,9 +59,7 @@ function JobCard({
         <h2 className="mt-4 text-lg font-semibold leading-snug text-[#202235]">
           {job.title}
         </h2>
-        <p className="mt-2 text-sm font-medium text-[#667085]">
-          {job.companyName}
-        </p>
+        <p className="mt-2 text-sm font-medium text-[#667085]">micro1</p>
         <p className="mt-3 text-sm font-semibold text-[#3a4254]">
           {openingLabel(job.openings)}
         </p>
