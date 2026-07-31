@@ -14,6 +14,8 @@ type ApplicationDraft = {
   candidateEmail: string;
   candidateFirstName: string;
   candidateLastName: string;
+  candidatePhoneCountry: string;
+  candidatePhoneCountryCode: string;
   candidatePhoneNumber: string;
   candidateLinkedinUrl: string;
   resumeFileName: string;
@@ -37,6 +39,58 @@ const toolOptions = [
   "Shopify",
   "Funnel",
 ];
+
+const phoneCountries = [
+  { country: "United States", code: "+1", label: "US" },
+  { country: "Canada", code: "+1", label: "CA" },
+  { country: "United Kingdom", code: "+44", label: "GB" },
+  { country: "Kenya", code: "+254", label: "KE" },
+  { country: "Nigeria", code: "+234", label: "NG" },
+  { country: "South Africa", code: "+27", label: "ZA" },
+  { country: "Ghana", code: "+233", label: "GH" },
+  { country: "Uganda", code: "+256", label: "UG" },
+  { country: "Tanzania", code: "+255", label: "TZ" },
+  { country: "Rwanda", code: "+250", label: "RW" },
+  { country: "India", code: "+91", label: "IN" },
+  { country: "Pakistan", code: "+92", label: "PK" },
+  { country: "Brazil", code: "+55", label: "BR" },
+  { country: "Mexico", code: "+52", label: "MX" },
+  { country: "Germany", code: "+49", label: "DE" },
+  { country: "France", code: "+33", label: "FR" },
+  { country: "Italy", code: "+39", label: "IT" },
+  { country: "Netherlands", code: "+31", label: "NL" },
+  { country: "Spain", code: "+34", label: "ES" },
+  { country: "China", code: "+86", label: "CN" },
+  { country: "Japan", code: "+81", label: "JP" },
+  { country: "South Korea", code: "+82", label: "KR" },
+  { country: "Australia", code: "+61", label: "AU" },
+].sort((first, second) => second.code.length - first.code.length);
+
+const defaultPhoneCountry = phoneCountries.find(
+  (country) => country.code === "+254",
+) ?? {
+  country: "Kenya",
+  code: "+254",
+  label: "KE",
+};
+
+function detectPhoneCountry(phoneNumber: string) {
+  const trimmedPhoneNumber = phoneNumber.trim();
+
+  if (!trimmedPhoneNumber.startsWith("+") && !trimmedPhoneNumber.startsWith("00")) {
+    return defaultPhoneCountry;
+  }
+
+  const normalizedPhoneCode = trimmedPhoneNumber.startsWith("00")
+    ? `+${trimmedPhoneNumber.slice(2).replace(/\D/g, "")}`
+    : `+${trimmedPhoneNumber.slice(1).replace(/\D/g, "")}`;
+
+  return (
+    phoneCountries.find((country) =>
+      normalizedPhoneCode.startsWith(country.code),
+    ) ?? defaultPhoneCountry
+  );
+}
 
 function getErrorMessage(payload: unknown) {
   if (
@@ -115,6 +169,8 @@ export function ApplicationForm({ jobId }: ApplicationFormProps) {
   });
   const [draft, setDraft] = useState<ApplicationDraft | null>(null);
   const [resumeName, setResumeName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [phoneCountry, setPhoneCountry] = useState(defaultPhoneCountry);
   const [startAvailabilityDays, setStartAvailabilityDays] = useState(1);
   const [expectedHourlyRateUsd, setExpectedHourlyRateUsd] = useState(1);
   const [weeklyAvailabilityHours, setWeeklyAvailabilityHours] = useState(1);
@@ -132,16 +188,20 @@ export function ApplicationForm({ jobId }: ApplicationFormProps) {
     const formData = new FormData(form);
     const firstName = String(formData.get("firstName") ?? "").trim();
     const lastName = String(formData.get("lastName") ?? "").trim();
+    const detectedPhoneCountry = detectPhoneCountry(phoneNumber);
 
     setDraft({
       candidateName: `${firstName} ${lastName}`.trim(),
       candidateEmail: String(formData.get("candidateEmail") ?? ""),
       candidateFirstName: firstName,
       candidateLastName: lastName,
-      candidatePhoneNumber: String(formData.get("phoneNumber") ?? ""),
+      candidatePhoneCountry: detectedPhoneCountry.country,
+      candidatePhoneCountryCode: detectedPhoneCountry.code,
+      candidatePhoneNumber: phoneNumber,
       candidateLinkedinUrl: String(formData.get("linkedinUrl") ?? ""),
       resumeFileName: resumeName,
     });
+    setPhoneCountry(detectedPhoneCountry);
     setState({ status: "idle", message: "" });
     setStep("questions");
   }
@@ -163,8 +223,6 @@ export function ApplicationForm({ jobId }: ApplicationFormProps) {
       body: JSON.stringify({
         jobId,
         ...draft,
-        candidatePhoneCountry: "Kenya",
-        candidatePhoneCountryCode: "+254",
         startAvailabilityDays,
         expectedHourlyRateUsd,
         weeklyAvailabilityHours,
@@ -404,18 +462,25 @@ export function ApplicationForm({ jobId }: ApplicationFormProps) {
         <div className="mt-1.5 flex h-10 overflow-hidden rounded border border-[#d0d0dc] bg-transparent transition focus-within:border-[#3547ff] focus-within:ring-1 focus-within:ring-[#3547ff]">
           <div className="flex min-w-[86px] items-center gap-2 border-r border-[#d0d0dc] px-3 text-[13px] text-[#222432]">
             <span aria-hidden="true" className="text-base leading-none">
-              KE
+              {phoneCountry.label}
             </span>
             <ChevronDown aria-hidden="true" className="h-3.5 w-3.5 text-[#636574]" />
-            <span className="sr-only">Country</span>
+            <span className="sr-only">
+              Country: {phoneCountry.country} {phoneCountry.code}
+            </span>
           </div>
           <input
             className="min-w-0 flex-1 bg-transparent px-3 text-[13px] outline-none placeholder:text-[#848594]"
-            defaultValue={draft?.candidatePhoneNumber}
             id="phoneNumber"
             name="phoneNumber"
-            placeholder="+254"
+            onChange={(event) => {
+              const nextPhoneNumber = event.target.value;
+              setPhoneNumber(nextPhoneNumber);
+              setPhoneCountry(detectPhoneCountry(nextPhoneNumber));
+            }}
+            placeholder={`${phoneCountry.code} 712 345678`}
             type="tel"
+            value={phoneNumber}
           />
         </div>
       </div>
