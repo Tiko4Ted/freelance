@@ -40,8 +40,8 @@ function JobCard({
   const skills = visibleSkills(job);
 
   return (
-    <article className="relative flex min-h-[15.9rem] flex-col rounded-md border border-[#d7d8f5] bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
-      <div className="flex flex-1 flex-col p-3.5">
+    <article className="relative flex min-h-[15.9rem] flex-col gap-1 rounded-md border border-[#d7d8f5] bg-[#eef0ff] p-1 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+      <div className="flex flex-1 flex-col rounded bg-white p-3.5">
         <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
           <span className="text-[#65708a]">{job.postedAtLabel}</span>
           {job.isNew ? (
@@ -100,7 +100,7 @@ function JobCard({
         </div>
       </div>
 
-      <div className="grid grid-cols-[2.75rem_1fr] gap-1 border-t border-[#d7d8f5] bg-[#f5f6ff] p-1">
+      <div className="grid grid-cols-[2.75rem_1fr] gap-1">
         <Link
           aria-label={`View details for ${job.title}`}
           className="flex h-9 items-center justify-center rounded border border-[#d7d8f5] bg-[#f7f8ff] text-[#6470ff] transition hover:bg-white"
