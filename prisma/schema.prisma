@@ -37,23 +37,42 @@ enum WithdrawalStatus {
   FAILED
 }
 
-model User {
-  id                 String      @id @default(uuid())
-  email              String      @unique
-  passwordHash       String
-  name               String
-  role               Role        @default(REFERRER)
-  referralCode       String      @unique @default(uuid())
-  walletBalanceCents Int         @default(0)
-  payoutProvider     String?
-  payoutAccountId    String?
-  payoutAccountReady Boolean     @default(false)
-  createdAt          DateTime    @default(now())
-  updatedAt          DateTime    @updatedAt
+enum LedgerAccount {
+  HOLDING
+  FUNDING
+  LEGACY
+}
 
-  referrals          Referral[]
-  ledgerEntries      LedgerEntry[]
-  withdrawals        Withdrawal[]
+enum WalletTransferType {
+  HOLDING_TO_FUNDING
+}
+
+enum WalletTransferStatus {
+  COMPLETED
+  FAILED
+}
+
+model User {
+  id                  String   @id @default(uuid())
+  email               String   @unique
+  passwordHash        String
+  name                String
+  role                Role     @default(REFERRER)
+  referralCode        String   @unique @default(uuid())
+  walletBalanceCents  Int      @default(0)
+  holdingBalanceCents Int      @default(0)
+  fundingBalanceCents Int      @default(0)
+  payoutProvider      String?
+  payoutAccountId     String?
+  payoutAccountReady  Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  referrals             Referral[]
+  ledgerEntries         LedgerEntry[]
+  withdrawals           Withdrawal[]
+  walletTransfers       WalletTransfer[]
+  freelanceVerification UserFreelanceVerification?
 
   @@index([role])
 }
@@ -75,19 +94,19 @@ model Job {
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
-  applications      Application[]
-  referrals         Referral[]
-  skills            JobSkill[]
+  applications Application[]
+  referrals    Referral[]
+  skills       JobSkill[]
 
   @@index([isActive])
   @@index([postedAt])
 }
 
 model JobSkill {
-  id     String @id @default(uuid())
-  jobId  String
-  job    Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  label  String
+  id    String @id @default(uuid())
+  jobId String
+  job   Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  label String
 
   @@index([jobId])
 }
@@ -120,7 +139,7 @@ model Application {
   createdAt                 DateTime          @default(now())
   updatedAt                 DateTime          @updatedAt
 
-  ledgerEntry               LedgerEntry?
+  ledgerEntry LedgerEntry?
 
   @@unique([candidateEmail, jobId])
   @@index([candidateEmail])
@@ -151,37 +170,89 @@ model CandidateIdentity {
   updatedAt                 DateTime @updatedAt
 }
 
+model FreelanceIdentityReference {
+  id              String   @id @default(uuid())
+  freelanceIdCode String   @unique
+  legalName       String
+  dateOfBirth     DateTime
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  verification UserFreelanceVerification?
+}
+
+model UserFreelanceVerification {
+  id              String                     @id @default(uuid())
+  userId          String                     @unique
+  user            User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  freelanceIdCode String                     @unique
+  reference       FreelanceIdentityReference @relation(fields: [freelanceIdCode], references: [freelanceIdCode])
+  legalName       String
+  dateOfBirth     DateTime
+  verifiedAt      DateTime                   @default(now())
+  createdAt       DateTime                   @default(now())
+  updatedAt       DateTime                   @updatedAt
+
+  walletTransfers WalletTransfer[]
+}
+
+model WalletTransfer {
+  id             String                     @id @default(uuid())
+  userId         String
+  user           User                       @relation(fields: [userId], references: [id], onDelete: Restrict)
+  amountCents    Int
+  type           WalletTransferType         @default(HOLDING_TO_FUNDING)
+  status         WalletTransferStatus       @default(COMPLETED)
+  verificationId String?
+  verification   UserFreelanceVerification? @relation(fields: [verificationId], references: [id], onDelete: SetNull)
+  createdAt      DateTime                   @default(now())
+  updatedAt      DateTime                   @updatedAt
+
+  ledgerEntries LedgerEntry[]
+
+  @@index([userId])
+  @@index([verificationId])
+}
+
 model LedgerEntry {
-  id            String       @id @default(uuid())
+  id            String          @id @default(uuid())
   userId        String
-  user          User         @relation(fields: [userId], references: [id])
+  user          User            @relation(fields: [userId], references: [id])
   amountCents   Int
+  account       LedgerAccount   @default(FUNDING)
   reason        String
-  applicationId String?      @unique
-  application   Application? @relation(fields: [applicationId], references: [id])
+  applicationId String?         @unique
+  application   Application?    @relation(fields: [applicationId], references: [id])
   withdrawalId  String?
-  withdrawal    Withdrawal?  @relation(fields: [withdrawalId], references: [id])
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  withdrawal    Withdrawal?     @relation(fields: [withdrawalId], references: [id])
+  transferId    String?
+  transfer      WalletTransfer? @relation(fields: [transferId], references: [id])
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
 
   @@index([userId])
   @@index([withdrawalId])
+  @@index([transferId])
+  @@index([account])
 }
 
 model Withdrawal {
-  id               String           @id @default(uuid())
-  userId           String
-  user             User             @relation(fields: [userId], references: [id])
-  amountCents      Int
-  status           WithdrawalStatus @default(PENDING)
-  providerPayoutId String?
-  requestedAt      DateTime         @default(now())
-  completedAt      DateTime?
-  failureReason    String?
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
+  id                 String           @id @default(uuid())
+  userId             String
+  user               User             @relation(fields: [userId], references: [id])
+  amountCents        Int
+  status             WithdrawalStatus @default(PENDING)
+  payoutMethod       String?
+  destinationDetails Json?
+  providerPayoutId   String?
+  requestedAt        DateTime         @default(now())
+  completedAt        DateTime?
+  failureReason      String?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
 
-  ledgerEntries    LedgerEntry[]
+  ledgerEntries LedgerEntry[]
 
   @@index([userId])
   @@index([status])

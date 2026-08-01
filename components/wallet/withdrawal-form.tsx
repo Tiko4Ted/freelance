@@ -8,7 +8,30 @@ type FormState =
   | { status: "success"; message: string }
   | { status: "error"; message: string };
 
-function getErrorMessage(payload: unknown) {
+type PayoutMethod =
+  | "MPESA"
+  | "AIRTEL_MONEY"
+  | "BANK_CARD"
+  | "BINANCE"
+  | "PAYPAL";
+
+const payoutMethods: Array<{ value: PayoutMethod; label: string }> = [
+  { value: "MPESA", label: "M-Pesa" },
+  { value: "AIRTEL_MONEY", label: "Airtel Money" },
+  { value: "BANK_CARD", label: "Bank card" },
+  { value: "BINANCE", label: "Binance" },
+  { value: "PAYPAL", label: "PayPal" },
+];
+
+const destinationPlaceholders: Record<PayoutMethod, string> = {
+  MPESA: "M-Pesa phone number",
+  AIRTEL_MONEY: "Airtel Money phone number",
+  BANK_CARD: "Card or bank account label",
+  BINANCE: "Binance email or account ID",
+  PAYPAL: "PayPal email",
+};
+
+function getErrorMessage(payload: unknown, fallback: string) {
   if (
     payload &&
     typeof payload === "object" &&
@@ -18,31 +41,86 @@ function getErrorMessage(payload: unknown) {
     return payload.error;
   }
 
-  return "Withdrawal failed";
+  return fallback;
 }
 
 type WithdrawalFormProps = {
-  payoutAccountReady: boolean;
+  holdingBalanceCents: number;
+  fundingBalanceCents: number;
+  isFreelanceVerified: boolean;
 };
 
-export function WithdrawalForm({ payoutAccountReady }: WithdrawalFormProps) {
+export function WithdrawalForm({
+  holdingBalanceCents,
+  fundingBalanceCents,
+  isFreelanceVerified,
+}: WithdrawalFormProps) {
   const [state, setState] = useState<FormState>({
     status: "idle",
     message: "",
   });
-  const [accountReady, setAccountReady] = useState(payoutAccountReady);
+  const [showVerification, setShowVerification] = useState(false);
+  const [pendingTransferAmount, setPendingTransferAmount] = useState(0);
+  const [verified, setVerified] = useState(isFreelanceVerified);
+  const [payoutMethod, setPayoutMethod] = useState<PayoutMethod>("MPESA");
 
-  async function setupPayoutAccount() {
-    setState({ status: "submitting", message: "Setting up payout account" });
-    const response = await fetch("/api/v1/wallet/payout-account", {
+  async function postTransfer(payload: Record<string, unknown>) {
+    const response = await fetch("/api/v1/wallet/transfers", {
       method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const responsePayload: unknown = await response.json();
+
+    if (!response.ok) {
+      setState({
+        status: "error",
+        message: getErrorMessage(responsePayload, "Transfer failed"),
+      });
+
+      if (response.status === 428) {
+        setShowVerification(true);
+      }
+
+      return false;
+    }
+
+    setVerified(true);
+    setState({ status: "success", message: "Funds moved to Funding" });
+    window.location.reload();
+    return true;
+  }
+
+  async function requestTransfer(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const amountDollars = Number(formData.get("transferAmountDollars") ?? 0);
+    const amountCents = Math.round(amountDollars * 100);
+    setPendingTransferAmount(amountCents);
+
+    if (!verified) {
+      setShowVerification(true);
+      return;
+    }
+
+    setState({ status: "submitting", message: "Moving funds to Funding" });
+    await postTransfer({ amountCents });
+  }
+
+  async function verifyAndTransfer(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    setState({ status: "submitting", message: "Verifying freelance ID" });
+
+    const success = await postTransfer({
+      amountCents: pendingTransferAmount,
+      legalName: String(formData.get("legalName") ?? ""),
+      dateOfBirth: String(formData.get("dateOfBirth") ?? ""),
+      freelanceIdCode: String(formData.get("freelanceIdCode") ?? ""),
     });
 
-    if (response.ok) {
-      setAccountReady(true);
-      setState({ status: "success", message: "Payout account ready" });
-    } else {
-      setState({ status: "error", message: "Payout setup failed" });
+    if (success) {
+      setShowVerification(false);
     }
   }
 
@@ -55,12 +133,19 @@ export function WithdrawalForm({ payoutAccountReady }: WithdrawalFormProps) {
     const response = await fetch("/api/v1/withdrawals", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ amountCents: Math.round(amountDollars * 100) }),
+      body: JSON.stringify({
+        amountCents: Math.round(amountDollars * 100),
+        payoutMethod,
+        destinationDetails: String(formData.get("destinationDetails") ?? ""),
+      }),
     });
     const payload: unknown = await response.json();
 
     if (!response.ok) {
-      setState({ status: "error", message: getErrorMessage(payload) });
+      setState({
+        status: "error",
+        message: getErrorMessage(payload, "Withdrawal failed"),
+      });
       return;
     }
 
@@ -70,39 +155,87 @@ export function WithdrawalForm({ payoutAccountReady }: WithdrawalFormProps) {
   }
 
   return (
-    <div className="space-y-4">
-      <button
-        className="inline-flex h-10 w-full items-center justify-center border border-slate-950 px-4 text-sm font-semibold text-slate-950 transition hover:border-teal-700 hover:text-teal-700 disabled:cursor-not-allowed disabled:border-slate-300 disabled:text-slate-400"
-        disabled={accountReady || state.status === "submitting"}
-        onClick={setupPayoutAccount}
-        type="button"
-      >
-        {accountReady ? "Payout account ready ✓" : "Set up payout account"}
-      </button>
+    <div className="space-y-6">
+      <form className="space-y-3" onSubmit={requestTransfer}>
+        <div>
+          <label
+            className="text-sm font-medium text-slate-700"
+            htmlFor="transferAmountDollars"
+          >
+            Move from Holding to Funding
+          </label>
+          <input
+            className="mt-2 h-10 w-full border border-slate-300 px-3 text-sm outline-none focus:border-teal-700 disabled:cursor-not-allowed disabled:bg-slate-100"
+            disabled={holdingBalanceCents <= 0 || state.status === "submitting"}
+            id="transferAmountDollars"
+            max={Math.floor(holdingBalanceCents / 100)}
+            min={1}
+            name="transferAmountDollars"
+            placeholder="Amount to transfer"
+            required
+            step="1"
+            type="number"
+          />
+        </div>
+        <button
+          className="inline-flex h-10 w-full items-center justify-center border border-slate-950 bg-white px-4 text-sm font-semibold text-slate-950 transition hover:border-teal-700 hover:text-teal-700 disabled:cursor-not-allowed disabled:border-slate-300 disabled:text-slate-400"
+          disabled={holdingBalanceCents <= 0 || state.status === "submitting"}
+          type="submit"
+        >
+          Move to Funding
+        </button>
+        {!verified ? (
+          <p className="text-xs leading-5 text-slate-500">
+            First transfer requires freelance ID verification.
+          </p>
+        ) : null}
+      </form>
+
       <form className="space-y-3" onSubmit={requestWithdrawal}>
+        <div>
+          <label className="text-sm font-medium text-slate-700" htmlFor="amountDollars">
+            Withdraw from Funding
+          </label>
+          <input
+            className="mt-2 h-10 w-full border border-slate-300 px-3 text-sm outline-none focus:border-teal-700 disabled:cursor-not-allowed disabled:bg-slate-100"
+            disabled={fundingBalanceCents < 1000 || state.status === "submitting"}
+            id="amountDollars"
+            max={Math.floor(fundingBalanceCents / 100)}
+            min={10}
+            name="amountDollars"
+            placeholder="Amount (min $10)"
+            required
+            step="1"
+            type="number"
+          />
+        </div>
+        <select
+          className="h-10 w-full border border-slate-300 bg-white px-3 text-sm outline-none focus:border-teal-700"
+          onChange={(event) => setPayoutMethod(event.target.value as PayoutMethod)}
+          value={payoutMethod}
+        >
+          {payoutMethods.map((method) => (
+            <option key={method.value} value={method.value}>
+              {method.label}
+            </option>
+          ))}
+        </select>
         <input
           className="h-10 w-full border border-slate-300 px-3 text-sm outline-none focus:border-teal-700 disabled:cursor-not-allowed disabled:bg-slate-100"
-          disabled={!accountReady}
-          min={10}
-          name="amountDollars"
-          placeholder="Amount (min $10)"
+          disabled={fundingBalanceCents < 1000 || state.status === "submitting"}
+          name="destinationDetails"
+          placeholder={destinationPlaceholders[payoutMethod]}
           required
-          step="1"
-          type="number"
         />
         <button
           className="inline-flex h-10 w-full items-center justify-center border border-slate-950 bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:bg-slate-400"
-          disabled={!accountReady || state.status === "submitting"}
+          disabled={fundingBalanceCents < 1000 || state.status === "submitting"}
           type="submit"
         >
           Request withdrawal
         </button>
-        {!accountReady ? (
-          <p className="text-xs text-slate-500">
-            Set up your payout account before requesting a withdrawal.
-          </p>
-        ) : null}
       </form>
+
       {state.message ? (
         <p
           className={
@@ -113,6 +246,62 @@ export function WithdrawalForm({ payoutAccountReady }: WithdrawalFormProps) {
         >
           {state.message}
         </p>
+      ) : null}
+
+      {showVerification ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 px-4">
+          <div className="w-full max-w-md border border-slate-200 bg-white p-5 shadow-xl">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-950">
+                  Verify freelance ID
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  To move funds from Holding to Funding, verify your freelance
+                  identity. This protects payouts by ensuring money is disbursed
+                  only to verified freelancers and helps prevent internal money
+                  laundering. Your full name, date of birth, and freelance ID
+                  code will be checked against the official freelance ID
+                  records.
+                </p>
+              </div>
+              <button
+                className="text-xl leading-none text-slate-500 transition hover:text-slate-950"
+                onClick={() => setShowVerification(false)}
+                type="button"
+              >
+                x
+              </button>
+            </div>
+            <form className="mt-5 space-y-3" onSubmit={verifyAndTransfer}>
+              <input
+                className="h-10 w-full border border-slate-300 px-3 text-sm outline-none focus:border-teal-700"
+                name="legalName"
+                placeholder="Full legal name"
+                required
+              />
+              <input
+                className="h-10 w-full border border-slate-300 px-3 text-sm outline-none focus:border-teal-700"
+                name="dateOfBirth"
+                required
+                type="date"
+              />
+              <input
+                className="h-10 w-full border border-slate-300 px-3 text-sm outline-none focus:border-teal-700"
+                name="freelanceIdCode"
+                placeholder="Freelance ID code"
+                required
+              />
+              <button
+                className="inline-flex h-10 w-full items-center justify-center border border-slate-950 bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+                disabled={state.status === "submitting"}
+                type="submit"
+              >
+                Verify and move funds
+              </button>
+            </form>
+          </div>
+        </div>
       ) : null}
     </div>
   );

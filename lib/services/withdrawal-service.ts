@@ -1,4 +1,4 @@
-import { WithdrawalStatus } from "@prisma/client";
+import { LedgerAccount, WithdrawalStatus } from "@prisma/client";
 
 import { prisma } from "@/lib/db/prisma";
 import { getPayoutProvider } from "@/lib/payments";
@@ -10,6 +10,8 @@ function toWithdrawalResponse(withdrawal: {
   id: string;
   amountCents: number;
   status: WithdrawalStatus;
+  payoutMethod: string | null;
+  destinationDetails: unknown;
   providerPayoutId: string | null;
   requestedAt: Date;
   completedAt: Date | null;
@@ -31,6 +33,8 @@ export const WithdrawalService = {
         id: true,
         amountCents: true,
         status: true,
+        payoutMethod: true,
+        destinationDetails: true,
         providerPayoutId: true,
         requestedAt: true,
         completedAt: true,
@@ -50,29 +54,34 @@ export const WithdrawalService = {
       const debit = await tx.user.updateMany({
         where: {
           id: userId,
-          payoutAccountReady: true,
-          walletBalanceCents: { gte: input.amountCents },
+          fundingBalanceCents: { gte: input.amountCents },
         },
         data: {
-          walletBalanceCents: {
+          fundingBalanceCents: {
             decrement: input.amountCents,
           },
         },
       });
 
       if (debit.count !== 1) {
-        throw new Error("INSUFFICIENT_BALANCE_OR_PAYOUT_NOT_READY");
+        throw new Error("INSUFFICIENT_FUNDING_BALANCE");
       }
 
       const createdWithdrawal = await tx.withdrawal.create({
         data: {
           userId,
           amountCents: input.amountCents,
+          payoutMethod: input.payoutMethod,
+          destinationDetails: {
+            label: input.destinationDetails,
+          },
         },
         select: {
           id: true,
           amountCents: true,
           status: true,
+          payoutMethod: true,
+          destinationDetails: true,
           providerPayoutId: true,
           requestedAt: true,
           completedAt: true,
@@ -84,6 +93,7 @@ export const WithdrawalService = {
         data: {
           userId,
           amountCents: -input.amountCents,
+          account: LedgerAccount.FUNDING,
           reason: "WITHDRAWAL",
           withdrawalId: createdWithdrawal.id,
         },
@@ -102,6 +112,8 @@ export const WithdrawalService = {
         id: true,
         userId: true,
         amountCents: true,
+        payoutMethod: true,
+        destinationDetails: true,
         user: {
           select: {
             payoutProvider: true,
@@ -123,15 +135,23 @@ export const WithdrawalService = {
         continue;
       }
 
-      if (!withdrawal.user.payoutAccountId) {
-        await this.failWithdrawal(withdrawal.id, "Missing payout account");
+      const destination =
+        withdrawal.destinationDetails &&
+        typeof withdrawal.destinationDetails === "object" &&
+        "label" in withdrawal.destinationDetails &&
+        typeof withdrawal.destinationDetails.label === "string"
+          ? withdrawal.destinationDetails.label
+          : null;
+
+      if (!withdrawal.payoutMethod || !destination) {
+        await this.failWithdrawal(withdrawal.id, "Missing payout destination");
         results.push({ withdrawalId: withdrawal.id, result: "FAILED" });
         continue;
       }
 
       const provider = getPayoutProvider(withdrawal.user.payoutProvider);
       const payout = await provider.sendPayout({
-        providerAccountId: withdrawal.user.payoutAccountId,
+        providerAccountId: `${withdrawal.payoutMethod}:${destination}`,
         amount: withdrawal.amountCents,
         currency: "USD",
         idempotencyKey: withdrawal.id,
@@ -180,6 +200,7 @@ export const WithdrawalService = {
         data: {
           userId: withdrawal.userId,
           amountCents: withdrawal.amountCents,
+          account: LedgerAccount.FUNDING,
           reason: "WITHDRAWAL_REVERSAL",
           withdrawalId: withdrawal.id,
         },
@@ -188,7 +209,7 @@ export const WithdrawalService = {
       await tx.user.update({
         where: { id: withdrawal.userId },
         data: {
-          walletBalanceCents: {
+          fundingBalanceCents: {
             increment: withdrawal.amountCents,
           },
         },
