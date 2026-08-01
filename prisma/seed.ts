@@ -31,26 +31,31 @@ const DIGITAL_JOB_TARGET_COUNT = 520;
 const freelanceIdentityReferences = [
   {
     freelanceIdCode: "FL-BRIAN-BWOSI-001",
+    serialNumber: "SER-BWOSI-001",
     legalName: "Brian Bwosi",
     dateOfBirth: "1998-01-01",
   },
   {
     freelanceIdCode: "FL-AMINA-HASSAN-002",
+    serialNumber: "SER-HASSAN-002",
     legalName: "Amina Hassan",
     dateOfBirth: "1996-06-14",
   },
   {
     freelanceIdCode: "FL-DAVID-KIMANI-003",
+    serialNumber: "SER-KIMANI-003",
     legalName: "David Kimani",
     dateOfBirth: "1994-09-22",
   },
   {
     freelanceIdCode: "FL-MARIA-SANTOS-004",
+    serialNumber: "SER-SANTOS-004",
     legalName: "Maria Santos",
     dateOfBirth: "1992-03-08",
   },
   {
     freelanceIdCode: "FL-PRIYA-SHAH-005",
+    serialNumber: "SER-SHAH-005",
     legalName: "Priya Shah",
     dateOfBirth: "1997-11-30",
   },
@@ -1210,12 +1215,14 @@ async function main() {
     await prisma.freelanceIdentityReference.upsert({
       where: { freelanceIdCode: identity.freelanceIdCode },
       update: {
+        serialNumber: identity.serialNumber,
         legalName: identity.legalName,
         dateOfBirth: new Date(`${identity.dateOfBirth}T00:00:00.000Z`),
         isActive: true,
       },
       create: {
         freelanceIdCode: identity.freelanceIdCode,
+        serialNumber: identity.serialNumber,
         legalName: identity.legalName,
         dateOfBirth: new Date(`${identity.dateOfBirth}T00:00:00.000Z`),
         isActive: true,

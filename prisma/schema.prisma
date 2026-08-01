@@ -173,6 +173,7 @@ model CandidateIdentity {
 model FreelanceIdentityReference {
   id              String   @id @default(uuid())
   freelanceIdCode String   @unique
+  serialNumber    String   @unique
   legalName       String
   dateOfBirth     DateTime
   isActive        Boolean  @default(true)
@@ -187,6 +188,7 @@ model UserFreelanceVerification {
   userId          String                     @unique
   user            User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
   freelanceIdCode String                     @unique
+  serialNumber    String                     @unique
   reference       FreelanceIdentityReference @relation(fields: [freelanceIdCode], references: [freelanceIdCode])
   legalName       String
   dateOfBirth     DateTime

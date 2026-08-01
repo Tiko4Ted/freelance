@@ -32,9 +32,16 @@ export async function POST(request: Request) {
         );
       }
 
+      if (error.message === "TRANSFER_AMOUNT_BELOW_MINIMUM") {
+        return NextResponse.json(
+          { error: "Minimum transfer amount is $10" },
+          { status: 400 },
+        );
+      }
+
       if (error.message === "INVALID_FREELANCE_ID_DETAILS") {
         return NextResponse.json(
-          { error: "Freelance ID details do not match our records" },
+          { error: "Freelance ID or serial number does not match our records" },
           { status: 400 },
         );
       }

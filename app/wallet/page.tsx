@@ -96,18 +96,6 @@ export default async function WalletPage() {
             Funding available: {wallet.formattedFundingBalance} - Minimum
             withdrawal: $10
           </p>
-          <p className="mt-2 text-sm font-medium">
-            Freelance ID:{" "}
-            <span
-              className={
-                wallet.freelanceVerification
-                  ? "text-teal-700"
-                  : "text-amber-700"
-              }
-            >
-              {wallet.freelanceVerification ? "Verified" : "Not verified"}
-            </span>
-          </p>
           <div className="mt-5">
             <WithdrawalForm
               fundingBalanceCents={wallet.fundingBalanceCents}
