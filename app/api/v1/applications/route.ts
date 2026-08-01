@@ -48,6 +48,20 @@ export async function POST(request: Request) {
       );
     }
 
+    if (
+      error instanceof Error &&
+      error.message.startsWith("ACTIVE_APPLICATION:")
+    ) {
+      const activeJobTitle = error.message.split(":").slice(1).join(":");
+
+      return NextResponse.json(
+        {
+          error: `Complete and submit your current task before applying to another job: ${activeJobTitle}`,
+        },
+        { status: 409 },
+      );
+    }
+
     return NextResponse.json(
       { error: "Unable to submit application" },
       { status: 500 },

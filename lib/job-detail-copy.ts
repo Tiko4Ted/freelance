@@ -1,4 +1,7 @@
-import type { PublicJobView } from "@/lib/services/job-service";
+type JobDetailSource = {
+  title: string;
+  skills: { label: string }[];
+};
 
 type JobDetailCopy = {
   intro: string;
@@ -7,20 +10,20 @@ type JobDetailCopy = {
   note?: string;
 };
 
-function getSkillLabels(job: PublicJobView) {
+function getSkillLabels(job: JobDetailSource) {
   return job.skills.map((skill) => skill.label);
 }
 
-function getPrimarySkill(job: PublicJobView) {
+function getPrimarySkill(job: JobDetailSource) {
   return getSkillLabels(job)[0] ?? "domain expertise";
 }
 
-function isAudioRole(job: PublicJobView) {
+function isAudioRole(job: JobDetailSource) {
   const searchable = [job.title, ...getSkillLabels(job)].join(" ").toLowerCase();
   return searchable.includes("audio") || searchable.includes("voice");
 }
 
-function isCrmOperationsRole(job: PublicJobView) {
+function isCrmOperationsRole(job: JobDetailSource) {
   return job.title.toLowerCase().includes("crm operations specialist");
 }
 
@@ -39,7 +42,7 @@ function sentenceList(items: string[]) {
   }`;
 }
 
-export function buildJobDetailCopy(job: PublicJobView): JobDetailCopy {
+export function buildJobDetailCopy(job: JobDetailSource): JobDetailCopy {
   const primarySkill = getPrimarySkill(job);
   const skillSummary = sentenceList(getSkillLabels(job).slice(0, 4));
 

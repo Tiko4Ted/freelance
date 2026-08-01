@@ -40,6 +40,21 @@ function applicationBucket(status: ApplicationStatus) {
   return "pending" as const;
 }
 
+function isInstructionOnlyJob(job: { title: string; skills: { label: string }[] }) {
+  const searchable = `${job.title} ${job.skills
+    .map((skill) => skill.label)
+    .join(" ")}`.toLowerCase();
+
+  return [
+    "audio",
+    "voice",
+    "recording",
+    "video",
+    "gameplay",
+    "capture",
+  ].some((term) => searchable.includes(term));
+}
+
 export const ReferralService = {
   async getMyLinks(userId: string, origin: string) {
     const user = await prisma.user.findUnique({
@@ -67,6 +82,8 @@ export const ReferralService = {
         status: true,
         hoursLogged: true,
         tasksCompleted: true,
+        taskSubmissionFileName: true,
+        taskSubmittedAt: true,
         createdAt: true,
         updatedAt: true,
         job: {
@@ -74,6 +91,11 @@ export const ReferralService = {
             id: true,
             title: true,
             payoutType: true,
+            skills: {
+              select: {
+                label: true,
+              },
+            },
           },
         },
       },
@@ -85,6 +107,13 @@ export const ReferralService = {
       bucket: applicationBucket(application.status),
       hoursLogged: application.hoursLogged,
       tasksCompleted: application.tasksCompleted,
+      taskSubmissionFileName: application.taskSubmissionFileName,
+      taskSubmittedAt: application.taskSubmittedAt
+        ? toDashboardDate(application.taskSubmittedAt)
+        : null,
+      materialType: isInstructionOnlyJob(application.job)
+        ? "instructions"
+        : "download",
       appliedAt: toDashboardDate(application.createdAt),
       updatedAt: toDashboardDate(application.updatedAt),
       job: {

@@ -134,6 +134,9 @@ model Application {
   lockedPayoutCents         Int?
   hoursLogged               Float             @default(0)
   tasksCompleted            Int               @default(0)
+  taskSubmissionFileName    String?
+  taskSubmissionNotes       String?
+  taskSubmittedAt           DateTime?
   onboardedAt               DateTime?
   payoutDeadline            DateTime?
   createdAt                 DateTime          @default(now())

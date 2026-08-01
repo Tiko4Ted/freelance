@@ -4,11 +4,11 @@ const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
     className: "bg-slate-100 text-slate-700",
   },
   APPLIED: {
-    label: "Applied",
-    className: "bg-slate-100 text-slate-700",
+    label: "Pending approval",
+    className: "bg-amber-100 text-amber-800",
   },
   CERTIFYING: {
-    label: "Certifying",
+    label: "Pending task review",
     className: "bg-amber-100 text-amber-800",
   },
   CERTIFIED: {

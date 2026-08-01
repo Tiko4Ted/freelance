@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 import { CopyReferralLink } from "@/components/dashboard/copy-referral-link";
+import { JobActivityList } from "@/components/dashboard/job-activity-list";
 import { StatusBadge } from "@/components/status-badge";
 import { ReferralService } from "@/lib/services/referral-service";
 
@@ -149,59 +150,7 @@ export default async function DashboardPage() {
             ))}
           </div>
 
-          <div className="mt-5 divide-y divide-slate-200 border border-slate-200 bg-white">
-            {candidateApplications.length ? (
-              candidateApplications.map((application) => (
-                <article
-                  className="grid gap-4 p-5 lg:grid-cols-[1fr_auto]"
-                  key={application.id}
-                >
-                  <div>
-                    <div className="flex flex-wrap items-center gap-3">
-                      <h3 className="font-semibold text-slate-950">
-                        {application.job.title}
-                      </h3>
-                      <StatusBadge status={application.status} />
-                    </div>
-                    <p className="mt-2 text-sm leading-6 text-slate-600">
-                      Applied {application.appliedAt}. Last updated{" "}
-                      {application.updatedAt}.
-                    </p>
-                  </div>
-                  <div className="grid min-w-48 grid-cols-2 gap-3 text-sm">
-                    <div className="border border-slate-200 bg-slate-50 p-3">
-                      <p className="text-slate-500">Hours</p>
-                      <p className="mt-1 font-semibold text-slate-950">
-                        {application.hoursLogged}
-                      </p>
-                    </div>
-                    <div className="border border-slate-200 bg-slate-50 p-3">
-                      <p className="text-slate-500">Tasks</p>
-                      <p className="mt-1 font-semibold text-slate-950">
-                        {application.tasksCompleted}
-                      </p>
-                    </div>
-                  </div>
-                </article>
-              ))
-            ) : (
-              <div className="p-5">
-                <h3 className="font-semibold text-slate-950">
-                  No job activity yet
-                </h3>
-                <p className="mt-2 text-sm leading-6 text-slate-600">
-                  Applications you submit will appear here as pending while the
-                  team reviews your documents and confirms eligibility by email.
-                </p>
-                <Link
-                  className="mt-4 inline-flex h-10 items-center justify-center border border-slate-950 bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-teal-700"
-                  href="/jobs"
-                >
-                  Browse jobs
-                </Link>
-              </div>
-            )}
-          </div>
+          <JobActivityList applications={candidateApplications} />
         </div>
 
         <aside className="border border-slate-200 bg-white p-5">

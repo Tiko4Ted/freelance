@@ -255,7 +255,7 @@ function ApplicationSubmissionPage({
               onClick={onClose}
               type="button"
             >
-              Close
+              Go to dashboard
             </button>
           ) : null}
         </div>
@@ -266,7 +266,6 @@ function ApplicationSubmissionPage({
 
 export function ApplicationForm({
   jobId,
-  listingsHref = "/jobs",
 }: ApplicationFormProps) {
   const router = useRouter();
   const [step, setStep] = useState<FormStep>("details");
@@ -356,7 +355,7 @@ export function ApplicationForm({
     setState({
       status: "success",
       message:
-        "Thank you for completing your application. Please await the review of your submitted documents; you will be notified by email once our team has completed the assessment and determined the appropriate next steps.",
+        "Thank you for completing your application. Please await the review of your submitted documents; this job now appears in your dashboard as Pending approval and you will be notified by email once our team has completed the assessment.",
     });
   }
 
@@ -371,9 +370,9 @@ export function ApplicationForm({
 
   if (isSubmissionPage) {
     return (
-      <ApplicationSubmissionPage
+        <ApplicationSubmissionPage
         message={state.message}
-        onClose={() => router.push(listingsHref)}
+        onClose={() => router.push("/dashboard")}
         status={state.status}
       />
     );
