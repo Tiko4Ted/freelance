@@ -17,7 +17,6 @@ function optionalTrimmedString(max: number) {
 export const applicationSchema = z.object({
   jobId: z.string().uuid(),
   candidateName: z.string().trim().min(2).max(120),
-  candidateEmail: z.string().email().transform((value) => value.toLowerCase()),
   candidateFirstName: optionalTrimmedString(60),
   candidateLastName: optionalTrimmedString(60),
   candidatePhoneCountry: optionalTrimmedString(80),

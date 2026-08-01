@@ -13,10 +13,7 @@ export async function GET(_request: Request, context: RouteContext) {
   try {
     const session = await requireSession();
     const { id } = await context.params;
-    const material = await ApplicationService.getTaskMaterial(
-      id,
-      session.user.email ?? "",
-    );
+    const material = await ApplicationService.getTaskMaterial(id, session.user.id);
 
     return new NextResponse(material.content, {
       headers: {

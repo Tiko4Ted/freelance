@@ -73,6 +73,7 @@ model User {
   withdrawals           Withdrawal[]
   walletTransfers       WalletTransfer[]
   freelanceVerification UserFreelanceVerification?
+  applications          Application[]
 
   @@index([role])
 }
@@ -113,6 +114,8 @@ model JobSkill {
 
 model Application {
   id                        String            @id @default(uuid())
+  applicantUserId           String?
+  applicant                 User?             @relation(fields: [applicantUserId], references: [id], onDelete: SetNull)
   jobId                     String
   job                       Job               @relation(fields: [jobId], references: [id])
   candidateEmail            String
@@ -144,7 +147,9 @@ model Application {
 
   ledgerEntry LedgerEntry?
 
+  @@unique([applicantUserId, jobId])
   @@unique([candidateEmail, jobId])
+  @@index([applicantUserId])
   @@index([candidateEmail])
   @@index([status])
   @@index([payoutDeadline])

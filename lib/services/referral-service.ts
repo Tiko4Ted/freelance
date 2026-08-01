@@ -72,10 +72,9 @@ export const ReferralService = {
     };
   },
 
-  async getCandidateApplications(candidateEmail: string) {
-    const normalizedEmail = candidateEmail.trim().toLowerCase();
+  async getCandidateApplications(applicantUserId: string) {
     const applications = await prisma.application.findMany({
-      where: { candidateEmail: normalizedEmail },
+      where: { applicantUserId },
       orderBy: { createdAt: "desc" },
       select: {
         id: true,
