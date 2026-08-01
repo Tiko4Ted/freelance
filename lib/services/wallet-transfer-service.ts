@@ -3,26 +3,10 @@ import { LedgerAccount, Prisma, WalletTransferType } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import type { WalletTransferInput } from "@/lib/validation/wallet-transfer";
 
-function normalizeName(value: string) {
-  return value.trim().replace(/\s+/g, " ").toLowerCase();
-}
+const MIN_TRANSFER_CENTS = 1000;
 
 function normalizeCode(value: string) {
   return value.trim().toUpperCase();
-}
-
-function parseDateOfBirth(value: string) {
-  const date = new Date(`${value}T00:00:00.000Z`);
-
-  if (Number.isNaN(date.getTime())) {
-    throw new Error("INVALID_FREELANCE_ID_DETAILS");
-  }
-
-  return date;
-}
-
-function sameDate(left: Date, right: Date) {
-  return left.toISOString().slice(0, 10) === right.toISOString().slice(0, 10);
 }
 
 function isUniqueConstraintError(error: unknown) {
@@ -33,20 +17,23 @@ function isUniqueConstraintError(error: unknown) {
 }
 
 function requireIdentityInput(input: WalletTransferInput) {
-  if (!input.freelanceIdCode || !input.legalName || !input.dateOfBirth) {
+  if (!input.freelanceIdCode || !input.serialNumber) {
     throw new Error("FREELANCE_ID_REQUIRED");
   }
 
   return {
     freelanceIdCode: normalizeCode(input.freelanceIdCode),
-    legalName: input.legalName.trim(),
-    dateOfBirth: parseDateOfBirth(input.dateOfBirth),
+    serialNumber: normalizeCode(input.serialNumber),
   };
 }
 
 export const WalletTransferService = {
   async transferHoldingToFunding(userId: string, input: WalletTransferInput) {
     const amountCents = input.amountCents;
+
+    if (amountCents < MIN_TRANSFER_CENTS) {
+      throw new Error("TRANSFER_AMOUNT_BELOW_MINIMUM");
+    }
 
     return prisma.$transaction(async (tx) => {
       const user = await tx.user.findUnique({
@@ -59,6 +46,7 @@ export const WalletTransferService = {
             select: {
               id: true,
               freelanceIdCode: true,
+              serialNumber: true,
             },
           },
         },
@@ -80,6 +68,7 @@ export const WalletTransferService = {
           where: { freelanceIdCode: identityInput.freelanceIdCode },
           select: {
             freelanceIdCode: true,
+            serialNumber: true,
             legalName: true,
             dateOfBirth: true,
             isActive: true,
@@ -88,9 +77,7 @@ export const WalletTransferService = {
 
         if (
           !reference?.isActive ||
-          normalizeName(reference.legalName) !==
-            normalizeName(identityInput.legalName) ||
-          !sameDate(reference.dateOfBirth, identityInput.dateOfBirth)
+          normalizeCode(reference.serialNumber) !== identityInput.serialNumber
         ) {
           throw new Error("INVALID_FREELANCE_ID_DETAILS");
         }
@@ -100,8 +87,9 @@ export const WalletTransferService = {
             data: {
               userId,
               freelanceIdCode: reference.freelanceIdCode,
-              legalName: identityInput.legalName,
-              dateOfBirth: identityInput.dateOfBirth,
+              serialNumber: reference.serialNumber,
+              legalName: reference.legalName,
+              dateOfBirth: reference.dateOfBirth,
             },
             select: { id: true },
           })

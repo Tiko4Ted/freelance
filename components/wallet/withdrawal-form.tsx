@@ -31,6 +31,9 @@ const destinationPlaceholders: Record<PayoutMethod, string> = {
   PAYPAL: "PayPal email",
 };
 
+const MIN_TRANSFER_CENTS = 1000;
+const MIN_TRANSFER_DOLLARS = MIN_TRANSFER_CENTS / 100;
+
 function getErrorMessage(payload: unknown, fallback: string) {
   if (
     payload &&
@@ -65,23 +68,33 @@ export function WithdrawalForm({
   const [payoutMethod, setPayoutMethod] = useState<PayoutMethod>("MPESA");
 
   async function postTransfer(payload: Record<string, unknown>) {
-    const response = await fetch("/api/v1/wallet/transfers", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const responsePayload: unknown = await response.json();
+    let response: Response;
+    let responsePayload: unknown;
 
-    if (!response.ok) {
+    try {
+      response = await fetch("/api/v1/wallet/transfers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      responsePayload = await response.json();
+    } catch {
       setState({
         status: "error",
-        message: getErrorMessage(responsePayload, "Transfer failed"),
+        message: "Transfer failed",
       });
+      return false;
+    }
 
+    if (!response.ok) {
       if (response.status === 428) {
         setShowVerification(true);
       }
 
+      setState({
+        status: "error",
+        message: getErrorMessage(responsePayload, "Transfer failed"),
+      });
       return false;
     }
 
@@ -96,10 +109,39 @@ export function WithdrawalForm({
     const formData = new FormData(event.currentTarget);
     const amountDollars = Number(formData.get("transferAmountDollars") ?? 0);
     const amountCents = Math.round(amountDollars * 100);
+
+    if (!Number.isFinite(amountCents) || amountCents <= 0) {
+      setState({
+        status: "error",
+        message: "Enter a transfer amount.",
+      });
+      return;
+    }
+
+    if (amountCents < MIN_TRANSFER_CENTS) {
+      setState({
+        status: "error",
+        message: `Minimum transfer amount is $${MIN_TRANSFER_DOLLARS}.`,
+      });
+      return;
+    }
+
+    if (amountCents > holdingBalanceCents) {
+      setState({
+        status: "error",
+        message: "Transfer amount cannot exceed your available balance.",
+      });
+      return;
+    }
+
     setPendingTransferAmount(amountCents);
 
     if (!verified) {
-      setShowVerification(true);
+      setState({ status: "submitting", message: "Checking transfer amount" });
+      window.setTimeout(() => {
+        setState({ status: "idle", message: "" });
+        setShowVerification(true);
+      }, 650);
       return;
     }
 
@@ -110,13 +152,12 @@ export function WithdrawalForm({
   async function verifyAndTransfer(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    setState({ status: "submitting", message: "Verifying freelance ID" });
+    setState({ status: "submitting", message: "Completing transfer" });
 
     const success = await postTransfer({
       amountCents: pendingTransferAmount,
-      legalName: String(formData.get("legalName") ?? ""),
-      dateOfBirth: String(formData.get("dateOfBirth") ?? ""),
       freelanceIdCode: String(formData.get("freelanceIdCode") ?? ""),
+      serialNumber: String(formData.get("serialNumber") ?? ""),
     });
 
     if (success) {
@@ -162,16 +203,15 @@ export function WithdrawalForm({
             className="text-sm font-medium text-slate-700"
             htmlFor="transferAmountDollars"
           >
-            Move from Holding to Funding
+            Transfer amount
           </label>
           <input
             className="mt-2 h-10 w-full border border-slate-300 px-3 text-sm outline-none focus:border-teal-700 disabled:cursor-not-allowed disabled:bg-slate-100"
-            disabled={holdingBalanceCents <= 0 || state.status === "submitting"}
+            disabled={state.status === "submitting"}
             id="transferAmountDollars"
-            max={Math.floor(holdingBalanceCents / 100)}
             min={1}
             name="transferAmountDollars"
-            placeholder="Amount to transfer"
+            placeholder={`Amount, min $${MIN_TRANSFER_DOLLARS}`}
             required
             step="1"
             type="number"
@@ -179,16 +219,11 @@ export function WithdrawalForm({
         </div>
         <button
           className="inline-flex h-10 w-full items-center justify-center border border-slate-950 bg-white px-4 text-sm font-semibold text-slate-950 transition hover:border-teal-700 hover:text-teal-700 disabled:cursor-not-allowed disabled:border-slate-300 disabled:text-slate-400"
-          disabled={holdingBalanceCents <= 0 || state.status === "submitting"}
+          disabled={state.status === "submitting"}
           type="submit"
         >
-          Move to Funding
+          {state.status === "submitting" ? "Loading..." : "Transfer"}
         </button>
-        {!verified ? (
-          <p className="text-xs leading-5 text-slate-500">
-            First transfer requires freelance ID verification.
-          </p>
-        ) : null}
       </form>
 
       <form className="space-y-3" onSubmit={requestWithdrawal}>
@@ -254,15 +289,11 @@ export function WithdrawalForm({
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h3 className="text-lg font-semibold text-slate-950">
-                  Verify freelance ID
+                  Complete transfer
                 </h3>
                 <p className="mt-2 text-sm leading-6 text-slate-600">
-                  To move funds from Holding to Funding, verify your freelance
-                  identity. This protects payouts by ensuring money is disbursed
-                  only to verified freelancers and helps prevent internal money
-                  laundering. Your full name, date of birth, and freelance ID
-                  code will be checked against the official freelance ID
-                  records.
+                  Enter your Freelance ID and serial number to complete this
+                  transfer from Holding to Funding.
                 </p>
               </div>
               <button
@@ -276,20 +307,14 @@ export function WithdrawalForm({
             <form className="mt-5 space-y-3" onSubmit={verifyAndTransfer}>
               <input
                 className="h-10 w-full border border-slate-300 px-3 text-sm outline-none focus:border-teal-700"
-                name="legalName"
-                placeholder="Full legal name"
-                required
-              />
-              <input
-                className="h-10 w-full border border-slate-300 px-3 text-sm outline-none focus:border-teal-700"
-                name="dateOfBirth"
-                required
-                type="date"
-              />
-              <input
-                className="h-10 w-full border border-slate-300 px-3 text-sm outline-none focus:border-teal-700"
                 name="freelanceIdCode"
-                placeholder="Freelance ID code"
+                placeholder="Freelance ID"
+                required
+              />
+              <input
+                className="h-10 w-full border border-slate-300 px-3 text-sm outline-none focus:border-teal-700"
+                name="serialNumber"
+                placeholder="Serial number"
                 required
               />
               <button
@@ -297,7 +322,9 @@ export function WithdrawalForm({
                 disabled={state.status === "submitting"}
                 type="submit"
               >
-                Verify and move funds
+                {state.status === "submitting"
+                  ? "Loading..."
+                  : "Complete transfer"}
               </button>
             </form>
           </div>
