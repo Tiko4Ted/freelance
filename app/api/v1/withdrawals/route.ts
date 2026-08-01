@@ -44,10 +44,10 @@ export async function POST(request: Request) {
 
     if (
       error instanceof Error &&
-      error.message === "INSUFFICIENT_BALANCE_OR_PAYOUT_NOT_READY"
+      error.message === "INSUFFICIENT_FUNDING_BALANCE"
     ) {
       return NextResponse.json(
-        { error: "Insufficient balance or payout account is not ready" },
+        { error: "Insufficient funding balance" },
         { status: 409 },
       );
     }

@@ -5,7 +5,6 @@ import { StatusBadge } from "@/components/status-badge";
 import { WithdrawalForm } from "@/components/wallet/withdrawal-form";
 import { requireSession } from "@/lib/auth/session";
 import { LedgerService } from "@/lib/services/ledger-service";
-import { PayoutAccountService } from "@/lib/services/payout-account-service";
 import { WithdrawalService } from "@/lib/services/withdrawal-service";
 
 export const dynamic = "force-dynamic";
@@ -20,10 +19,9 @@ export default async function WalletPage() {
     redirect("/login");
   }
 
-  const [wallet, withdrawals, payoutAccount] = await Promise.all([
+  const [wallet, withdrawals] = await Promise.all([
     LedgerService.getWallet(userId),
     WithdrawalService.listWithdrawals(userId),
-    PayoutAccountService.getStatus(userId),
   ]);
 
   return (
@@ -36,9 +34,26 @@ export default async function WalletPage() {
           <h1 className="mt-5 text-3xl font-semibold text-slate-950 md:text-5xl">
             Wallet
           </h1>
-          <p className="mt-4 text-4xl font-semibold text-teal-700">
-            {wallet.formattedBalance}
-          </p>
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
+            <div className="border border-slate-200 bg-slate-50 p-4">
+              <p className="text-sm font-medium text-slate-600">Holding</p>
+              <p className="mt-2 text-3xl font-semibold text-slate-950">
+                {wallet.formattedHoldingBalance}
+              </p>
+              <p className="mt-2 text-xs leading-5 text-slate-500">
+                Completed job money waits here until freelance ID verification.
+              </p>
+            </div>
+            <div className="border border-slate-200 bg-slate-50 p-4">
+              <p className="text-sm font-medium text-slate-600">Funding</p>
+              <p className="mt-2 text-3xl font-semibold text-teal-700">
+                {wallet.formattedFundingBalance}
+              </p>
+              <p className="mt-2 text-xs leading-5 text-slate-500">
+                Funds here can be withdrawn to your selected payout method.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -55,7 +70,7 @@ export default async function WalletPage() {
                     {entry.reason}
                   </h2>
                   <p className="mt-1 text-sm text-slate-500">
-                    {entry.createdAt}
+                    {entry.account} - {entry.createdAt}
                   </p>
                 </div>
                 <p
@@ -74,24 +89,31 @@ export default async function WalletPage() {
           )}
         </div>
         <aside className="border border-slate-200 bg-white p-5">
-          <h2 className="text-xl font-semibold text-slate-950">Withdraw</h2>
+          <h2 className="text-xl font-semibold text-slate-950">
+            Move and withdraw
+          </h2>
           <p className="mt-2 text-sm text-slate-600">
-            Available: {wallet.formattedBalance} · Minimum withdrawal: $10
+            Funding available: {wallet.formattedFundingBalance} - Minimum
+            withdrawal: $10
           </p>
           <p className="mt-2 text-sm font-medium">
-            Payout account:{" "}
+            Freelance ID:{" "}
             <span
               className={
-                payoutAccount.payoutAccountReady
+                wallet.freelanceVerification
                   ? "text-teal-700"
                   : "text-amber-700"
               }
             >
-              {payoutAccount.payoutAccountReady ? "Ready" : "Not set up"}
+              {wallet.freelanceVerification ? "Verified" : "Not verified"}
             </span>
           </p>
           <div className="mt-5">
-            <WithdrawalForm payoutAccountReady={payoutAccount.payoutAccountReady} />
+            <WithdrawalForm
+              fundingBalanceCents={wallet.fundingBalanceCents}
+              holdingBalanceCents={wallet.holdingBalanceCents}
+              isFreelanceVerified={Boolean(wallet.freelanceVerification)}
+            />
           </div>
         </aside>
       </section>
@@ -110,6 +132,11 @@ export default async function WalletPage() {
                   <p className="mt-2 text-sm text-slate-500">
                     {withdrawal.requestedAt}
                   </p>
+                  {withdrawal.payoutMethod ? (
+                    <p className="mt-1 text-xs text-slate-500">
+                      {withdrawal.payoutMethod}
+                    </p>
+                  ) : null}
                 </div>
                 <p className="font-semibold text-slate-950">
                   ${(withdrawal.amountCents / 100).toFixed(2)}

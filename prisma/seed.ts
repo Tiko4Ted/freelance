@@ -28,6 +28,34 @@ const DIGITAL_JOB_DATA_RULES = [
 
 const DIGITAL_JOB_TARGET_COUNT = 520;
 
+const freelanceIdentityReferences = [
+  {
+    freelanceIdCode: "FL-BRIAN-BWOSI-001",
+    legalName: "Brian Bwosi",
+    dateOfBirth: "1998-01-01",
+  },
+  {
+    freelanceIdCode: "FL-AMINA-HASSAN-002",
+    legalName: "Amina Hassan",
+    dateOfBirth: "1996-06-14",
+  },
+  {
+    freelanceIdCode: "FL-DAVID-KIMANI-003",
+    legalName: "David Kimani",
+    dateOfBirth: "1994-09-22",
+  },
+  {
+    freelanceIdCode: "FL-MARIA-SANTOS-004",
+    legalName: "Maria Santos",
+    dateOfBirth: "1992-03-08",
+  },
+  {
+    freelanceIdCode: "FL-PRIYA-SHAH-005",
+    legalName: "Priya Shah",
+    dateOfBirth: "1997-11-30",
+  },
+];
+
 const baseDemoJobs: DemoJob[] = [
   {
     title: "GitHub Contributor",
@@ -1177,6 +1205,23 @@ async function main() {
       role: Role.ADMIN,
     },
   });
+
+  for (const identity of freelanceIdentityReferences) {
+    await prisma.freelanceIdentityReference.upsert({
+      where: { freelanceIdCode: identity.freelanceIdCode },
+      update: {
+        legalName: identity.legalName,
+        dateOfBirth: new Date(`${identity.dateOfBirth}T00:00:00.000Z`),
+        isActive: true,
+      },
+      create: {
+        freelanceIdCode: identity.freelanceIdCode,
+        legalName: identity.legalName,
+        dateOfBirth: new Date(`${identity.dateOfBirth}T00:00:00.000Z`),
+        isActive: true,
+      },
+    });
+  }
 
   for (const jobBatch of chunkItems(demoJobs, 3)) {
     await Promise.all(jobBatch.map(seedJob));
