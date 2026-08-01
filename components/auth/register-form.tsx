@@ -9,6 +9,10 @@ type RegisterState =
   | { status: "submitting"; message: string }
   | { status: "error"; message: string };
 
+type RegisterFormProps = {
+  callbackUrl?: string;
+};
+
 function getErrorMessage(payload: unknown) {
   if (
     payload &&
@@ -22,7 +26,7 @@ function getErrorMessage(payload: unknown) {
   return "Unable to create account";
 }
 
-export function RegisterForm() {
+export function RegisterForm({ callbackUrl = "/dashboard" }: RegisterFormProps) {
   const [state, setState] = useState<RegisterState>({
     status: "idle",
     message: "",
@@ -55,11 +59,11 @@ export function RegisterForm() {
     });
 
     if (result?.error) {
-      window.location.href = "/login";
+      window.location.href = `/login?callbackUrl=${encodeURIComponent(callbackUrl)}`;
       return;
     }
 
-    window.location.href = "/dashboard";
+    window.location.href = callbackUrl;
   }
 
   return (
@@ -124,7 +128,10 @@ export function RegisterForm() {
       ) : null}
       <p className="text-sm text-slate-600">
         Have an account?{" "}
-        <Link className="font-medium text-teal-700" href="/login">
+        <Link
+          className="font-medium text-teal-700"
+          href={`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`}
+        >
           Sign in
         </Link>
       </p>

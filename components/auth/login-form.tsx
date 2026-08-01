@@ -9,7 +9,11 @@ type LoginState =
   | { status: "submitting"; message: string }
   | { status: "error"; message: string };
 
-export function LoginForm() {
+type LoginFormProps = {
+  callbackUrl?: string;
+};
+
+export function LoginForm({ callbackUrl = "/dashboard" }: LoginFormProps) {
   const [state, setState] = useState<LoginState>({
     status: "idle",
     message: "",
@@ -33,7 +37,7 @@ export function LoginForm() {
       return;
     }
 
-    window.location.href = "/dashboard";
+    window.location.href = callbackUrl;
   }
 
   return (
@@ -86,7 +90,10 @@ export function LoginForm() {
       ) : null}
       <p className="text-sm text-slate-600">
         No account?{" "}
-        <Link className="font-medium text-teal-700" href="/register">
+        <Link
+          className="font-medium text-teal-700"
+          href={`/register?callbackUrl=${encodeURIComponent(callbackUrl)}`}
+        >
           Create one
         </Link>
       </p>

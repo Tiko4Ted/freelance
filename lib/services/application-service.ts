@@ -10,6 +10,11 @@ type ReferralCookie = {
   referralCode: string;
 };
 
+type AuthenticatedApplicant = {
+  id: string;
+  email: string;
+};
+
 function parseReferralCookie(value: string | undefined): ReferralCookie | null {
   if (!value) {
     return null;
@@ -149,8 +154,12 @@ function toApplicationResponse(application: {
 }
 
 export const ApplicationService = {
-  async submitApplication(input: ApplicationInput, referralCookie?: string) {
-    const normalizedEmail = normalizeEmail(input.candidateEmail);
+  async submitApplication(
+    input: ApplicationInput,
+    applicant: AuthenticatedApplicant,
+    referralCookie?: string,
+  ) {
+    const normalizedEmail = normalizeEmail(applicant.email);
     const parsedReferral = parseReferralCookie(referralCookie);
 
     try {
@@ -166,7 +175,7 @@ export const ApplicationService = {
 
         const activeApplication = await tx.application.findFirst({
           where: {
-            candidateEmail: normalizedEmail,
+            applicantUserId: applicant.id,
             status: { in: blockingApplicationStatuses },
             taskSubmittedAt: null,
           },
@@ -200,7 +209,7 @@ export const ApplicationService = {
             select: { id: true, email: true, role: true },
           });
 
-          if (referrer?.email === normalizedEmail) {
+          if (referrer?.id === applicant.id || referrer?.email === normalizedEmail) {
             throw new Error("SELF_REFERRAL");
           }
 
@@ -219,6 +228,7 @@ export const ApplicationService = {
 
         return tx.application.create({
           data: {
+            applicantUserId: applicant.id,
             jobId: job.id,
             candidateEmail: normalizedEmail,
             candidateName: input.candidateName.trim(),
@@ -270,11 +280,11 @@ export const ApplicationService = {
     }
   },
 
-  async getTaskMaterial(applicationId: string, candidateEmail: string) {
+  async getTaskMaterial(applicationId: string, applicantUserId: string) {
     const application = await prisma.application.findFirst({
       where: {
         id: applicationId,
-        candidateEmail: normalizeEmail(candidateEmail),
+        applicantUserId,
       },
       select: {
         id: true,
@@ -309,13 +319,13 @@ export const ApplicationService = {
 
   async submitTask(
     applicationId: string,
-    candidateEmail: string,
+    applicantUserId: string,
     input: TaskSubmissionInput,
   ) {
     const updatedApplication = await prisma.application.updateMany({
       where: {
         id: applicationId,
-        candidateEmail: normalizeEmail(candidateEmail),
+        applicantUserId,
         taskSubmittedAt: null,
         status: {
           in: [

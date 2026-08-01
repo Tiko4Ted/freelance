@@ -18,7 +18,7 @@ export async function POST(request: Request, context: RouteContext) {
     const body: unknown = await request.json();
     const input = taskSubmissionSchema.parse(body);
 
-    await ApplicationService.submitTask(id, session.user.email ?? "", input);
+    await ApplicationService.submitTask(id, session.user.id, input);
 
     return NextResponse.json({
       application: {

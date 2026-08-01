@@ -14,6 +14,7 @@ import {
 import { useRouter } from "next/navigation";
 
 type ApplicationFormProps = {
+  applicantEmail: string;
   jobId: string;
   listingsHref?: string;
 };
@@ -22,7 +23,6 @@ type FormStep = "details" | "questions";
 
 type ApplicationDraft = {
   candidateName: string;
-  candidateEmail: string;
   candidateFirstName: string;
   candidateLastName: string;
   candidatePhoneCountry: string;
@@ -265,6 +265,7 @@ function ApplicationSubmissionPage({
 }
 
 export function ApplicationForm({
+  applicantEmail,
   jobId,
 }: ApplicationFormProps) {
   const router = useRouter();
@@ -300,7 +301,6 @@ export function ApplicationForm({
 
     setDraft({
       candidateName: `${firstName} ${lastName}`.trim(),
-      candidateEmail: String(formData.get("candidateEmail") ?? ""),
       candidateFirstName: firstName,
       candidateLastName: lastName,
       candidatePhoneCountry: detectedPhoneCountry.country,
@@ -329,8 +329,8 @@ export function ApplicationForm({
       const response = await fetch("/api/v1/applications", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          jobId,
+      body: JSON.stringify({
+        jobId,
           ...draft,
           startAvailabilityDays,
           expectedHourlyRateUsd,
@@ -525,6 +525,10 @@ export function ApplicationForm({
       onSubmit={handleDetailsNext}
     >
       <h2 className="text-[22px] font-semibold leading-tight">Interested?</h2>
+      <p className="mt-2 text-[12px] leading-[1.45] text-[#4d5060]">
+        Applying with{" "}
+        <span className="font-semibold text-[#151625]">{applicantEmail}</span>
+      </p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
         <div>
@@ -561,24 +565,6 @@ export function ApplicationForm({
             minLength={1}
           />
         </div>
-      </div>
-
-      <div className="mt-4">
-        <label
-          className="text-[11px] font-medium text-[#363747]"
-          htmlFor="candidateEmail"
-        >
-          Email
-        </label>
-        <input
-          className="mt-1.5 h-9 w-full rounded border border-[#d0d0dc] bg-transparent px-3 text-[13px] outline-none transition placeholder:text-[#848594] focus:border-[#3547ff] focus:ring-1 focus:ring-[#3547ff]"
-          defaultValue={draft?.candidateEmail}
-          id="candidateEmail"
-          name="candidateEmail"
-          placeholder="Enter your email address"
-          required
-          type="email"
-        />
       </div>
 
       <div className="mt-4">

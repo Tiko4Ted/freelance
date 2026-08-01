@@ -2,7 +2,24 @@ import Link from "next/link";
 
 import { LoginForm } from "@/components/auth/login-form";
 
-export default function LoginPage() {
+type LoginPageProps = {
+  searchParams: Promise<{
+    callbackUrl?: string;
+  }>;
+};
+
+function safeCallbackUrl(value: string | undefined) {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) {
+    return "/dashboard";
+  }
+
+  return value;
+}
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const params = await searchParams;
+  const callbackUrl = safeCallbackUrl(params.callbackUrl);
+
   return (
     <main className="min-h-screen bg-slate-50 text-slate-950">
       <section className="mx-auto grid min-h-screen max-w-5xl items-center gap-8 px-6 py-8 md:grid-cols-[1fr_24rem] md:px-8">
@@ -19,7 +36,7 @@ export default function LoginPage() {
           </p>
         </div>
         <div className="border border-slate-200 bg-white p-5">
-          <LoginForm />
+          <LoginForm callbackUrl={callbackUrl} />
         </div>
       </section>
     </main>

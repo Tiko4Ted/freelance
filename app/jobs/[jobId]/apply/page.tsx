@@ -1,5 +1,6 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
+import { auth } from "@/auth";
 import { ApplicationForm } from "@/components/application-form";
 import { buildJobDetailCopy } from "@/lib/job-detail-copy";
 import { JobService } from "@/lib/services/job-service";
@@ -45,12 +46,33 @@ function listingsHref(referralCode?: string) {
   return `/referral/jobs?referralCode=${encodeURIComponent(referralCode)}`;
 }
 
+function applyHref(jobId: string, referralCode?: string) {
+  const href = `/jobs/${jobId}/apply`;
+
+  if (!referralCode) {
+    return href;
+  }
+
+  return `${href}?referralCode=${encodeURIComponent(referralCode)}`;
+}
+
 export default async function ApplyPage({
   params,
   searchParams,
 }: ApplyPageProps) {
-  const [{ jobId }, query] = await Promise.all([params, searchParams]);
+  const [{ jobId }, query, session] = await Promise.all([
+    params,
+    searchParams,
+    auth(),
+  ]);
   const referralCode = query.ref ?? query.referralCode;
+
+  if (!session?.user?.id) {
+    redirect(
+      `/login?callbackUrl=${encodeURIComponent(applyHref(jobId, referralCode))}`,
+    );
+  }
+
   const job = await JobService.getActiveJob(jobId);
 
   if (!job) {
@@ -149,6 +171,7 @@ export default async function ApplyPage({
 
         <aside className="lg:sticky lg:top-6 lg:self-start">
           <ApplicationForm
+            applicantEmail={session.user.email ?? ""}
             jobId={job.id}
             listingsHref={listingsHref(referralCode)}
           />

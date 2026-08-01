@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 
+import { requireSession } from "@/lib/auth/session";
 import { ApplicationService } from "@/lib/services/application-service";
 import { applicationSchema } from "@/lib/validation/application";
 
@@ -9,17 +10,34 @@ const REFERRAL_COOKIE_NAME = "ref_code";
 
 export async function POST(request: Request) {
   try {
+    const session = await requireSession();
+
+    if (!session.user.email) {
+      return NextResponse.json(
+        { error: "Account email is required to apply" },
+        { status: 400 },
+      );
+    }
+
     const body: unknown = await request.json();
     const input = applicationSchema.parse(body);
     const cookieStore = await cookies();
     const referralCookie = cookieStore.get(REFERRAL_COOKIE_NAME)?.value;
     const application = await ApplicationService.submitApplication(
       input,
+      { id: session.user.id, email: session.user.email },
       referralCookie,
     );
 
     return NextResponse.json({ application }, { status: 201 });
   } catch (error) {
+    if (error instanceof Error && error.message === "UNAUTHORIZED") {
+      return NextResponse.json(
+        { error: "Sign in before applying to this job" },
+        { status: 401 },
+      );
+    }
+
     if (error instanceof ZodError) {
       return NextResponse.json(
         { error: "Invalid application input", issues: error.flatten() },

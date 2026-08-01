@@ -51,7 +51,7 @@ export default async function DashboardPage() {
     await Promise.all([
     ReferralService.getMyLinks(session.user.id, origin),
     ReferralService.getMyApplications(session.user.id),
-      ReferralService.getCandidateApplications(session.user.email ?? ""),
+      ReferralService.getCandidateApplications(session.user.id),
     ]);
   const taskCounts = countByBucket(candidateApplications);
   const totalTasks = candidateApplications.length;
