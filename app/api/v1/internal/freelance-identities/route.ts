@@ -33,6 +33,8 @@ export async function POST(request: Request) {
       );
     }
 
+    console.error("Freelance identity sync failed", error);
+
     return NextResponse.json(
       { error: "Unable to sync identity" },
       { status: 500 },
