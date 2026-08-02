@@ -2,6 +2,8 @@ import Link from "next/link";
 
 import { RegisterForm } from "@/components/auth/register-form";
 
+export const dynamic = "force-dynamic";
+
 type RegisterPageProps = {
   searchParams: Promise<{
     callbackUrl?: string;
