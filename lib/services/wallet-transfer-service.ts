@@ -123,7 +123,7 @@ export const WalletTransferService = {
             ipAddress: context.ipAddress,
             now: new Date(),
           });
-          await tx.freelanceIdentityVerificationAudit.create({
+          await prisma.freelanceIdentityVerificationAudit.create({
             data: {
               userId,
               ipAddress: context.ipAddress,
