@@ -73,6 +73,7 @@ model User {
   withdrawals           Withdrawal[]
   walletTransfers       WalletTransfer[]
   freelanceVerification UserFreelanceVerification?
+  freelanceVerificationAudits FreelanceIdentityVerificationAudit[]
   applications          Application[]
 
   @@index([role])
@@ -189,6 +190,37 @@ model FreelanceIdentityReference {
   updatedAt       DateTime @updatedAt
 
   verification UserFreelanceVerification?
+  syncRequests FreelanceIdentitySyncRequest[]
+}
+
+model FreelanceIdentitySyncRequest {
+  idempotencyKey     String   @id
+  payloadHash        String
+  payload            Json
+  identityReferenceId String?
+  identityReference  FreelanceIdentityReference? @relation(fields: [identityReferenceId], references: [id], onDelete: SetNull)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([identityReferenceId])
+}
+
+model FreelanceIdentityVerificationAudit {
+  id                       String   @id @default(uuid())
+  userId                   String?
+  user                     User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  ipAddress                String?
+  userAgent                String?
+  attemptedFreelanceIdHash String?
+  attemptedSerialHash      String?
+  outcome                  String
+  reason                   String?
+  createdAt                DateTime @default(now())
+
+  @@index([userId])
+  @@index([ipAddress])
+  @@index([outcome])
+  @@index([createdAt])
 }
 
 model UserFreelanceVerification {

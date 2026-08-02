@@ -148,6 +148,18 @@ The payout eligibility service credits referrers through `LedgerEntry` rows and 
 
 Withdrawal requests debit the wallet and create a negative ledger entry inside a single transaction. The current payout provider is a local mock behind the provider interface; Stripe Connect is the next integration checkpoint.
 
+## Freelance ID Sync
+
+Implemented:
+
+- `POST /api/v1/internal/freelance-identities`
+- Idempotent identity sync from the standalone ID generator.
+- Conflict protection for reused idempotency keys, freelance ID codes, serial numbers, and legal name plus DOB.
+- Wallet transfer identity verification checks legal name, DOB, freelance ID, serial, and `isActive`.
+- Failed identity verification attempts are rate-limited per user and IP, locked for 30 minutes on breach, and audited with hashed attempted ID/serial plus IP and user-agent.
+
+The production-intended transport for the internal sync route is mTLS terminated at the reverse proxy. For the current local/Truehost deployment path, the app uses a strong rotated bearer token in `Authorization: Bearer <token>` via `ID_GENERATOR_SYNC_BEARER_TOKEN`. This is a deliberate fallback, not a silent downgrade; when nginx client-certificate verification is configured, the route should be tightened to trust only the proxy's verified client-cert signal.
+
 ## Deployment
 
 Production:
