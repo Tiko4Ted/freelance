@@ -1,6 +1,11 @@
 "use client";
 
-export default function GlobalError() {
+type GlobalErrorProps = {
+  error: Error & { digest?: string };
+  reset: () => void;
+};
+
+export default function GlobalError({ reset }: GlobalErrorProps) {
   return (
     <html lang="en">
       <body>
@@ -10,6 +15,13 @@ export default function GlobalError() {
             <p className="text-sm text-slate-300">
               The request could not be completed. Try refreshing the page.
             </p>
+            <button
+              className="inline-flex h-10 items-center justify-center border border-slate-100 px-4 text-sm font-semibold text-slate-100 transition hover:border-teal-300 hover:text-teal-300"
+              onClick={reset}
+              type="button"
+            >
+              Try again
+            </button>
           </div>
         </main>
       </body>

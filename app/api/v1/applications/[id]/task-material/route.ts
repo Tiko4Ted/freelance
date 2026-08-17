@@ -18,7 +18,7 @@ export async function GET(_request: Request, context: RouteContext) {
     return new NextResponse(material.content, {
       headers: {
         "Content-Disposition": `attachment; filename="${material.fileName}"`,
-        "Content-Type": "text/plain; charset=utf-8",
+        "Content-Type": "application/pdf",
       },
     });
   } catch {

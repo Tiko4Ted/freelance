@@ -1,7 +1,8 @@
 import { ApplicationStatus, Prisma, Role } from "@prisma/client";
 
 import { prisma } from "@/lib/db/prisma";
-import { buildJobDetailCopy } from "@/lib/job-detail-copy";
+import { createSimplePdf } from "@/lib/pdf/simple-pdf";
+import { buildTaskAssignment } from "@/lib/task-assignment";
 import type { ApplicationInput } from "@/lib/validation/application";
 import type { TaskSubmissionInput } from "@/lib/validation/task-submission";
 
@@ -46,68 +47,6 @@ const blockingApplicationStatuses = [
   ApplicationStatus.MATCHED,
   ApplicationStatus.ACTIVE,
 ];
-
-function isInstructionOnlyJob(job: { title: string; skills: { label: string }[] }) {
-  const searchable = `${job.title} ${job.skills
-    .map((skill) => skill.label)
-    .join(" ")}`.toLowerCase();
-
-  return [
-    "audio",
-    "voice",
-    "recording",
-    "video",
-    "gameplay",
-    "capture",
-  ].some((term) => searchable.includes(term));
-}
-
-function formatTaskInstructions(application: {
-  id: string;
-  candidateName: string;
-  job: {
-    title: string;
-    companyName: string;
-    skills: { label: string }[];
-  };
-}) {
-  const detailCopy = buildJobDetailCopy(application.job);
-  const instructionOnly = isInstructionOnlyJob(application.job);
-  const skills = application.job.skills.map((skill) => skill.label).join(", ");
-
-  return [
-    `${application.job.title} task instructions`,
-    "",
-    `Candidate: ${application.candidateName}`,
-    `Application ID: ${application.id}`,
-    `Company: ${application.job.companyName}`,
-    `Required skills: ${skills || "Role-specific expertise"}`,
-    "",
-    instructionOnly
-      ? "Task material type: Instructions only. This role is based on recording, audio, video, or capture work, so no separate PDF material is required."
-      : "Task material type: Downloadable instruction pack. Use this document as your working brief and checklist before submitting.",
-    "",
-    "Scope of work",
-    ...detailCopy.scope.map((item) => `- ${item}`),
-    "",
-    "Submission tips",
-    "- Follow the role requirements exactly and keep your work aligned with the requested format.",
-    "- Check that every file, recording, or written response is complete before submitting.",
-    "- Make sure names, labels, timestamps, and file formats are clear and consistent.",
-    "- Review your final work for accuracy, quality, and missing sections before upload.",
-    "- Submit only once after confirming the work is complete.",
-    "",
-    "What reviewers will check",
-    "- Completeness against the assigned task instructions.",
-    "- Quality, clarity, and relevance of the submitted work.",
-    "- Skill fit against the listed role requirements.",
-    "- Whether the submission follows formatting, language, or recording instructions.",
-    "- Whether the work appears original and ready for customer review.",
-    "",
-    "After submission",
-    "Your dashboard status will update to Pending task review. You will receive an email status update after review.",
-  ].join("\n");
-}
 
 function toApplicationResponse(application: {
   id: string;
@@ -293,7 +232,9 @@ export const ApplicationService = {
         job: {
           select: {
             title: true,
+            description: true,
             companyName: true,
+            payoutType: true,
             skills: {
               select: {
                 label: true,
@@ -308,12 +249,11 @@ export const ApplicationService = {
       throw new Error("APPLICATION_NOT_FOUND");
     }
 
+    const assignment = buildTaskAssignment(application);
+
     return {
-      fileName: `${application.job.title
-        .replace(/[^a-z0-9]+/gi, "-")
-        .replace(/^-|-$/g, "")
-        .toLowerCase()}-task-instructions.txt`,
-      content: formatTaskInstructions(application),
+      fileName: `${assignment.fileBaseName}.pdf`,
+      content: createSimplePdf(assignment.title, assignment.sections),
     };
   },
 

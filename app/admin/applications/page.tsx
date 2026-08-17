@@ -97,6 +97,31 @@ export default async function AdminApplicationsPage() {
                   <p className="mt-2 text-sm text-slate-500">
                     Referrer: {application.referrer?.email ?? "none"}
                   </p>
+                  {application.taskSubmittedAt ? (
+                    <div className="mt-4 border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+                      <p className="font-semibold text-slate-950">
+                        Submitted task
+                      </p>
+                      <p className="mt-2 break-all">
+                        File: {application.taskSubmissionFileName ?? "none"}
+                      </p>
+                      <p className="mt-1">
+                        Submitted:{" "}
+                        {new Intl.DateTimeFormat("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                          hour: "numeric",
+                          minute: "2-digit",
+                        }).format(new Date(application.taskSubmittedAt))}
+                      </p>
+                      {application.taskSubmissionNotes ? (
+                        <p className="mt-2 whitespace-pre-wrap">
+                          Notes: {application.taskSubmissionNotes}
+                        </p>
+                      ) : null}
+                    </div>
+                  ) : null}
                 </div>
                 <ApplicationActions
                   applicationId={application.id}

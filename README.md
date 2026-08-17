@@ -27,6 +27,7 @@ Completed:
 - Referrer dashboard UI for links and referred applications.
 - Admin job and application management APIs.
 - Admin screens for jobs, applications, status changes, and progress logging.
+- Approved candidates can download role-matched task PDFs, submit completed work for review, and expose submitted task details in admin review.
 - Wallet API and ledger-backed wallet page.
 - Payout eligibility service with a runnable worker entrypoint.
 - Payout-provider interface with a mock provider for local withdrawal processing.
@@ -186,7 +187,11 @@ Implemented:
 - `GET /api/v1/referrals/me`
 - `GET /api/v1/referrals/me/applications`
 - `POST /api/v1/applications`
+- `GET /api/v1/applications/:id/task-material`
+- `POST /api/v1/applications/:id/task-submission`
 
 Referral links use `/jobs/[jobId]?ref=<referralCode>`. The proxy stores the first referral touch in an HTTP-only cookie and the application route validates it server-side.
 
 Board-level referral links can also use `/jobs?referralCode=<referralCode>`. The jobs board treats `ref` and `referralCode` as aliases, personalizes with the referrer's first name when available, and falls back to neutral invited-copy for unknown or missing codes.
+
+When a candidate application is approved, the dashboard exposes a downloadable PDF task brief matched from the job title, description, payout type, and skill tags. Submitting work moves the application to pending task review; payout crediting remains tied to successful review and payout eligibility.
