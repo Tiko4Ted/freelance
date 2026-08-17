@@ -12,7 +12,7 @@ Completed:
 - Initial Prisma migration for the production PostgreSQL schema.
 - Vercel-compatible build script that generates Prisma Client before `next build`.
 - Vercel upload ignore rules so local env files are not included in deployments.
-- Seed script with 25 idempotent demo jobs, skill chips, display pay ranges, high-demand flags, and one admin user.
+- Seed script with 820 idempotent demo jobs, skill chips, display pay ranges, high-demand flags, and one admin user.
 - Shared Prisma client setup.
 - Environment variable template.
 - Project-specific landing shell.
