@@ -2,8 +2,10 @@
 
 import { FormEvent, useState } from "react";
 import {
+  AlertCircle,
   CheckCircle2,
   ChevronDown,
+  ClipboardCheck,
   FileText,
   LoaderCircle,
   Minus,
@@ -13,8 +15,11 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+import type { AptitudeQuestion } from "@/lib/aptitude-test";
+
 type ApplicationFormProps = {
   applicantEmail: string;
+  aptitudeTest: AptitudeQuestion[];
   jobId: string;
   listingsHref?: string;
 };
@@ -116,6 +121,22 @@ function getErrorMessage(payload: unknown) {
   return "Unable to submit application";
 }
 
+function isApplicationPayload(
+  payload: unknown,
+): payload is { application: { status: string; aptitudeScorePercent: number } } {
+  return (
+    payload !== null &&
+    typeof payload === "object" &&
+    "application" in payload &&
+    payload.application !== null &&
+    typeof payload.application === "object" &&
+    "status" in payload.application &&
+    typeof payload.application.status === "string" &&
+    "aptitudeScorePercent" in payload.application &&
+    typeof payload.application.aptitudeScorePercent === "number"
+  );
+}
+
 function NumberStepper({
   label,
   name,
@@ -215,20 +236,13 @@ function ApplicationSubmissionPage({
             <div className="mt-8 space-y-4 text-[15px] leading-[1.65] text-[#343849]">
               <p>{message}</p>
               <p>
-                Your application documents have been received and placed in our
-                review queue for formal assessment. Our recruiting operations
-                team will evaluate the information you provided, including your
-                resume, contact details, availability, rate expectations, and
-                role-specific responses, against the requirements of this
-                opening and any other relevant opportunities.
+                Your application details, availability, resume information, and
+                role-specific aptitude result have been saved against this
+                opening.
               </p>
               <p>
-                No additional action is required from you at this stage. Please
-                allow the team sufficient time to complete the review process.
-                Once there is an update regarding your application, next steps,
-                or a suitable match, you will be notified through the email
-                address submitted with your application. We recommend monitoring
-                your inbox for official communication from our team.
+                Open your dashboard to see whether the task is already available
+                or whether the application is waiting for manual review.
               </p>
             </div>
           ) : (
@@ -264,8 +278,52 @@ function ApplicationSubmissionPage({
   );
 }
 
+function ApplicationErrorDialog({
+  message,
+  onClose,
+}: {
+  message: string;
+  onClose: () => void;
+}) {
+  return (
+    <div
+      aria-labelledby="application-error-title"
+      aria-modal="true"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#11131f]/60 px-5 py-8"
+      role="dialog"
+    >
+      <div className="w-full max-w-[430px] rounded-lg border border-[#ffd6d6] bg-white p-5 text-[#151625] shadow-[0_24px_80px_rgba(18,22,44,0.24)]">
+        <div className="flex items-start gap-3">
+          <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-[#fff0f0] text-red-700">
+            <AlertCircle aria-hidden="true" className="h-5 w-5" />
+          </span>
+          <div className="min-w-0">
+            <h2
+              className="text-[18px] font-semibold leading-tight text-[#10121f]"
+              id="application-error-title"
+            >
+              Application not submitted
+            </h2>
+            <p className="mt-2 text-[14px] leading-[1.55] text-[#3b3f51]">
+              {message}
+            </p>
+          </div>
+        </div>
+        <button
+          className="mt-5 inline-flex h-10 w-full items-center justify-center rounded-md bg-[#1723a7] px-4 text-[14px] font-semibold text-white transition hover:bg-[#101a91]"
+          onClick={onClose}
+          type="button"
+        >
+          Got it
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function ApplicationForm({
   applicantEmail,
+  aptitudeTest,
   jobId,
 }: ApplicationFormProps) {
   const router = useRouter();
@@ -282,9 +340,15 @@ export function ApplicationForm({
   const [expectedHourlyRateUsd, setExpectedHourlyRateUsd] = useState(1);
   const [weeklyAvailabilityHours, setWeeklyAvailabilityHours] = useState(1);
   const [strongestTools, setStrongestTools] = useState<string[]>([]);
+  const [aptitudeAnswers, setAptitudeAnswers] = useState<Record<string, string>>(
+    {},
+  );
   const [toolsOpen, setToolsOpen] = useState(false);
   const isSubmissionPage =
     state.status === "submitting" || state.status === "success";
+  const isAptitudeComplete = aptitudeTest.every(
+    (question) => aptitudeAnswers[question.id],
+  );
 
   function handleDetailsNext(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -323,19 +387,31 @@ export function ApplicationForm({
       return;
     }
 
+    if (!isAptitudeComplete) {
+      setState({
+        status: "error",
+        message: "Complete the aptitude test before submitting.",
+      });
+      return;
+    }
+
     setState({ status: "submitting", message: "Submitting application" });
 
     try {
       const response = await fetch("/api/v1/applications", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        jobId,
+        body: JSON.stringify({
+          jobId,
           ...draft,
           startAvailabilityDays,
           expectedHourlyRateUsd,
           weeklyAvailabilityHours,
           strongestTools,
+          aptitudeAnswers: aptitudeTest.map((question) => ({
+            questionId: question.id,
+            selectedOptionId: aptitudeAnswers[question.id],
+          })),
         }),
       });
       const payload: unknown = await response.json();
@@ -344,6 +420,19 @@ export function ApplicationForm({
         setState({ status: "error", message: getErrorMessage(payload) });
         return;
       }
+
+      const autoApproved =
+        isApplicationPayload(payload) && payload.application.status === "CERTIFIED";
+      const score = isApplicationPayload(payload)
+        ? payload.application.aptitudeScorePercent
+        : null;
+
+      setState({
+        status: "success",
+        message: autoApproved
+          ? `Your aptitude score was ${score}%, so your application was automatically approved and the task is now available in your dashboard.`
+          : `Your aptitude score was ${score ?? "recorded"}%. Your application is pending manual review before the task unlocks.`,
+      });
     } catch {
       setState({
         status: "error",
@@ -351,12 +440,6 @@ export function ApplicationForm({
       });
       return;
     }
-
-    setState({
-      status: "success",
-      message:
-        "Thank you for completing your application. Please await the review of your submitted documents; this job now appears in your dashboard as Pending approval and you will be notified by email once our team has completed the assessment.",
-    });
   }
 
   function toggleTool(tool: string) {
@@ -370,7 +453,7 @@ export function ApplicationForm({
 
   if (isSubmissionPage) {
     return (
-        <ApplicationSubmissionPage
+      <ApplicationSubmissionPage
         message={state.message}
         onClose={() => router.push("/dashboard")}
         status={state.status}
@@ -380,13 +463,20 @@ export function ApplicationForm({
 
   if (step === "questions") {
     return (
-      <form
-        className="rounded-lg bg-[#f2f1fb] p-6 text-[#151625]"
-        onSubmit={handleFinalSubmit}
-      >
-        <h2 className="text-[20px] font-semibold leading-[1.35]">
-          Answer a few questions to complete your application
-        </h2>
+      <>
+        {state.status === "error" && state.message ? (
+          <ApplicationErrorDialog
+            message={state.message}
+            onClose={() => setState({ status: "idle", message: "" })}
+          />
+        ) : null}
+        <form
+          className="rounded-lg bg-[#f2f1fb] p-6 text-[#151625]"
+          onSubmit={handleFinalSubmit}
+        >
+          <h2 className="text-[20px] font-semibold leading-[1.35]">
+            Complete your application questions
+          </h2>
 
         <div className="mt-5 space-y-5">
           <NumberStepper
@@ -483,6 +573,63 @@ export function ApplicationForm({
               </div>
             ) : null}
           </div>
+
+          <section className="border-t border-[#d8d7e7] pt-5">
+            <div className="flex items-start gap-3">
+              <span className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded bg-white text-[#2738d9]">
+                <ClipboardCheck aria-hidden="true" className="h-5 w-5" />
+              </span>
+              <div>
+                <h3 className="text-[16px] font-semibold leading-tight text-[#151625]">
+                  Task aptitude test
+                </h3>
+                <p className="mt-1 text-[12px] leading-[1.45] text-[#4d5060]">
+                  Answer these simple role-related questions. A score above 40%
+                  automatically approves you for this task.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 space-y-4">
+              {aptitudeTest.map((question, index) => (
+                <fieldset
+                  className="rounded border border-[#d0d0dc] bg-white p-4"
+                  key={question.id}
+                >
+                  <legend className="text-[13px] font-semibold leading-[1.45] text-[#242634]">
+                    {index + 1}. {question.prompt}
+                  </legend>
+                  <div className="mt-3 grid gap-2">
+                    {question.options.map((option) => (
+                      <label
+                        className={
+                          aptitudeAnswers[question.id] === option.id
+                            ? "flex cursor-pointer items-start gap-2 rounded border border-[#3142ff] bg-[#eef0ff] px-3 py-2 text-[13px] text-[#151625]"
+                            : "flex cursor-pointer items-start gap-2 rounded border border-[#e0e0ea] px-3 py-2 text-[13px] text-[#343643] transition hover:border-[#9da4ff]"
+                        }
+                        key={option.id}
+                      >
+                        <input
+                          checked={aptitudeAnswers[question.id] === option.id}
+                          className="mt-1"
+                          name={`aptitude-${question.id}`}
+                          onChange={() =>
+                            setAptitudeAnswers((currentAnswers) => ({
+                              ...currentAnswers,
+                              [question.id]: option.id,
+                            }))
+                          }
+                          required
+                          type="radio"
+                        />
+                        <span>{option.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+              ))}
+            </div>
+          </section>
         </div>
 
         <div className="mt-14 grid grid-cols-2 gap-4">
@@ -498,33 +645,31 @@ export function ApplicationForm({
           </button>
           <button
             className="inline-flex h-11 items-center justify-center rounded-md bg-gradient-to-r from-[#3e52ff] to-[#1723a7] px-5 text-[15px] font-semibold text-white shadow-sm transition hover:from-[#3345f0] hover:to-[#101a91] disabled:cursor-not-allowed disabled:opacity-65"
+            disabled={!isAptitudeComplete}
             type="submit"
           >
             Submit
           </button>
         </div>
 
-        {state.message ? (
-          <p
-            className={
-              state.status === "error"
-                ? "mt-4 text-[12px] font-medium text-red-700"
-                : "mt-4 text-[12px] font-medium text-[#096d5e]"
-            }
-          >
-            {state.message}
-          </p>
-        ) : null}
-      </form>
+        </form>
+      </>
     );
   }
 
   return (
-    <form
-      className="rounded-lg bg-[#f2f1fb] p-6 text-[#151625]"
-      onSubmit={handleDetailsNext}
-    >
-      <h2 className="text-[22px] font-semibold leading-tight">Interested?</h2>
+    <>
+      {state.status === "error" && state.message ? (
+        <ApplicationErrorDialog
+          message={state.message}
+          onClose={() => setState({ status: "idle", message: "" })}
+        />
+      ) : null}
+      <form
+        className="rounded-lg bg-[#f2f1fb] p-6 text-[#151625]"
+        onSubmit={handleDetailsNext}
+      >
+        <h2 className="text-[22px] font-semibold leading-tight">Interested?</h2>
       <p className="mt-2 text-[12px] leading-[1.45] text-[#4d5060]">
         Applying with{" "}
         <span className="font-semibold text-[#151625]">{applicantEmail}</span>
@@ -664,17 +809,7 @@ export function ApplicationForm({
         </a>
       </p>
 
-      {state.message ? (
-        <p
-          className={
-            state.status === "error"
-              ? "mt-4 text-[12px] font-medium text-red-700"
-              : "mt-4 text-[12px] font-medium text-[#096d5e]"
-          }
-        >
-          {state.message}
-        </p>
-      ) : null}
-    </form>
+      </form>
+    </>
   );
 }

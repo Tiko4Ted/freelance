@@ -25,6 +25,11 @@ function toApplicationResponse(application: {
   expectedHourlyRateUsd: number | null;
   weeklyAvailabilityHours: number | null;
   strongestTools: string[];
+  aptitudeScorePercent: number | null;
+  aptitudeCorrectAnswers: number;
+  aptitudeQuestionCount: number;
+  aptitudePassed: boolean;
+  aptitudeSubmittedAt: Date | null;
   status: ApplicationStatus;
   lockedPayoutCents: number | null;
   hoursLogged: number;
@@ -61,6 +66,11 @@ function toApplicationResponse(application: {
     expectedHourlyRateUsd: application.expectedHourlyRateUsd,
     weeklyAvailabilityHours: application.weeklyAvailabilityHours,
     strongestTools: application.strongestTools,
+    aptitudeScorePercent: application.aptitudeScorePercent,
+    aptitudeCorrectAnswers: application.aptitudeCorrectAnswers,
+    aptitudeQuestionCount: application.aptitudeQuestionCount,
+    aptitudePassed: application.aptitudePassed,
+    aptitudeSubmittedAt: application.aptitudeSubmittedAt?.toISOString() ?? null,
     status: application.status,
     lockedPayoutCents: application.lockedPayoutCents,
     hoursLogged: application.hoursLogged,
@@ -89,6 +99,11 @@ const applicationSelect = {
   expectedHourlyRateUsd: true,
   weeklyAvailabilityHours: true,
   strongestTools: true,
+  aptitudeScorePercent: true,
+  aptitudeCorrectAnswers: true,
+  aptitudeQuestionCount: true,
+  aptitudePassed: true,
+  aptitudeSubmittedAt: true,
   status: true,
   lockedPayoutCents: true,
   hoursLogged: true,

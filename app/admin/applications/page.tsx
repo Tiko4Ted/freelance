@@ -91,6 +91,24 @@ export default async function AdminApplicationsPage() {
                       Tools: {application.strongestTools.join(", ")}
                     </p>
                   ) : null}
+                  {application.aptitudeScorePercent !== null ? (
+                    <div className="mt-4 border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+                      <p className="font-semibold text-slate-950">
+                        Aptitude test
+                      </p>
+                      <p className="mt-2">
+                        Score: {application.aptitudeScorePercent}% (
+                        {application.aptitudeCorrectAnswers}/
+                        {application.aptitudeQuestionCount} correct)
+                      </p>
+                      <p className="mt-1">
+                        Result:{" "}
+                        {application.aptitudePassed
+                          ? "Auto-approved"
+                          : "Needs manual review"}
+                      </p>
+                    </div>
+                  ) : null}
                   <p className="mt-2 text-sm text-slate-600">
                     {application.job.title}
                   </p>

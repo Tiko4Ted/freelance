@@ -225,9 +225,17 @@ export function JobActivityList({ applications }: JobActivityListProps) {
 
                   {application.status === "APPLIED" ? (
                     <p className="mt-2 text-sm leading-6 text-amber-700">
-                      Pending approval. Your application is awaiting internal
-                      review. The task PDF unlocks once your application is
-                      approved.
+                      Pending approval. Your aptitude test has been recorded and
+                      this application is awaiting manual review before the task
+                      unlocks.
+                    </p>
+                  ) : null}
+
+                  {application.aptitudeScorePercent !== null ? (
+                    <p className="mt-2 text-sm leading-6 text-slate-600">
+                      Aptitude score: {application.aptitudeScorePercent}% (
+                      {application.aptitudeCorrectAnswers}/
+                      {application.aptitudeQuestionCount} correct).
                     </p>
                   ) : null}
 

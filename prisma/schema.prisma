@@ -132,6 +132,12 @@ model Application {
   expectedHourlyRateUsd     Int?
   weeklyAvailabilityHours   Int?
   strongestTools            String[]          @default([])
+  aptitudeAnswers           Json?
+  aptitudeScorePercent      Int?
+  aptitudeCorrectAnswers    Int               @default(0)
+  aptitudeQuestionCount     Int               @default(0)
+  aptitudePassed            Boolean           @default(false)
+  aptitudeSubmittedAt       DateTime?
   referralId                String?           @unique
   referral                  Referral?         @relation(fields: [referralId], references: [id])
   status                    ApplicationStatus @default(APPLIED)

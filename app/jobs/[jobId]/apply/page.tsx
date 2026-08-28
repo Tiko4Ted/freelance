@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 import { ApplicationForm } from "@/components/application-form";
+import { buildAptitudeTest } from "@/lib/aptitude-test";
 import { buildJobDetailCopy } from "@/lib/job-detail-copy";
 import { JobService } from "@/lib/services/job-service";
 
@@ -80,6 +81,7 @@ export default async function ApplyPage({
   }
 
   const detailCopy = buildJobDetailCopy(job);
+  const aptitudeTest = buildAptitudeTest(job);
   const payLabel = formatApplyPay(job.formattedHourlyPay);
 
   return (
@@ -172,6 +174,7 @@ export default async function ApplyPage({
         <aside className="lg:sticky lg:top-6 lg:self-start">
           <ApplicationForm
             applicantEmail={session.user.email ?? ""}
+            aptitudeTest={aptitudeTest}
             jobId={job.id}
             listingsHref={listingsHref(referralCode)}
           />

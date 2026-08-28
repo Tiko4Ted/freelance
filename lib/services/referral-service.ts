@@ -81,6 +81,10 @@ export const ReferralService = {
         status: true,
         hoursLogged: true,
         tasksCompleted: true,
+        aptitudeScorePercent: true,
+        aptitudeCorrectAnswers: true,
+        aptitudeQuestionCount: true,
+        aptitudePassed: true,
         taskSubmissionFileName: true,
         taskSubmittedAt: true,
         createdAt: true,
@@ -106,6 +110,10 @@ export const ReferralService = {
       bucket: applicationBucket(application.status),
       hoursLogged: application.hoursLogged,
       tasksCompleted: application.tasksCompleted,
+      aptitudeScorePercent: application.aptitudeScorePercent,
+      aptitudeCorrectAnswers: application.aptitudeCorrectAnswers,
+      aptitudeQuestionCount: application.aptitudeQuestionCount,
+      aptitudePassed: application.aptitudePassed,
       taskSubmissionFileName: application.taskSubmissionFileName,
       taskSubmittedAt: application.taskSubmittedAt
         ? toDashboardDate(application.taskSubmittedAt)

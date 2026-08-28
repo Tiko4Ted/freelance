@@ -1,5 +1,6 @@
 import { ApplicationStatus, Prisma, Role } from "@prisma/client";
 
+import { scoreAptitudeTest } from "@/lib/aptitude-test";
 import { prisma } from "@/lib/db/prisma";
 import { createSimplePdf } from "@/lib/pdf/simple-pdf";
 import { buildTaskAssignment } from "@/lib/task-assignment";
@@ -64,6 +65,11 @@ function toApplicationResponse(application: {
   expectedHourlyRateUsd: number | null;
   weeklyAvailabilityHours: number | null;
   strongestTools: string[];
+  aptitudeScorePercent: number | null;
+  aptitudeCorrectAnswers: number;
+  aptitudeQuestionCount: number;
+  aptitudePassed: boolean;
+  aptitudeSubmittedAt: Date | null;
   status: ApplicationStatus;
   lockedPayoutCents: number | null;
   referralId: string | null;
@@ -85,6 +91,11 @@ function toApplicationResponse(application: {
     expectedHourlyRateUsd: application.expectedHourlyRateUsd,
     weeklyAvailabilityHours: application.weeklyAvailabilityHours,
     strongestTools: application.strongestTools,
+    aptitudeScorePercent: application.aptitudeScorePercent,
+    aptitudeCorrectAnswers: application.aptitudeCorrectAnswers,
+    aptitudeQuestionCount: application.aptitudeQuestionCount,
+    aptitudePassed: application.aptitudePassed,
+    aptitudeSubmittedAt: application.aptitudeSubmittedAt?.toISOString() ?? null,
     status: application.status,
     lockedPayoutCents: application.lockedPayoutCents,
     referralId: application.referralId,
@@ -105,12 +116,25 @@ export const ApplicationService = {
       const application = await prisma.$transaction(async (tx) => {
         const job = await tx.job.findFirst({
           where: { id: input.jobId, isActive: true },
-          select: { id: true, payoutAmountCents: true },
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            payoutAmountCents: true,
+            payoutType: true,
+            skills: {
+              select: {
+                label: true,
+              },
+            },
+          },
         });
 
         if (!job) {
           throw new Error("JOB_NOT_FOUND");
         }
+
+        const aptitudeResult = scoreAptitudeTest(job, input.aptitudeAnswers);
 
         const activeApplication = await tx.application.findFirst({
           where: {
@@ -182,6 +206,15 @@ export const ApplicationService = {
             expectedHourlyRateUsd: input.expectedHourlyRateUsd ?? null,
             weeklyAvailabilityHours: input.weeklyAvailabilityHours ?? null,
             strongestTools: input.strongestTools,
+            aptitudeAnswers: input.aptitudeAnswers,
+            aptitudeScorePercent: aptitudeResult.scorePercent,
+            aptitudeCorrectAnswers: aptitudeResult.correctCount,
+            aptitudeQuestionCount: aptitudeResult.totalQuestions,
+            aptitudePassed: aptitudeResult.passed,
+            aptitudeSubmittedAt: new Date(),
+            status: aptitudeResult.passed
+              ? ApplicationStatus.CERTIFIED
+              : ApplicationStatus.APPLIED,
             lockedPayoutCents: job.payoutAmountCents,
             referralId,
           },
@@ -201,6 +234,11 @@ export const ApplicationService = {
             expectedHourlyRateUsd: true,
             weeklyAvailabilityHours: true,
             strongestTools: true,
+            aptitudeScorePercent: true,
+            aptitudeCorrectAnswers: true,
+            aptitudeQuestionCount: true,
+            aptitudePassed: true,
+            aptitudeSubmittedAt: true,
             status: true,
             lockedPayoutCents: true,
             referralId: true,
@@ -224,6 +262,13 @@ export const ApplicationService = {
       where: {
         id: applicationId,
         applicantUserId,
+        status: {
+          in: [
+            ApplicationStatus.ACTIVE,
+            ApplicationStatus.MATCHED,
+            ApplicationStatus.CERTIFIED,
+          ],
+        },
       },
       select: {
         id: true,
