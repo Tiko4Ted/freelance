@@ -2,12 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import {
-  AlertCircle,
-  CheckCircle2,
   ChevronDown,
-  ClipboardCheck,
-  FileText,
-  LoaderCircle,
   Minus,
   Plus,
   Upload,
@@ -15,13 +10,19 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import type { AptitudeQuestion } from "@/lib/aptitude-test";
+import {
+  ApplicationErrorDialog,
+  type SubmitState,
+} from "@/components/application-feedback";
+import {
+  applicationDraftStorageKey,
+  type StoredApplicationDraft,
+} from "@/lib/application-draft";
 
 type ApplicationFormProps = {
+  aptitudeHref: string;
   applicantEmail: string;
-  aptitudeTest: AptitudeQuestion[];
   jobId: string;
-  listingsHref?: string;
 };
 
 type FormStep = "details" | "questions";
@@ -36,12 +37,6 @@ type ApplicationDraft = {
   candidateLinkedinUrl: string;
   resumeFileName: string;
 };
-
-type SubmitState =
-  | { status: "idle"; message: string }
-  | { status: "submitting"; message: string }
-  | { status: "success"; message: string }
-  | { status: "error"; message: string };
 
 const toolOptions = [
   "Salesforce",
@@ -108,35 +103,6 @@ function detectPhoneCountry(phoneNumber: string) {
   );
 }
 
-function getErrorMessage(payload: unknown) {
-  if (
-    payload &&
-    typeof payload === "object" &&
-    "error" in payload &&
-    typeof payload.error === "string"
-  ) {
-    return payload.error;
-  }
-
-  return "Unable to submit application";
-}
-
-function isApplicationPayload(
-  payload: unknown,
-): payload is { application: { status: string; aptitudeScorePercent: number } } {
-  return (
-    payload !== null &&
-    typeof payload === "object" &&
-    "application" in payload &&
-    payload.application !== null &&
-    typeof payload.application === "object" &&
-    "status" in payload.application &&
-    typeof payload.application.status === "string" &&
-    "aptitudeScorePercent" in payload.application &&
-    typeof payload.application.aptitudeScorePercent === "number"
-  );
-}
-
 function NumberStepper({
   label,
   name,
@@ -193,137 +159,9 @@ function NumberStepper({
   );
 }
 
-function ApplicationSubmissionPage({
-  status,
-  message,
-  onClose,
-}: {
-  status: Extract<SubmitState["status"], "submitting" | "success">;
-  message: string;
-  onClose: () => void;
-}) {
-  const isSuccess = status === "success";
-
-  return (
-    <section className="fixed inset-0 z-50 min-h-screen overflow-y-auto bg-[#f8f8ff] px-5 py-8 text-[#151625] sm:px-8">
-      <div className="mx-auto flex min-h-[calc(100dvh-4rem)] max-w-[760px] flex-col justify-center py-8">
-        <div className="rounded-lg border border-[#dfe2f4] bg-white px-5 py-7 shadow-[0_24px_80px_rgba(28,34,76,0.12)] sm:px-8 sm:py-9">
-          <div className="flex items-center gap-3">
-            <span
-              className={
-                isSuccess
-                  ? "inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-[#e8f8f3] text-[#087c66]"
-                  : "inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-[#eef0ff] text-[#2d3fe5]"
-              }
-            >
-              {isSuccess ? (
-                <CheckCircle2 aria-hidden="true" className="h-6 w-6" />
-              ) : (
-                <FileText aria-hidden="true" className="h-6 w-6" />
-              )}
-            </span>
-            <div>
-              <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[#60677c]">
-                Application documents
-              </p>
-              <h1 className="mt-1 text-[24px] font-semibold leading-tight text-[#10121f] sm:text-[30px]">
-                {isSuccess ? "Submission received" : "Preparing your submission"}
-              </h1>
-            </div>
-          </div>
-
-          {isSuccess ? (
-            <div className="mt-8 space-y-4 text-[15px] leading-[1.65] text-[#343849]">
-              <p>{message}</p>
-              <p>
-                Your application details, availability, resume information, and
-                role-specific aptitude result have been saved against this
-                opening.
-              </p>
-              <p>
-                Open your dashboard to see whether the task is already available
-                or whether the application is waiting for manual review.
-              </p>
-            </div>
-          ) : (
-            <div className="mt-8">
-              <div className="flex items-center gap-3 rounded-md border border-[#dfe2f4] bg-[#fbfbff] px-4 py-4">
-                <LoaderCircle
-                  aria-hidden="true"
-                  className="h-5 w-5 animate-spin text-[#3142ff]"
-                />
-                <p className="text-[14px] font-medium text-[#2c3041]">
-                  {message}. Please keep this page open while we securely submit
-                  your application documents.
-                </p>
-              </div>
-              <div className="mt-5 h-2 overflow-hidden rounded-full bg-[#e4e7f7]">
-                <div className="h-full w-2/3 animate-pulse rounded-full bg-[#3142ff]" />
-              </div>
-            </div>
-          )}
-
-          {isSuccess ? (
-            <button
-              className="mt-8 inline-flex h-11 w-full items-center justify-center rounded-md bg-[#1723a7] px-5 text-[15px] font-semibold text-white shadow-sm transition hover:bg-[#101a91] sm:w-auto"
-              onClick={onClose}
-              type="button"
-            >
-              Go to dashboard
-            </button>
-          ) : null}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function ApplicationErrorDialog({
-  message,
-  onClose,
-}: {
-  message: string;
-  onClose: () => void;
-}) {
-  return (
-    <div
-      aria-labelledby="application-error-title"
-      aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#11131f]/60 px-5 py-8"
-      role="dialog"
-    >
-      <div className="w-full max-w-[430px] rounded-lg border border-[#ffd6d6] bg-white p-5 text-[#151625] shadow-[0_24px_80px_rgba(18,22,44,0.24)]">
-        <div className="flex items-start gap-3">
-          <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-[#fff0f0] text-red-700">
-            <AlertCircle aria-hidden="true" className="h-5 w-5" />
-          </span>
-          <div className="min-w-0">
-            <h2
-              className="text-[18px] font-semibold leading-tight text-[#10121f]"
-              id="application-error-title"
-            >
-              Application not submitted
-            </h2>
-            <p className="mt-2 text-[14px] leading-[1.55] text-[#3b3f51]">
-              {message}
-            </p>
-          </div>
-        </div>
-        <button
-          className="mt-5 inline-flex h-10 w-full items-center justify-center rounded-md bg-[#1723a7] px-4 text-[14px] font-semibold text-white transition hover:bg-[#101a91]"
-          onClick={onClose}
-          type="button"
-        >
-          Got it
-        </button>
-      </div>
-    </div>
-  );
-}
-
 export function ApplicationForm({
+  aptitudeHref,
   applicantEmail,
-  aptitudeTest,
   jobId,
 }: ApplicationFormProps) {
   const router = useRouter();
@@ -340,15 +178,7 @@ export function ApplicationForm({
   const [expectedHourlyRateUsd, setExpectedHourlyRateUsd] = useState(1);
   const [weeklyAvailabilityHours, setWeeklyAvailabilityHours] = useState(1);
   const [strongestTools, setStrongestTools] = useState<string[]>([]);
-  const [aptitudeAnswers, setAptitudeAnswers] = useState<Record<string, string>>(
-    {},
-  );
   const [toolsOpen, setToolsOpen] = useState(false);
-  const isSubmissionPage =
-    state.status === "submitting" || state.status === "success";
-  const isAptitudeComplete = aptitudeTest.every(
-    (question) => aptitudeAnswers[question.id],
-  );
 
   function handleDetailsNext(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -378,7 +208,7 @@ export function ApplicationForm({
     setStep("questions");
   }
 
-  async function handleFinalSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleQuestionsNext(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!draft) {
@@ -387,58 +217,27 @@ export function ApplicationForm({
       return;
     }
 
-    if (!isAptitudeComplete) {
-      setState({
-        status: "error",
-        message: "Complete the aptitude test before submitting.",
-      });
-      return;
-    }
-
-    setState({ status: "submitting", message: "Submitting application" });
-
     try {
-      const response = await fetch("/api/v1/applications", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          jobId,
-          ...draft,
-          startAvailabilityDays,
-          expectedHourlyRateUsd,
-          weeklyAvailabilityHours,
-          strongestTools,
-          aptitudeAnswers: aptitudeTest.map((question) => ({
-            questionId: question.id,
-            selectedOptionId: aptitudeAnswers[question.id],
-          })),
-        }),
-      });
-      const payload: unknown = await response.json();
+      const storedDraft: StoredApplicationDraft = {
+        jobId,
+        ...draft,
+        startAvailabilityDays,
+        expectedHourlyRateUsd,
+        weeklyAvailabilityHours,
+        strongestTools,
+      };
 
-      if (!response.ok) {
-        setState({ status: "error", message: getErrorMessage(payload) });
-        return;
-      }
-
-      const autoApproved =
-        isApplicationPayload(payload) && payload.application.status === "CERTIFIED";
-      const score = isApplicationPayload(payload)
-        ? payload.application.aptitudeScorePercent
-        : null;
-
-      setState({
-        status: "success",
-        message: autoApproved
-          ? `Your aptitude score was ${score}%, so your application was automatically approved and the task is now available in your dashboard.`
-          : `Your aptitude score was ${score ?? "recorded"}%. Your application is pending manual review before the task unlocks.`,
-      });
+      sessionStorage.setItem(
+        applicationDraftStorageKey(jobId),
+        JSON.stringify(storedDraft),
+      );
+      setState({ status: "idle", message: "" });
+      router.push(aptitudeHref);
     } catch {
       setState({
         status: "error",
-        message: "Unable to submit application",
+        message: "Unable to continue to the aptitude test",
       });
-      return;
     }
   }
 
@@ -449,16 +248,6 @@ export function ApplicationForm({
         : [...currentTools, tool],
     );
     setToolsOpen(false);
-  }
-
-  if (isSubmissionPage) {
-    return (
-      <ApplicationSubmissionPage
-        message={state.message}
-        onClose={() => router.push("/dashboard")}
-        status={state.status}
-      />
-    );
   }
 
   if (step === "questions") {
@@ -472,7 +261,7 @@ export function ApplicationForm({
         ) : null}
         <form
           className="rounded-lg bg-[#f2f1fb] p-6 text-[#151625]"
-          onSubmit={handleFinalSubmit}
+          onSubmit={handleQuestionsNext}
         >
           <h2 className="text-[20px] font-semibold leading-[1.35]">
             Complete your application questions
@@ -573,63 +362,6 @@ export function ApplicationForm({
               </div>
             ) : null}
           </div>
-
-          <section className="border-t border-[#d8d7e7] pt-5">
-            <div className="flex items-start gap-3">
-              <span className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded bg-white text-[#2738d9]">
-                <ClipboardCheck aria-hidden="true" className="h-5 w-5" />
-              </span>
-              <div>
-                <h3 className="text-[16px] font-semibold leading-tight text-[#151625]">
-                  Task aptitude test
-                </h3>
-                <p className="mt-1 text-[12px] leading-[1.45] text-[#4d5060]">
-                  Answer these simple role-related questions. A score above 40%
-                  automatically approves you for this task.
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-5 space-y-4">
-              {aptitudeTest.map((question, index) => (
-                <fieldset
-                  className="rounded border border-[#d0d0dc] bg-white p-4"
-                  key={question.id}
-                >
-                  <legend className="text-[13px] font-semibold leading-[1.45] text-[#242634]">
-                    {index + 1}. {question.prompt}
-                  </legend>
-                  <div className="mt-3 grid gap-2">
-                    {question.options.map((option) => (
-                      <label
-                        className={
-                          aptitudeAnswers[question.id] === option.id
-                            ? "flex cursor-pointer items-start gap-2 rounded border border-[#3142ff] bg-[#eef0ff] px-3 py-2 text-[13px] text-[#151625]"
-                            : "flex cursor-pointer items-start gap-2 rounded border border-[#e0e0ea] px-3 py-2 text-[13px] text-[#343643] transition hover:border-[#9da4ff]"
-                        }
-                        key={option.id}
-                      >
-                        <input
-                          checked={aptitudeAnswers[question.id] === option.id}
-                          className="mt-1"
-                          name={`aptitude-${question.id}`}
-                          onChange={() =>
-                            setAptitudeAnswers((currentAnswers) => ({
-                              ...currentAnswers,
-                              [question.id]: option.id,
-                            }))
-                          }
-                          required
-                          type="radio"
-                        />
-                        <span>{option.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                </fieldset>
-              ))}
-            </div>
-          </section>
         </div>
 
         <div className="mt-14 grid grid-cols-2 gap-4">
@@ -645,10 +377,9 @@ export function ApplicationForm({
           </button>
           <button
             className="inline-flex h-11 items-center justify-center rounded-md bg-gradient-to-r from-[#3e52ff] to-[#1723a7] px-5 text-[15px] font-semibold text-white shadow-sm transition hover:from-[#3345f0] hover:to-[#101a91] disabled:cursor-not-allowed disabled:opacity-65"
-            disabled={!isAptitudeComplete}
             type="submit"
           >
-            Submit
+            Next
           </button>
         </div>
 

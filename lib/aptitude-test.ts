@@ -175,6 +175,7 @@ function getQuestionKey(job: AptitudeJob) {
   const skills = skillLabels(job);
   const primarySkill = skills[0] ?? fallbackSkills[0];
   const secondarySkill = skills[1] ?? fallbackSkills[1];
+  const tertiarySkill = skills[2] ?? fallbackSkills[2];
   const category = categoryOptions[inferCategory(job)];
   const taskLabel =
     job.payoutType === "TASK_1"
@@ -211,6 +212,66 @@ function getQuestionKey(job: AptitudeJob) {
       `Before submitting work for ${job.title}, what should you check?`,
       `That the deliverable is complete, accurate, and uses ${secondarySkill} where relevant`,
       ["That the fastest possible answer was submitted", "That another candidate did the work", "That required files are missing"],
+    ),
+    buildQuestion(
+      "instruction-priority",
+      "When task instructions and personal preference conflict, what should guide your work?",
+      "The written task instructions and acceptance criteria",
+      ["The fastest shortcut available", "A different task from another client", "Only the part that seems easiest"],
+    ),
+    buildQuestion(
+      "evidence-quality",
+      "Which final note is most useful to a reviewer?",
+      "A concise explanation of decisions, evidence, and remaining assumptions",
+      ["A note saying the task is done with no detail", "A copied paragraph from an unrelated source", "A private message with no deliverable attached"],
+    ),
+    buildQuestion(
+      "time-management",
+      `How should you handle the deadline for this ${taskLabel}?`,
+      "Plan the work early enough to review it before submission",
+      ["Wait until the deadline passes", "Submit partial work without explanation", "Start only after requesting payment"],
+    ),
+    buildQuestion(
+      "tool-fit",
+      `Which skill is most likely to help you complete ${job.title} accurately?`,
+      primarySkill,
+      ["Package delivery routing", "Restaurant menu planning", "Unrelated account creation"],
+    ),
+    buildQuestion(
+      "communication-update",
+      "If you discover a blocker while working, what should you communicate?",
+      "The blocker, what you tried, and the specific help or decision needed",
+      ["Nothing until the final deadline", "Only a vague message that it is hard", "A request to skip all requirements"],
+    ),
+    buildQuestion(
+      "confidentiality",
+      "How should you treat client materials shared for the task?",
+      "Use them only for the assigned work and keep them confidential",
+      ["Post them publicly for feedback", "Reuse them for unrelated projects", "Share them with anyone who asks"],
+    ),
+    buildQuestion(
+      "revision-response",
+      "What is the best response if a reviewer requests a reasonable revision?",
+      "Review the feedback, update the deliverable, and explain what changed",
+      ["Ignore the feedback", "Delete the original work", "Submit the same file without checking"],
+    ),
+    buildQuestion(
+      "file-readiness",
+      "Before uploading a final file, what should be true?",
+      "The file opens correctly and contains the requested deliverable",
+      ["The file is empty but named correctly", "The file belongs to another job", "The file requires private access the reviewer lacks"],
+    ),
+    buildQuestion(
+      "quality-standard",
+      `Which quality standard best fits ${job.title}?`,
+      `Clear, accurate work that applies ${tertiarySkill} when relevant`,
+      ["Unverified guesses with no notes", "A response unrelated to the job title", "Work completed under someone else's account"],
+    ),
+    buildQuestion(
+      "submission-readiness",
+      "When should you submit the application and aptitude test?",
+      "After your details are accurate and every aptitude answer is complete",
+      ["Before entering required details", "After answering only the first question", "Only after changing the job requirements"],
     ),
   ];
 }

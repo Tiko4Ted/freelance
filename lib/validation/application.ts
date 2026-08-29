@@ -45,7 +45,7 @@ export const applicationSchema = z.object({
         selectedOptionId: z.string().trim().min(1).max(20),
       }),
     )
-    .min(5),
+    .min(15),
 });
 
 export type ApplicationInput = z.infer<typeof applicationSchema>;
