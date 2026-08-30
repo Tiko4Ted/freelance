@@ -8,10 +8,6 @@ export type StoredApplicationDraft = {
   candidatePhoneNumber: string;
   candidateLinkedinUrl: string;
   resumeFileName: string;
-  startAvailabilityDays: number;
-  expectedHourlyRateUsd: number;
-  weeklyAvailabilityHours: number;
-  strongestTools: string[];
 };
 
 export const applicationDraftStorageKey = (jobId: string) =>

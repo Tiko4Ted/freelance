@@ -1,13 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import {
-  ChevronDown,
-  Minus,
-  Plus,
-  Upload,
-  X,
-} from "lucide-react";
+import { ChevronDown, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import {
@@ -24,32 +18,6 @@ type ApplicationFormProps = {
   applicantEmail: string;
   jobId: string;
 };
-
-type FormStep = "details" | "questions";
-
-type ApplicationDraft = {
-  candidateName: string;
-  candidateFirstName: string;
-  candidateLastName: string;
-  candidatePhoneCountry: string;
-  candidatePhoneCountryCode: string;
-  candidatePhoneNumber: string;
-  candidateLinkedinUrl: string;
-  resumeFileName: string;
-};
-
-const toolOptions = [
-  "Salesforce",
-  "HubSpot",
-  "Freshdesk",
-  "Intercom",
-  "Apollo",
-  "Crayon",
-  "Close",
-  "Salesloft",
-  "Shopify",
-  "Funnel",
-];
 
 const phoneCountries = [
   { country: "United States", code: "+1", label: "US" },
@@ -103,82 +71,19 @@ function detectPhoneCountry(phoneNumber: string) {
   );
 }
 
-function NumberStepper({
-  label,
-  name,
-  value,
-  min,
-  max,
-  onChange,
-}: {
-  label: string;
-  name: string;
-  value: number;
-  min: number;
-  max: number;
-  onChange: (value: number) => void;
-}) {
-  function setBoundedValue(nextValue: number) {
-    onChange(Math.min(max, Math.max(min, nextValue)));
-  }
-
-  return (
-    <div>
-      <label className="text-[11px] font-medium text-[#242634]" htmlFor={name}>
-        {label}
-      </label>
-      <div className="mt-2 grid h-10 grid-cols-[2.5rem_1fr_2.5rem] items-center rounded border border-[#d0d0dc] bg-transparent">
-        <button
-          aria-label={`Decrease ${label}`}
-          className="mx-auto inline-flex h-7 w-7 items-center justify-center rounded bg-white text-[#3142ff] transition hover:bg-[#e5e8ff]"
-          onClick={() => setBoundedValue(value - 1)}
-          type="button"
-        >
-          <Minus aria-hidden="true" className="h-3.5 w-3.5" />
-        </button>
-        <input
-          className="h-full min-w-0 bg-transparent text-center text-[14px] font-semibold text-[#151625] outline-none"
-          id={name}
-          max={max}
-          min={min}
-          name={name}
-          onChange={(event) => setBoundedValue(Number(event.target.value))}
-          type="number"
-          value={value}
-        />
-        <button
-          aria-label={`Increase ${label}`}
-          className="mx-auto inline-flex h-7 w-7 items-center justify-center rounded bg-white text-[#3142ff] transition hover:bg-[#e5e8ff]"
-          onClick={() => setBoundedValue(value + 1)}
-          type="button"
-        >
-          <Plus aria-hidden="true" className="h-3.5 w-3.5" />
-        </button>
-      </div>
-    </div>
-  );
-}
-
 export function ApplicationForm({
   aptitudeHref,
   applicantEmail,
   jobId,
 }: ApplicationFormProps) {
   const router = useRouter();
-  const [step, setStep] = useState<FormStep>("details");
   const [state, setState] = useState<SubmitState>({
     status: "idle",
     message: "",
   });
-  const [draft, setDraft] = useState<ApplicationDraft | null>(null);
   const [resumeName, setResumeName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [phoneCountry, setPhoneCountry] = useState(defaultPhoneCountry);
-  const [startAvailabilityDays, setStartAvailabilityDays] = useState(1);
-  const [expectedHourlyRateUsd, setExpectedHourlyRateUsd] = useState(1);
-  const [weeklyAvailabilityHours, setWeeklyAvailabilityHours] = useState(1);
-  const [strongestTools, setStrongestTools] = useState<string[]>([]);
-  const [toolsOpen, setToolsOpen] = useState(false);
 
   function handleDetailsNext(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -193,7 +98,8 @@ export function ApplicationForm({
     const lastName = String(formData.get("lastName") ?? "").trim();
     const detectedPhoneCountry = detectPhoneCountry(phoneNumber);
 
-    setDraft({
+    const storedDraft: StoredApplicationDraft = {
+      jobId,
       candidateName: `${firstName} ${lastName}`.trim(),
       candidateFirstName: firstName,
       candidateLastName: lastName,
@@ -202,35 +108,14 @@ export function ApplicationForm({
       candidatePhoneNumber: phoneNumber,
       candidateLinkedinUrl: String(formData.get("linkedinUrl") ?? ""),
       resumeFileName: resumeName,
-    });
-    setPhoneCountry(detectedPhoneCountry);
-    setState({ status: "idle", message: "" });
-    setStep("questions");
-  }
-
-  function handleQuestionsNext(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    if (!draft) {
-      setState({ status: "error", message: "Complete your details first" });
-      setStep("details");
-      return;
-    }
+    };
 
     try {
-      const storedDraft: StoredApplicationDraft = {
-        jobId,
-        ...draft,
-        startAvailabilityDays,
-        expectedHourlyRateUsd,
-        weeklyAvailabilityHours,
-        strongestTools,
-      };
-
       sessionStorage.setItem(
         applicationDraftStorageKey(jobId),
         JSON.stringify(storedDraft),
       );
+      setPhoneCountry(detectedPhoneCountry);
       setState({ status: "idle", message: "" });
       router.push(aptitudeHref);
     } catch {
@@ -239,153 +124,6 @@ export function ApplicationForm({
         message: "Unable to continue to the aptitude test",
       });
     }
-  }
-
-  function toggleTool(tool: string) {
-    setStrongestTools((currentTools) =>
-      currentTools.includes(tool)
-        ? currentTools.filter((item) => item !== tool)
-        : [...currentTools, tool],
-    );
-    setToolsOpen(false);
-  }
-
-  if (step === "questions") {
-    return (
-      <>
-        {state.status === "error" && state.message ? (
-          <ApplicationErrorDialog
-            message={state.message}
-            onClose={() => setState({ status: "idle", message: "" })}
-          />
-        ) : null}
-        <form
-          className="rounded-lg bg-[#f2f1fb] p-6 text-[#151625]"
-          onSubmit={handleQuestionsNext}
-        >
-          <h2 className="text-[20px] font-semibold leading-[1.35]">
-            Complete your application questions
-          </h2>
-
-        <div className="mt-5 space-y-5">
-          <NumberStepper
-            label="Q1. How soon can you start the work? (in days)"
-            max={365}
-            min={0}
-            name="startAvailabilityDays"
-            onChange={setStartAvailabilityDays}
-            value={startAvailabilityDays}
-          />
-
-          <div>
-            <label
-              className="text-[11px] font-medium text-[#242634]"
-              htmlFor="expectedHourlyRateUsd"
-            >
-              Q2. What is your expected hourly rate in USD?
-            </label>
-            <div className="mt-2 flex h-9 overflow-hidden rounded border border-[#d0d0dc] bg-transparent">
-              <input
-                className="min-w-0 flex-1 bg-transparent px-3 text-[13px] outline-none"
-                id="expectedHourlyRateUsd"
-                min={1}
-                name="expectedHourlyRateUsd"
-                onChange={(event) =>
-                  setExpectedHourlyRateUsd(
-                    Math.max(1, Number(event.target.value)),
-                  )
-                }
-                type="number"
-                value={expectedHourlyRateUsd}
-              />
-              <span className="flex items-center px-3 text-[13px] font-medium text-[#151625]">
-                /hour
-              </span>
-            </div>
-          </div>
-
-          <NumberStepper
-            label="Q3. How many hours per week are you available to work?"
-            max={168}
-            min={1}
-            name="weeklyAvailabilityHours"
-            onChange={setWeeklyAvailabilityHours}
-            value={weeklyAvailabilityHours}
-          />
-
-          <div className="relative">
-            <p className="text-[11px] font-medium leading-[1.45] text-[#242634]">
-              Q4. Which of the following tools do you have the strongest
-              hands-on experience with?
-            </p>
-            <button
-              className="mt-2 flex min-h-16 w-full items-center gap-2 rounded border border-[#d0d0dc] bg-transparent px-3 py-2 text-left text-[12px] text-[#252735]"
-              onClick={() => setToolsOpen((isOpen) => !isOpen)}
-              type="button"
-            >
-              <span className="flex flex-1 flex-wrap gap-x-4 gap-y-2">
-                {strongestTools.length ? (
-                  strongestTools.map((tool) => (
-                    <span className="inline-flex items-center gap-2" key={tool}>
-                      {tool}
-                      <span
-                        aria-hidden="true"
-                        className="text-[15px] font-semibold leading-none text-[#151625]"
-                      >
-                        x
-                      </span>
-                    </span>
-                  ))
-                ) : (
-                  <span className="text-[#787a88]">Select options...</span>
-                )}
-              </span>
-              <X aria-hidden="true" className="h-4 w-4 text-[#676977]" />
-              <ChevronDown aria-hidden="true" className="h-4 w-4 text-[#676977]" />
-            </button>
-            {toolsOpen ? (
-              <div className="absolute left-0 right-0 z-10 mt-1 grid max-h-44 grid-cols-2 gap-1 overflow-y-auto rounded border border-[#d0d0dc] bg-white p-2 shadow-lg">
-                {toolOptions.map((tool) => (
-                  <button
-                    className={
-                      strongestTools.includes(tool)
-                        ? "rounded bg-[#e7eaff] px-2 py-1.5 text-left text-[12px] font-medium text-[#1c2bd7]"
-                        : "rounded px-2 py-1.5 text-left text-[12px] text-[#343643] hover:bg-[#f2f1fb]"
-                    }
-                    key={tool}
-                    onClick={() => toggleTool(tool)}
-                    type="button"
-                  >
-                    {tool}
-                  </button>
-                ))}
-              </div>
-            ) : null}
-          </div>
-        </div>
-
-        <div className="mt-14 grid grid-cols-2 gap-4">
-          <button
-            className="inline-flex h-11 items-center justify-center rounded-md bg-[#e2e6ff] px-5 text-[15px] font-semibold text-[#252735] transition hover:bg-[#d9defd]"
-            onClick={() => {
-              setState({ status: "idle", message: "" });
-              setStep("details");
-            }}
-            type="button"
-          >
-            Back
-          </button>
-          <button
-            className="inline-flex h-11 items-center justify-center rounded-md bg-gradient-to-r from-[#3e52ff] to-[#1723a7] px-5 text-[15px] font-semibold text-white shadow-sm transition hover:from-[#3345f0] hover:to-[#101a91] disabled:cursor-not-allowed disabled:opacity-65"
-            type="submit"
-          >
-            Next
-          </button>
-        </div>
-
-        </form>
-      </>
-    );
   }
 
   return (
@@ -416,7 +154,6 @@ export function ApplicationForm({
           </label>
           <input
             className="mt-1.5 h-9 w-full rounded border border-[#d0d0dc] bg-transparent px-3 text-[13px] outline-none transition placeholder:text-[#848594] focus:border-[#3547ff] focus:ring-1 focus:ring-[#3547ff]"
-            defaultValue={draft?.candidateFirstName}
             id="firstName"
             name="firstName"
             placeholder="Enter your first name"
@@ -433,7 +170,6 @@ export function ApplicationForm({
           </label>
           <input
             className="mt-1.5 h-9 w-full rounded border border-[#d0d0dc] bg-transparent px-3 text-[13px] outline-none transition placeholder:text-[#848594] focus:border-[#3547ff] focus:ring-1 focus:ring-[#3547ff]"
-            defaultValue={draft?.candidateLastName}
             id="lastName"
             name="lastName"
             placeholder="Enter your last name"
@@ -485,7 +221,6 @@ export function ApplicationForm({
         </label>
         <input
           className="mt-1.5 h-9 w-full rounded border border-[#d0d0dc] bg-transparent px-3 text-[13px] outline-none transition placeholder:text-[#848594] focus:border-[#3547ff] focus:ring-1 focus:ring-[#3547ff]"
-          defaultValue={draft?.candidateLinkedinUrl}
           id="linkedinUrl"
           name="linkedinUrl"
           placeholder="Enter your LinkedIn URL"
