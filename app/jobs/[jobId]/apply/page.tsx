@@ -38,16 +38,18 @@ function formatSkillLabel(label: string) {
   return label;
 }
 
-function listingsHref(referralCode?: string) {
-  if (!referralCode) {
-    return "/jobs";
-  }
-
-  return `/referral/jobs?referralCode=${encodeURIComponent(referralCode)}`;
-}
-
 function applyHref(jobId: string, referralCode?: string) {
   const href = `/jobs/${jobId}/apply`;
+
+  if (!referralCode) {
+    return href;
+  }
+
+  return `${href}?referralCode=${encodeURIComponent(referralCode)}`;
+}
+
+function aptitudeHref(jobId: string, referralCode?: string) {
+  const href = `/jobs/${jobId}/apply/aptitude`;
 
   if (!referralCode) {
     return href;
@@ -172,8 +174,8 @@ export default async function ApplyPage({
         <aside className="lg:sticky lg:top-6 lg:self-start">
           <ApplicationForm
             applicantEmail={session.user.email ?? ""}
+            aptitudeHref={aptitudeHref(job.id, referralCode)}
             jobId={job.id}
-            listingsHref={listingsHref(referralCode)}
           />
         </aside>
       </div>

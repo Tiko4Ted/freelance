@@ -38,6 +38,14 @@ export const applicationSchema = z.object({
   expectedHourlyRateUsd: z.coerce.number().int().min(1).max(10000).optional(),
   weeklyAvailabilityHours: z.coerce.number().int().min(1).max(168).optional(),
   strongestTools: z.array(z.string().trim().min(1).max(80)).optional().default([]),
+  aptitudeAnswers: z
+    .array(
+      z.object({
+        questionId: z.string().trim().min(1).max(80),
+        selectedOptionId: z.string().trim().min(1).max(20),
+      }),
+    )
+    .min(15),
 });
 
 export type ApplicationInput = z.infer<typeof applicationSchema>;

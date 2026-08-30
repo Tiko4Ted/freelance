@@ -1,55 +1,23 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import {
-  CheckCircle2,
-  ChevronDown,
-  FileText,
-  LoaderCircle,
-  Minus,
-  Plus,
-  Upload,
-  X,
-} from "lucide-react";
+import { ChevronDown, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+import {
+  ApplicationErrorDialog,
+  type SubmitState,
+} from "@/components/application-feedback";
+import {
+  applicationDraftStorageKey,
+  type StoredApplicationDraft,
+} from "@/lib/application-draft";
+
 type ApplicationFormProps = {
+  aptitudeHref: string;
   applicantEmail: string;
   jobId: string;
-  listingsHref?: string;
 };
-
-type FormStep = "details" | "questions";
-
-type ApplicationDraft = {
-  candidateName: string;
-  candidateFirstName: string;
-  candidateLastName: string;
-  candidatePhoneCountry: string;
-  candidatePhoneCountryCode: string;
-  candidatePhoneNumber: string;
-  candidateLinkedinUrl: string;
-  resumeFileName: string;
-};
-
-type SubmitState =
-  | { status: "idle"; message: string }
-  | { status: "submitting"; message: string }
-  | { status: "success"; message: string }
-  | { status: "error"; message: string };
-
-const toolOptions = [
-  "Salesforce",
-  "HubSpot",
-  "Freshdesk",
-  "Intercom",
-  "Apollo",
-  "Crayon",
-  "Close",
-  "Salesloft",
-  "Shopify",
-  "Funnel",
-];
 
 const phoneCountries = [
   { country: "United States", code: "+1", label: "US" },
@@ -103,188 +71,19 @@ function detectPhoneCountry(phoneNumber: string) {
   );
 }
 
-function getErrorMessage(payload: unknown) {
-  if (
-    payload &&
-    typeof payload === "object" &&
-    "error" in payload &&
-    typeof payload.error === "string"
-  ) {
-    return payload.error;
-  }
-
-  return "Unable to submit application";
-}
-
-function NumberStepper({
-  label,
-  name,
-  value,
-  min,
-  max,
-  onChange,
-}: {
-  label: string;
-  name: string;
-  value: number;
-  min: number;
-  max: number;
-  onChange: (value: number) => void;
-}) {
-  function setBoundedValue(nextValue: number) {
-    onChange(Math.min(max, Math.max(min, nextValue)));
-  }
-
-  return (
-    <div>
-      <label className="text-[11px] font-medium text-[#242634]" htmlFor={name}>
-        {label}
-      </label>
-      <div className="mt-2 grid h-10 grid-cols-[2.5rem_1fr_2.5rem] items-center rounded border border-[#d0d0dc] bg-transparent">
-        <button
-          aria-label={`Decrease ${label}`}
-          className="mx-auto inline-flex h-7 w-7 items-center justify-center rounded bg-white text-[#3142ff] transition hover:bg-[#e5e8ff]"
-          onClick={() => setBoundedValue(value - 1)}
-          type="button"
-        >
-          <Minus aria-hidden="true" className="h-3.5 w-3.5" />
-        </button>
-        <input
-          className="h-full min-w-0 bg-transparent text-center text-[14px] font-semibold text-[#151625] outline-none"
-          id={name}
-          max={max}
-          min={min}
-          name={name}
-          onChange={(event) => setBoundedValue(Number(event.target.value))}
-          type="number"
-          value={value}
-        />
-        <button
-          aria-label={`Increase ${label}`}
-          className="mx-auto inline-flex h-7 w-7 items-center justify-center rounded bg-white text-[#3142ff] transition hover:bg-[#e5e8ff]"
-          onClick={() => setBoundedValue(value + 1)}
-          type="button"
-        >
-          <Plus aria-hidden="true" className="h-3.5 w-3.5" />
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function ApplicationSubmissionPage({
-  status,
-  message,
-  onClose,
-}: {
-  status: Extract<SubmitState["status"], "submitting" | "success">;
-  message: string;
-  onClose: () => void;
-}) {
-  const isSuccess = status === "success";
-
-  return (
-    <section className="fixed inset-0 z-50 min-h-screen overflow-y-auto bg-[#f8f8ff] px-5 py-8 text-[#151625] sm:px-8">
-      <div className="mx-auto flex min-h-[calc(100dvh-4rem)] max-w-[760px] flex-col justify-center py-8">
-        <div className="rounded-lg border border-[#dfe2f4] bg-white px-5 py-7 shadow-[0_24px_80px_rgba(28,34,76,0.12)] sm:px-8 sm:py-9">
-          <div className="flex items-center gap-3">
-            <span
-              className={
-                isSuccess
-                  ? "inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-[#e8f8f3] text-[#087c66]"
-                  : "inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-[#eef0ff] text-[#2d3fe5]"
-              }
-            >
-              {isSuccess ? (
-                <CheckCircle2 aria-hidden="true" className="h-6 w-6" />
-              ) : (
-                <FileText aria-hidden="true" className="h-6 w-6" />
-              )}
-            </span>
-            <div>
-              <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[#60677c]">
-                Application documents
-              </p>
-              <h1 className="mt-1 text-[24px] font-semibold leading-tight text-[#10121f] sm:text-[30px]">
-                {isSuccess ? "Submission received" : "Preparing your submission"}
-              </h1>
-            </div>
-          </div>
-
-          {isSuccess ? (
-            <div className="mt-8 space-y-4 text-[15px] leading-[1.65] text-[#343849]">
-              <p>{message}</p>
-              <p>
-                Your application documents have been received and placed in our
-                review queue for formal assessment. Our recruiting operations
-                team will evaluate the information you provided, including your
-                resume, contact details, availability, rate expectations, and
-                role-specific responses, against the requirements of this
-                opening and any other relevant opportunities.
-              </p>
-              <p>
-                No additional action is required from you at this stage. Please
-                allow the team sufficient time to complete the review process.
-                Once there is an update regarding your application, next steps,
-                or a suitable match, you will be notified through the email
-                address submitted with your application. We recommend monitoring
-                your inbox for official communication from our team.
-              </p>
-            </div>
-          ) : (
-            <div className="mt-8">
-              <div className="flex items-center gap-3 rounded-md border border-[#dfe2f4] bg-[#fbfbff] px-4 py-4">
-                <LoaderCircle
-                  aria-hidden="true"
-                  className="h-5 w-5 animate-spin text-[#3142ff]"
-                />
-                <p className="text-[14px] font-medium text-[#2c3041]">
-                  {message}. Please keep this page open while we securely submit
-                  your application documents.
-                </p>
-              </div>
-              <div className="mt-5 h-2 overflow-hidden rounded-full bg-[#e4e7f7]">
-                <div className="h-full w-2/3 animate-pulse rounded-full bg-[#3142ff]" />
-              </div>
-            </div>
-          )}
-
-          {isSuccess ? (
-            <button
-              className="mt-8 inline-flex h-11 w-full items-center justify-center rounded-md bg-[#1723a7] px-5 text-[15px] font-semibold text-white shadow-sm transition hover:bg-[#101a91] sm:w-auto"
-              onClick={onClose}
-              type="button"
-            >
-              Go to dashboard
-            </button>
-          ) : null}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 export function ApplicationForm({
+  aptitudeHref,
   applicantEmail,
   jobId,
 }: ApplicationFormProps) {
   const router = useRouter();
-  const [step, setStep] = useState<FormStep>("details");
   const [state, setState] = useState<SubmitState>({
     status: "idle",
     message: "",
   });
-  const [draft, setDraft] = useState<ApplicationDraft | null>(null);
   const [resumeName, setResumeName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [phoneCountry, setPhoneCountry] = useState(defaultPhoneCountry);
-  const [startAvailabilityDays, setStartAvailabilityDays] = useState(1);
-  const [expectedHourlyRateUsd, setExpectedHourlyRateUsd] = useState(1);
-  const [weeklyAvailabilityHours, setWeeklyAvailabilityHours] = useState(1);
-  const [strongestTools, setStrongestTools] = useState<string[]>([]);
-  const [toolsOpen, setToolsOpen] = useState(false);
-  const isSubmissionPage =
-    state.status === "submitting" || state.status === "success";
 
   function handleDetailsNext(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -299,7 +98,8 @@ export function ApplicationForm({
     const lastName = String(formData.get("lastName") ?? "").trim();
     const detectedPhoneCountry = detectPhoneCountry(phoneNumber);
 
-    setDraft({
+    const storedDraft: StoredApplicationDraft = {
+      jobId,
       candidateName: `${firstName} ${lastName}`.trim(),
       candidateFirstName: firstName,
       candidateLastName: lastName,
@@ -308,223 +108,37 @@ export function ApplicationForm({
       candidatePhoneNumber: phoneNumber,
       candidateLinkedinUrl: String(formData.get("linkedinUrl") ?? ""),
       resumeFileName: resumeName,
-    });
-    setPhoneCountry(detectedPhoneCountry);
-    setState({ status: "idle", message: "" });
-    setStep("questions");
-  }
-
-  async function handleFinalSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    if (!draft) {
-      setState({ status: "error", message: "Complete your details first" });
-      setStep("details");
-      return;
-    }
-
-    setState({ status: "submitting", message: "Submitting application" });
+    };
 
     try {
-      const response = await fetch("/api/v1/applications", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        jobId,
-          ...draft,
-          startAvailabilityDays,
-          expectedHourlyRateUsd,
-          weeklyAvailabilityHours,
-          strongestTools,
-        }),
-      });
-      const payload: unknown = await response.json();
-
-      if (!response.ok) {
-        setState({ status: "error", message: getErrorMessage(payload) });
-        return;
-      }
+      sessionStorage.setItem(
+        applicationDraftStorageKey(jobId),
+        JSON.stringify(storedDraft),
+      );
+      setPhoneCountry(detectedPhoneCountry);
+      setState({ status: "idle", message: "" });
+      router.push(aptitudeHref);
     } catch {
       setState({
         status: "error",
-        message: "Unable to submit application",
+        message: "Unable to continue to the aptitude test",
       });
-      return;
     }
-
-    setState({
-      status: "success",
-      message:
-        "Thank you for completing your application. Please await the review of your submitted documents; this job now appears in your dashboard as Pending approval and you will be notified by email once our team has completed the assessment.",
-    });
-  }
-
-  function toggleTool(tool: string) {
-    setStrongestTools((currentTools) =>
-      currentTools.includes(tool)
-        ? currentTools.filter((item) => item !== tool)
-        : [...currentTools, tool],
-    );
-    setToolsOpen(false);
-  }
-
-  if (isSubmissionPage) {
-    return (
-        <ApplicationSubmissionPage
-        message={state.message}
-        onClose={() => router.push("/dashboard")}
-        status={state.status}
-      />
-    );
-  }
-
-  if (step === "questions") {
-    return (
-      <form
-        className="rounded-lg bg-[#f2f1fb] p-6 text-[#151625]"
-        onSubmit={handleFinalSubmit}
-      >
-        <h2 className="text-[20px] font-semibold leading-[1.35]">
-          Answer a few questions to complete your application
-        </h2>
-
-        <div className="mt-5 space-y-5">
-          <NumberStepper
-            label="Q1. How soon can you start the work? (in days)"
-            max={365}
-            min={0}
-            name="startAvailabilityDays"
-            onChange={setStartAvailabilityDays}
-            value={startAvailabilityDays}
-          />
-
-          <div>
-            <label
-              className="text-[11px] font-medium text-[#242634]"
-              htmlFor="expectedHourlyRateUsd"
-            >
-              Q2. What is your expected hourly rate in USD?
-            </label>
-            <div className="mt-2 flex h-9 overflow-hidden rounded border border-[#d0d0dc] bg-transparent">
-              <input
-                className="min-w-0 flex-1 bg-transparent px-3 text-[13px] outline-none"
-                id="expectedHourlyRateUsd"
-                min={1}
-                name="expectedHourlyRateUsd"
-                onChange={(event) =>
-                  setExpectedHourlyRateUsd(
-                    Math.max(1, Number(event.target.value)),
-                  )
-                }
-                type="number"
-                value={expectedHourlyRateUsd}
-              />
-              <span className="flex items-center px-3 text-[13px] font-medium text-[#151625]">
-                /hour
-              </span>
-            </div>
-          </div>
-
-          <NumberStepper
-            label="Q3. How many hours per week are you available to work?"
-            max={168}
-            min={1}
-            name="weeklyAvailabilityHours"
-            onChange={setWeeklyAvailabilityHours}
-            value={weeklyAvailabilityHours}
-          />
-
-          <div className="relative">
-            <p className="text-[11px] font-medium leading-[1.45] text-[#242634]">
-              Q4. Which of the following tools do you have the strongest
-              hands-on experience with?
-            </p>
-            <button
-              className="mt-2 flex min-h-16 w-full items-center gap-2 rounded border border-[#d0d0dc] bg-transparent px-3 py-2 text-left text-[12px] text-[#252735]"
-              onClick={() => setToolsOpen((isOpen) => !isOpen)}
-              type="button"
-            >
-              <span className="flex flex-1 flex-wrap gap-x-4 gap-y-2">
-                {strongestTools.length ? (
-                  strongestTools.map((tool) => (
-                    <span className="inline-flex items-center gap-2" key={tool}>
-                      {tool}
-                      <span
-                        aria-hidden="true"
-                        className="text-[15px] font-semibold leading-none text-[#151625]"
-                      >
-                        x
-                      </span>
-                    </span>
-                  ))
-                ) : (
-                  <span className="text-[#787a88]">Select options...</span>
-                )}
-              </span>
-              <X aria-hidden="true" className="h-4 w-4 text-[#676977]" />
-              <ChevronDown aria-hidden="true" className="h-4 w-4 text-[#676977]" />
-            </button>
-            {toolsOpen ? (
-              <div className="absolute left-0 right-0 z-10 mt-1 grid max-h-44 grid-cols-2 gap-1 overflow-y-auto rounded border border-[#d0d0dc] bg-white p-2 shadow-lg">
-                {toolOptions.map((tool) => (
-                  <button
-                    className={
-                      strongestTools.includes(tool)
-                        ? "rounded bg-[#e7eaff] px-2 py-1.5 text-left text-[12px] font-medium text-[#1c2bd7]"
-                        : "rounded px-2 py-1.5 text-left text-[12px] text-[#343643] hover:bg-[#f2f1fb]"
-                    }
-                    key={tool}
-                    onClick={() => toggleTool(tool)}
-                    type="button"
-                  >
-                    {tool}
-                  </button>
-                ))}
-              </div>
-            ) : null}
-          </div>
-        </div>
-
-        <div className="mt-14 grid grid-cols-2 gap-4">
-          <button
-            className="inline-flex h-11 items-center justify-center rounded-md bg-[#e2e6ff] px-5 text-[15px] font-semibold text-[#252735] transition hover:bg-[#d9defd]"
-            onClick={() => {
-              setState({ status: "idle", message: "" });
-              setStep("details");
-            }}
-            type="button"
-          >
-            Back
-          </button>
-          <button
-            className="inline-flex h-11 items-center justify-center rounded-md bg-gradient-to-r from-[#3e52ff] to-[#1723a7] px-5 text-[15px] font-semibold text-white shadow-sm transition hover:from-[#3345f0] hover:to-[#101a91] disabled:cursor-not-allowed disabled:opacity-65"
-            type="submit"
-          >
-            Submit
-          </button>
-        </div>
-
-        {state.message ? (
-          <p
-            className={
-              state.status === "error"
-                ? "mt-4 text-[12px] font-medium text-red-700"
-                : "mt-4 text-[12px] font-medium text-[#096d5e]"
-            }
-          >
-            {state.message}
-          </p>
-        ) : null}
-      </form>
-    );
   }
 
   return (
-    <form
-      className="rounded-lg bg-[#f2f1fb] p-6 text-[#151625]"
-      onSubmit={handleDetailsNext}
-    >
-      <h2 className="text-[22px] font-semibold leading-tight">Interested?</h2>
+    <>
+      {state.status === "error" && state.message ? (
+        <ApplicationErrorDialog
+          message={state.message}
+          onClose={() => setState({ status: "idle", message: "" })}
+        />
+      ) : null}
+      <form
+        className="rounded-lg bg-[#f2f1fb] p-6 text-[#151625]"
+        onSubmit={handleDetailsNext}
+      >
+        <h2 className="text-[22px] font-semibold leading-tight">Interested?</h2>
       <p className="mt-2 text-[12px] leading-[1.45] text-[#4d5060]">
         Applying with{" "}
         <span className="font-semibold text-[#151625]">{applicantEmail}</span>
@@ -540,7 +154,6 @@ export function ApplicationForm({
           </label>
           <input
             className="mt-1.5 h-9 w-full rounded border border-[#d0d0dc] bg-transparent px-3 text-[13px] outline-none transition placeholder:text-[#848594] focus:border-[#3547ff] focus:ring-1 focus:ring-[#3547ff]"
-            defaultValue={draft?.candidateFirstName}
             id="firstName"
             name="firstName"
             placeholder="Enter your first name"
@@ -557,7 +170,6 @@ export function ApplicationForm({
           </label>
           <input
             className="mt-1.5 h-9 w-full rounded border border-[#d0d0dc] bg-transparent px-3 text-[13px] outline-none transition placeholder:text-[#848594] focus:border-[#3547ff] focus:ring-1 focus:ring-[#3547ff]"
-            defaultValue={draft?.candidateLastName}
             id="lastName"
             name="lastName"
             placeholder="Enter your last name"
@@ -609,7 +221,6 @@ export function ApplicationForm({
         </label>
         <input
           className="mt-1.5 h-9 w-full rounded border border-[#d0d0dc] bg-transparent px-3 text-[13px] outline-none transition placeholder:text-[#848594] focus:border-[#3547ff] focus:ring-1 focus:ring-[#3547ff]"
-          defaultValue={draft?.candidateLinkedinUrl}
           id="linkedinUrl"
           name="linkedinUrl"
           placeholder="Enter your LinkedIn URL"
@@ -664,17 +275,7 @@ export function ApplicationForm({
         </a>
       </p>
 
-      {state.message ? (
-        <p
-          className={
-            state.status === "error"
-              ? "mt-4 text-[12px] font-medium text-red-700"
-              : "mt-4 text-[12px] font-medium text-[#096d5e]"
-          }
-        >
-          {state.message}
-        </p>
-      ) : null}
-    </form>
+      </form>
+    </>
   );
 }

@@ -12,7 +12,7 @@ Completed:
 - Initial Prisma migration for the production PostgreSQL schema.
 - Vercel-compatible build script that generates Prisma Client before `next build`.
 - Vercel upload ignore rules so local env files are not included in deployments.
-- Seed script with 25 idempotent demo jobs, skill chips, display pay ranges, high-demand flags, and one admin user.
+- Seed script with 820 idempotent demo jobs, skill chips, display pay ranges, high-demand flags, and one admin user.
 - Shared Prisma client setup.
 - Environment variable template.
 - Project-specific landing shell.
@@ -27,6 +27,7 @@ Completed:
 - Referrer dashboard UI for links and referred applications.
 - Admin job and application management APIs.
 - Admin screens for jobs, applications, status changes, and progress logging.
+- Approved candidates can download role-matched task PDFs, submit completed work for review, and expose submitted task details in admin review.
 - Wallet API and ledger-backed wallet page.
 - Payout eligibility service with a runnable worker entrypoint.
 - Payout-provider interface with a mock provider for local withdrawal processing.
@@ -148,6 +149,18 @@ The payout eligibility service credits referrers through `LedgerEntry` rows and 
 
 Withdrawal requests debit the wallet and create a negative ledger entry inside a single transaction. The current payout provider is a local mock behind the provider interface; Stripe Connect is the next integration checkpoint.
 
+## Freelance ID Sync
+
+Implemented:
+
+- `POST /api/v1/internal/freelance-identities`
+- Idempotent identity sync from the standalone ID generator.
+- Conflict protection for reused idempotency keys, freelance ID codes, serial numbers, and legal name plus DOB.
+- Wallet transfer identity verification checks legal name, DOB, freelance ID, serial, and `isActive`.
+- Failed identity verification attempts are rate-limited per user and IP, locked for 30 minutes on breach, and audited with hashed attempted ID/serial plus IP and user-agent.
+
+The production-intended transport for the internal sync route is mTLS terminated at the reverse proxy. For the current local/Truehost deployment path, the app uses a strong rotated bearer token in `Authorization: Bearer <token>` via `ID_GENERATOR_SYNC_BEARER_TOKEN`. This is a deliberate fallback, not a silent downgrade; when nginx client-certificate verification is configured, the route should be tightened to trust only the proxy's verified client-cert signal.
+
 ## Deployment
 
 Production:
@@ -174,7 +187,11 @@ Implemented:
 - `GET /api/v1/referrals/me`
 - `GET /api/v1/referrals/me/applications`
 - `POST /api/v1/applications`
+- `GET /api/v1/applications/:id/task-material`
+- `POST /api/v1/applications/:id/task-submission`
 
 Referral links use `/jobs/[jobId]?ref=<referralCode>`. The proxy stores the first referral touch in an HTTP-only cookie and the application route validates it server-side.
 
 Board-level referral links can also use `/jobs?referralCode=<referralCode>`. The jobs board treats `ref` and `referralCode` as aliases, personalizes with the referrer's first name when available, and falls back to neutral invited-copy for unknown or missing codes.
+
+When a candidate application is approved, the dashboard exposes a downloadable PDF task brief matched from the job title, description, payout type, and skill tags. Submitting work moves the application to pending task review; payout crediting remains tied to successful review and payout eligibility.

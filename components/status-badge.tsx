@@ -12,8 +12,8 @@ const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
     className: "bg-amber-100 text-amber-800",
   },
   CERTIFIED: {
-    label: "Certified",
-    className: "bg-amber-100 text-amber-800",
+    label: "Approved",
+    className: "bg-blue-100 text-blue-800",
   },
   MATCHED: {
     label: "Matched",

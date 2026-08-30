@@ -25,10 +25,18 @@ function toApplicationResponse(application: {
   expectedHourlyRateUsd: number | null;
   weeklyAvailabilityHours: number | null;
   strongestTools: string[];
+  aptitudeScorePercent: number | null;
+  aptitudeCorrectAnswers: number;
+  aptitudeQuestionCount: number;
+  aptitudePassed: boolean;
+  aptitudeSubmittedAt: Date | null;
   status: ApplicationStatus;
   lockedPayoutCents: number | null;
   hoursLogged: number;
   tasksCompleted: number;
+  taskSubmissionFileName: string | null;
+  taskSubmissionNotes: string | null;
+  taskSubmittedAt: Date | null;
   onboardedAt: Date | null;
   payoutDeadline: Date | null;
   createdAt: Date;
@@ -58,10 +66,18 @@ function toApplicationResponse(application: {
     expectedHourlyRateUsd: application.expectedHourlyRateUsd,
     weeklyAvailabilityHours: application.weeklyAvailabilityHours,
     strongestTools: application.strongestTools,
+    aptitudeScorePercent: application.aptitudeScorePercent,
+    aptitudeCorrectAnswers: application.aptitudeCorrectAnswers,
+    aptitudeQuestionCount: application.aptitudeQuestionCount,
+    aptitudePassed: application.aptitudePassed,
+    aptitudeSubmittedAt: application.aptitudeSubmittedAt?.toISOString() ?? null,
     status: application.status,
     lockedPayoutCents: application.lockedPayoutCents,
     hoursLogged: application.hoursLogged,
     tasksCompleted: application.tasksCompleted,
+    taskSubmissionFileName: application.taskSubmissionFileName,
+    taskSubmissionNotes: application.taskSubmissionNotes,
+    taskSubmittedAt: application.taskSubmittedAt?.toISOString() ?? null,
     onboardedAt: application.onboardedAt?.toISOString() ?? null,
     payoutDeadline: application.payoutDeadline?.toISOString() ?? null,
     createdAt: application.createdAt.toISOString(),
@@ -83,10 +99,18 @@ const applicationSelect = {
   expectedHourlyRateUsd: true,
   weeklyAvailabilityHours: true,
   strongestTools: true,
+  aptitudeScorePercent: true,
+  aptitudeCorrectAnswers: true,
+  aptitudeQuestionCount: true,
+  aptitudePassed: true,
+  aptitudeSubmittedAt: true,
   status: true,
   lockedPayoutCents: true,
   hoursLogged: true,
   tasksCompleted: true,
+  taskSubmissionFileName: true,
+  taskSubmissionNotes: true,
+  taskSubmittedAt: true,
   onboardedAt: true,
   payoutDeadline: true,
   createdAt: true,

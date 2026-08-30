@@ -1,7 +1,9 @@
 import { ApplicationStatus, Prisma, Role } from "@prisma/client";
 
+import { scoreAptitudeTest } from "@/lib/aptitude-test";
 import { prisma } from "@/lib/db/prisma";
-import { buildJobDetailCopy } from "@/lib/job-detail-copy";
+import { createSimplePdf } from "@/lib/pdf/simple-pdf";
+import { buildTaskAssignment } from "@/lib/task-assignment";
 import type { ApplicationInput } from "@/lib/validation/application";
 import type { TaskSubmissionInput } from "@/lib/validation/task-submission";
 
@@ -47,68 +49,6 @@ const blockingApplicationStatuses = [
   ApplicationStatus.ACTIVE,
 ];
 
-function isInstructionOnlyJob(job: { title: string; skills: { label: string }[] }) {
-  const searchable = `${job.title} ${job.skills
-    .map((skill) => skill.label)
-    .join(" ")}`.toLowerCase();
-
-  return [
-    "audio",
-    "voice",
-    "recording",
-    "video",
-    "gameplay",
-    "capture",
-  ].some((term) => searchable.includes(term));
-}
-
-function formatTaskInstructions(application: {
-  id: string;
-  candidateName: string;
-  job: {
-    title: string;
-    companyName: string;
-    skills: { label: string }[];
-  };
-}) {
-  const detailCopy = buildJobDetailCopy(application.job);
-  const instructionOnly = isInstructionOnlyJob(application.job);
-  const skills = application.job.skills.map((skill) => skill.label).join(", ");
-
-  return [
-    `${application.job.title} task instructions`,
-    "",
-    `Candidate: ${application.candidateName}`,
-    `Application ID: ${application.id}`,
-    `Company: ${application.job.companyName}`,
-    `Required skills: ${skills || "Role-specific expertise"}`,
-    "",
-    instructionOnly
-      ? "Task material type: Instructions only. This role is based on recording, audio, video, or capture work, so no separate PDF material is required."
-      : "Task material type: Downloadable instruction pack. Use this document as your working brief and checklist before submitting.",
-    "",
-    "Scope of work",
-    ...detailCopy.scope.map((item) => `- ${item}`),
-    "",
-    "Submission tips",
-    "- Follow the role requirements exactly and keep your work aligned with the requested format.",
-    "- Check that every file, recording, or written response is complete before submitting.",
-    "- Make sure names, labels, timestamps, and file formats are clear and consistent.",
-    "- Review your final work for accuracy, quality, and missing sections before upload.",
-    "- Submit only once after confirming the work is complete.",
-    "",
-    "What reviewers will check",
-    "- Completeness against the assigned task instructions.",
-    "- Quality, clarity, and relevance of the submitted work.",
-    "- Skill fit against the listed role requirements.",
-    "- Whether the submission follows formatting, language, or recording instructions.",
-    "- Whether the work appears original and ready for customer review.",
-    "",
-    "After submission",
-    "Your dashboard status will update to Pending task review. You will receive an email status update after review.",
-  ].join("\n");
-}
-
 function toApplicationResponse(application: {
   id: string;
   jobId: string;
@@ -125,6 +65,11 @@ function toApplicationResponse(application: {
   expectedHourlyRateUsd: number | null;
   weeklyAvailabilityHours: number | null;
   strongestTools: string[];
+  aptitudeScorePercent: number | null;
+  aptitudeCorrectAnswers: number;
+  aptitudeQuestionCount: number;
+  aptitudePassed: boolean;
+  aptitudeSubmittedAt: Date | null;
   status: ApplicationStatus;
   lockedPayoutCents: number | null;
   referralId: string | null;
@@ -146,6 +91,11 @@ function toApplicationResponse(application: {
     expectedHourlyRateUsd: application.expectedHourlyRateUsd,
     weeklyAvailabilityHours: application.weeklyAvailabilityHours,
     strongestTools: application.strongestTools,
+    aptitudeScorePercent: application.aptitudeScorePercent,
+    aptitudeCorrectAnswers: application.aptitudeCorrectAnswers,
+    aptitudeQuestionCount: application.aptitudeQuestionCount,
+    aptitudePassed: application.aptitudePassed,
+    aptitudeSubmittedAt: application.aptitudeSubmittedAt?.toISOString() ?? null,
     status: application.status,
     lockedPayoutCents: application.lockedPayoutCents,
     referralId: application.referralId,
@@ -166,12 +116,25 @@ export const ApplicationService = {
       const application = await prisma.$transaction(async (tx) => {
         const job = await tx.job.findFirst({
           where: { id: input.jobId, isActive: true },
-          select: { id: true, payoutAmountCents: true },
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            payoutAmountCents: true,
+            payoutType: true,
+            skills: {
+              select: {
+                label: true,
+              },
+            },
+          },
         });
 
         if (!job) {
           throw new Error("JOB_NOT_FOUND");
         }
+
+        const aptitudeResult = scoreAptitudeTest(job, input.aptitudeAnswers);
 
         const activeApplication = await tx.application.findFirst({
           where: {
@@ -243,6 +206,15 @@ export const ApplicationService = {
             expectedHourlyRateUsd: input.expectedHourlyRateUsd ?? null,
             weeklyAvailabilityHours: input.weeklyAvailabilityHours ?? null,
             strongestTools: input.strongestTools,
+            aptitudeAnswers: input.aptitudeAnswers,
+            aptitudeScorePercent: aptitudeResult.scorePercent,
+            aptitudeCorrectAnswers: aptitudeResult.correctCount,
+            aptitudeQuestionCount: aptitudeResult.totalQuestions,
+            aptitudePassed: aptitudeResult.passed,
+            aptitudeSubmittedAt: new Date(),
+            status: aptitudeResult.passed
+              ? ApplicationStatus.CERTIFIED
+              : ApplicationStatus.APPLIED,
             lockedPayoutCents: job.payoutAmountCents,
             referralId,
           },
@@ -262,6 +234,11 @@ export const ApplicationService = {
             expectedHourlyRateUsd: true,
             weeklyAvailabilityHours: true,
             strongestTools: true,
+            aptitudeScorePercent: true,
+            aptitudeCorrectAnswers: true,
+            aptitudeQuestionCount: true,
+            aptitudePassed: true,
+            aptitudeSubmittedAt: true,
             status: true,
             lockedPayoutCents: true,
             referralId: true,
@@ -285,6 +262,13 @@ export const ApplicationService = {
       where: {
         id: applicationId,
         applicantUserId,
+        status: {
+          in: [
+            ApplicationStatus.ACTIVE,
+            ApplicationStatus.MATCHED,
+            ApplicationStatus.CERTIFIED,
+          ],
+        },
       },
       select: {
         id: true,
@@ -293,7 +277,9 @@ export const ApplicationService = {
         job: {
           select: {
             title: true,
+            description: true,
             companyName: true,
+            payoutType: true,
             skills: {
               select: {
                 label: true,
@@ -308,12 +294,11 @@ export const ApplicationService = {
       throw new Error("APPLICATION_NOT_FOUND");
     }
 
+    const assignment = buildTaskAssignment(application);
+
     return {
-      fileName: `${application.job.title
-        .replace(/[^a-z0-9]+/gi, "-")
-        .replace(/^-|-$/g, "")
-        .toLowerCase()}-task-instructions.txt`,
-      content: formatTaskInstructions(application),
+      fileName: `${assignment.fileBaseName}.pdf`,
+      content: createSimplePdf(assignment.title, assignment.sections),
     };
   },
 

@@ -26,7 +26,8 @@ const DIGITAL_JOB_DATA_RULES = [
   "High-demand flags are assigned to AI, software, data, security, cloud, healthcare, legal, and revenue roles plus a deterministic share of the remaining catalog.",
 ];
 
-const DIGITAL_JOB_TARGET_COUNT = 520;
+const DIGITAL_JOB_TARGET_COUNT = 820;
+const JOB_SEED_BATCH_SIZE = 15;
 
 const freelanceIdentityReferences = [
   {
@@ -1091,8 +1092,10 @@ function validateJobCatalog(jobs: DemoJob[]) {
     throw new Error("Digital job data rules are incomplete.");
   }
 
-  if (jobs.length < 500) {
-    throw new Error(`Expected at least 500 jobs, received ${jobs.length}.`);
+  if (jobs.length < DIGITAL_JOB_TARGET_COUNT) {
+    throw new Error(
+      `Expected at least ${DIGITAL_JOB_TARGET_COUNT} jobs, received ${jobs.length}.`,
+    );
   }
 
   const titles = new Set<string>();
@@ -1230,7 +1233,7 @@ async function main() {
     });
   }
 
-  for (const jobBatch of chunkItems(demoJobs, 3)) {
+  for (const jobBatch of chunkItems(demoJobs, JOB_SEED_BATCH_SIZE)) {
     await Promise.all(jobBatch.map(seedJob));
   }
 

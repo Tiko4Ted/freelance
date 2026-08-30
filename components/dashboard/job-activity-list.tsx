@@ -38,10 +38,13 @@ function statusLabel(application: CandidateApplication) {
     return "Pending task review";
   }
 
+  if (application.status === "CERTIFIED") {
+    return "Approved - task available";
+  }
+
   if (
     application.status === "ACTIVE" ||
-    application.status === "MATCHED" ||
-    application.status === "CERTIFIED"
+    application.status === "MATCHED"
   ) {
     return "Ready to work";
   }
@@ -222,15 +225,32 @@ export function JobActivityList({ applications }: JobActivityListProps) {
 
                   {application.status === "APPLIED" ? (
                     <p className="mt-2 text-sm leading-6 text-amber-700">
-                      Pending approval. Your application is awaiting internal
-                      review.
+                      Pending approval. Your aptitude test has been recorded and
+                      this application is awaiting manual review before the task
+                      unlocks.
+                    </p>
+                  ) : null}
+
+                  {application.aptitudeScorePercent !== null ? (
+                    <p className="mt-2 text-sm leading-6 text-slate-600">
+                      Aptitude score: {application.aptitudeScorePercent}% (
+                      {application.aptitudeCorrectAnswers}/
+                      {application.aptitudeQuestionCount} correct).
                     </p>
                   ) : null}
 
                   {application.status === "CERTIFYING" ? (
                     <p className="mt-2 text-sm leading-6 text-teal-700">
-                      Pending task review. Your task is under review and you
-                      will get an email status update after review.
+                      Pending task review. Cash is credited only after reviewers
+                      mark the completed work successful and payout eligibility
+                      is confirmed.
+                    </p>
+                  ) : null}
+
+                  {application.status === "PAYOUT_ELIGIBLE" ? (
+                    <p className="mt-2 text-sm leading-6 text-teal-700">
+                      Successful. Your approved task payout can now be claimed
+                      in your wallet.
                     </p>
                   ) : null}
 
@@ -240,17 +260,15 @@ export function JobActivityList({ applications }: JobActivityListProps) {
                         className="inline-flex h-10 items-center justify-center border border-slate-950 px-4 text-sm font-semibold text-slate-950 transition hover:border-teal-700 hover:text-teal-700"
                         href={`/api/v1/applications/${application.id}/task-material`}
                       >
-                        {application.materialType === "instructions"
-                          ? "Download task instructions"
-                          : "Download task material"}
+                        Download task PDF
                       </a>
                       <form
                         className="grid gap-3 rounded border border-slate-200 bg-slate-50 p-3"
                         onSubmit={(event) => submitTask(event, application)}
                       >
                         <p className="text-sm leading-6 text-slate-600">
-                          Review the downloaded instructions and tips before
-                          submitting. Submit only after the work is complete.
+                          Review the PDF before starting. Submit only after the
+                          work is complete and ready for review.
                         </p>
                         <input
                           className="text-sm text-slate-700"

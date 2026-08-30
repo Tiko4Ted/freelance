@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 
+import { requestContextFromHeaders } from "@/lib/audit/request-context";
 import { requireSession } from "@/lib/auth/session";
 import { WalletTransferService } from "@/lib/services/wallet-transfer-service";
 import { walletTransferSchema } from "@/lib/validation/wallet-transfer";
@@ -13,6 +14,7 @@ export async function POST(request: Request) {
     const wallet = await WalletTransferService.transferHoldingToFunding(
       session.user.id,
       input,
+      requestContextFromHeaders(request.headers),
     );
 
     return NextResponse.json({ wallet }, { status: 201 });
@@ -41,8 +43,15 @@ export async function POST(request: Request) {
 
       if (error.message === "INVALID_FREELANCE_ID_DETAILS") {
         return NextResponse.json(
-          { error: "Freelance ID or serial number does not match our records" },
+          { error: "Freelance identity details do not match our records" },
           { status: 400 },
+        );
+      }
+
+      if (error.message === "IDENTITY_VERIFICATION_LOCKED") {
+        return NextResponse.json(
+          { error: "Too many failed identity verification attempts" },
+          { status: 429 },
         );
       }
 
