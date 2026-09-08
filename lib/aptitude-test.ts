@@ -300,5 +300,6 @@ export function scoreAptitudeTest(job: AptitudeJob, answers: AptitudeAnswer[]) {
     totalQuestions,
     scorePercent,
     passed: scorePercent > APTITUDE_PASS_PERCENT,
+    rejected: scorePercent < APTITUDE_PASS_PERCENT,
   };
 }

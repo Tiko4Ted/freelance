@@ -40,13 +40,16 @@ export function isApplicationPayload(
 export function ApplicationSubmissionPage({
   status,
   message,
+  outcome = "pending",
   onClose,
 }: {
   status: Extract<SubmitState["status"], "submitting" | "success">;
   message: string;
+  outcome?: "approved" | "pending" | "rejected";
   onClose: () => void;
 }) {
   const isSuccess = status === "success";
+  const isRejected = isSuccess && outcome === "rejected";
 
   return (
     <section className="fixed inset-0 z-50 min-h-screen overflow-y-auto bg-[#f8f8ff] px-5 py-8 text-[#151625] sm:px-8">
@@ -55,12 +58,16 @@ export function ApplicationSubmissionPage({
           <div className="flex items-center gap-3">
             <span
               className={
-                isSuccess
+                isRejected
+                  ? "inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-[#fff0f0] text-red-700"
+                  : isSuccess
                   ? "inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-[#e8f8f3] text-[#087c66]"
                   : "inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-[#eef0ff] text-[#2d3fe5]"
               }
             >
-              {isSuccess ? (
+              {isRejected ? (
+                <AlertCircle aria-hidden="true" className="h-6 w-6" />
+              ) : isSuccess ? (
                 <CheckCircle2 aria-hidden="true" className="h-6 w-6" />
               ) : (
                 <FileText aria-hidden="true" className="h-6 w-6" />
@@ -71,7 +78,11 @@ export function ApplicationSubmissionPage({
                 Application documents
               </p>
               <h1 className="mt-1 text-[24px] font-semibold leading-tight text-[#10121f] sm:text-[30px]">
-                {isSuccess ? "Submission received" : "Preparing your submission"}
+                {isRejected
+                  ? "Application rejected"
+                  : isSuccess
+                    ? "Submission received"
+                    : "Preparing your submission"}
               </h1>
             </div>
           </div>
@@ -84,10 +95,15 @@ export function ApplicationSubmissionPage({
                 role-specific aptitude result have been saved against this
                 opening.
               </p>
-              <p>
-                Open your dashboard to see whether the task is already available
-                or whether the application is waiting for manual review.
-              </p>
+              {isRejected ? (
+                <p>This role will appear as rejected in your dashboard.</p>
+              ) : (
+                <p>
+                  Open your dashboard to see whether the task is already
+                  available or whether the application is waiting for manual
+                  review.
+                </p>
+              )}
             </div>
           ) : (
             <div className="mt-8">

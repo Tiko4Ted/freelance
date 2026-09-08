@@ -189,7 +189,13 @@ export const ApplicationService = {
           }
         }
 
-        return tx.application.create({
+        const applicationStatus = aptitudeResult.passed
+          ? ApplicationStatus.CERTIFIED
+          : aptitudeResult.rejected
+            ? ApplicationStatus.REJECTED
+            : ApplicationStatus.APPLIED;
+
+        const application = await tx.application.create({
           data: {
             applicantUserId: applicant.id,
             jobId: job.id,
@@ -212,9 +218,7 @@ export const ApplicationService = {
             aptitudeQuestionCount: aptitudeResult.totalQuestions,
             aptitudePassed: aptitudeResult.passed,
             aptitudeSubmittedAt: new Date(),
-            status: aptitudeResult.passed
-              ? ApplicationStatus.CERTIFIED
-              : ApplicationStatus.APPLIED,
+            status: applicationStatus,
             lockedPayoutCents: job.payoutAmountCents,
             referralId,
           },
@@ -245,6 +249,20 @@ export const ApplicationService = {
             createdAt: true,
           },
         });
+
+        if (application.status === ApplicationStatus.CERTIFIED) {
+          await tx.job.updateMany({
+            where: {
+              id: job.id,
+              openings: { gt: 0 },
+            },
+            data: {
+              openings: { decrement: 1 },
+            },
+          });
+        }
+
+        return application;
       });
 
       return toApplicationResponse(application);

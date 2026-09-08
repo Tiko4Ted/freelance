@@ -65,6 +65,7 @@ test("passes applicants who score above 40 percent", () => {
   assert.equal(result.correctCount, 7);
   assert.equal(result.scorePercent, 47);
   assert.equal(result.passed, true);
+  assert.equal(result.rejected, false);
 });
 
 test("does not auto-approve applicants who score exactly 40 percent", () => {
@@ -77,4 +78,18 @@ test("does not auto-approve applicants who score exactly 40 percent", () => {
   assert.equal(result.correctCount, 6);
   assert.equal(result.scorePercent, 40);
   assert.equal(result.passed, false);
+  assert.equal(result.rejected, false);
+});
+
+test("rejects applicants who score below 40 percent", () => {
+  const answers: AptitudeAnswer[] = questionIds.map((questionId, index) => ({
+    questionId,
+    selectedOptionId: index < 5 ? "a" : "b",
+  }));
+  const result = scoreAptitudeTest(softwareJob, answers);
+
+  assert.equal(result.correctCount, 5);
+  assert.equal(result.scorePercent, 33);
+  assert.equal(result.passed, false);
+  assert.equal(result.rejected, true);
 });

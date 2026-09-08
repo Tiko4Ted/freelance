@@ -54,6 +54,10 @@ function statusLabel(application: CandidateApplication) {
   }
 
   if (application.bucket === "failed") {
+    if (application.status === "REJECTED") {
+      return "Rejected for this role";
+    }
+
     return "Failed";
   }
 
@@ -228,6 +232,13 @@ export function JobActivityList({ applications }: JobActivityListProps) {
                       Pending approval. Your aptitude test has been recorded and
                       this application is awaiting manual review before the task
                       unlocks.
+                    </p>
+                  ) : null}
+
+                  {application.status === "REJECTED" ? (
+                    <p className="mt-2 text-sm leading-6 text-red-700">
+                      Rejected for this role. Your aptitude score was below the
+                      required threshold.
                     </p>
                   ) : null}
 

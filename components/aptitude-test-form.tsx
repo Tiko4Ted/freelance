@@ -129,6 +129,9 @@ export function AptitudeTestForm({
     status: "idle",
     message: "",
   });
+  const [submissionOutcome, setSubmissionOutcome] = useState<
+    "approved" | "pending" | "rejected"
+  >("pending");
   const isSubmissionPage =
     state.status === "submitting" || state.status === "success";
   const answeredCount = aptitudeTest.filter((question) => answers[question.id])
@@ -193,17 +196,25 @@ export function AptitudeTestForm({
 
       sessionStorage.removeItem(applicationDraftStorageKey(jobId));
 
-      const autoApproved =
-        isApplicationPayload(payload) && payload.application.status === "CERTIFIED";
+      const applicationStatus = isApplicationPayload(payload)
+        ? payload.application.status
+        : null;
+      const autoApproved = applicationStatus === "CERTIFIED";
+      const rejected = applicationStatus === "REJECTED";
       const score = isApplicationPayload(payload)
         ? payload.application.aptitudeScorePercent
         : null;
 
+      setSubmissionOutcome(
+        rejected ? "rejected" : autoApproved ? "approved" : "pending",
+      );
       setState({
         status: "success",
-        message: autoApproved
-          ? `Your aptitude score was ${score}%, so your application was automatically approved and the task is now available in your dashboard.`
-          : `Your aptitude score was ${score ?? "recorded"}%. Your application is pending manual review before the task unlocks.`,
+        message: rejected
+          ? `Your aptitude score was ${score}%, so your application was rejected for this role.`
+          : autoApproved
+            ? `Your aptitude score was ${score}%, so your application was automatically approved and the task is now available in your dashboard.`
+            : `Your aptitude score was ${score ?? "recorded"}%. Your application is pending manual review before the task unlocks.`,
       });
     } catch {
       setState({
@@ -218,6 +229,7 @@ export function AptitudeTestForm({
       <ApplicationSubmissionPage
         message={state.message}
         onClose={() => router.push("/dashboard")}
+        outcome={submissionOutcome}
         status={state.status}
       />
     );
@@ -267,7 +279,7 @@ export function AptitudeTestForm({
               </h1>
               <p className="mt-1 max-w-[620px] text-[13px] leading-[1.55] text-[#4d5060]">
                 Answer all 15 role-related questions. A score above 40%
-                automatically approves you for this task.
+                automatically approves you for this task; below 40% is rejected.
               </p>
             </div>
           </div>
