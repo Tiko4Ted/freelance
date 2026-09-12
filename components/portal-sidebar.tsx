@@ -8,6 +8,7 @@ import {
   UserPlus,
   FileText,
   User,
+  Wallet,
 } from "lucide-react";
 
 export type PortalTab =
@@ -16,6 +17,7 @@ export type PortalTab =
   | "onboarding"
   | "referrals"
   | "documents"
+  | "payments"
   | "profile";
 
 interface PortalSidebarProps {
@@ -58,6 +60,13 @@ export function PortalSidebar({
       label: "Referrals",
       href: "/referral",
       icon: UserPlus,
+      hasDot: false,
+    },
+    {
+      id: "payments" as const,
+      label: "Payments",
+      href: "/wallet",
+      icon: Wallet,
       hasDot: false,
     },
     {
