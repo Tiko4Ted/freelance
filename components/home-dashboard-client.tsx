@@ -35,8 +35,10 @@ export function HomeDashboardClient({
   };
 
   return (
-    <div className="space-y-8">
-      {/* Yellow / Amber Notification Banner */}
+    <div className="flex flex-col lg:flex-row gap-8 items-start">
+      {/* Main Left Column */}
+      <div className="flex-1 space-y-8 min-w-0">
+        {/* Yellow / Amber Notification Banner */}
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#fde68a] bg-[#fffbeb] px-5 py-3.5 shadow-sm">
         <div className="flex items-center gap-2.5">
           <Clock
@@ -297,7 +299,109 @@ export function HomeDashboardClient({
             page.
           </p>
         </section>
-      )}
+        )}
+      </div>
+
+      {/* Right Column Sidebar */}
+      <aside className="w-full shrink-0 space-y-6 lg:w-[320px]">
+        {/* Stats Card */}
+        <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-6">
+            <div>
+              <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                Awaiting payout
+                <Info className="h-3.5 w-3.5" />
+              </div>
+              <div className="mt-1 text-2xl font-bold text-slate-900">
+                $5562.28
+              </div>
+            </div>
+            <div>
+              <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                Total paid
+                <Info className="h-3.5 w-3.5" />
+              </div>
+              <div className="mt-1 text-2xl font-bold text-slate-900">
+                $6927.17
+              </div>
+            </div>
+            <div>
+              <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                Tasks this week
+                <Info className="h-3.5 w-3.5" />
+              </div>
+              <div className="mt-1 text-2xl font-bold text-slate-900">20</div>
+            </div>
+            <div>
+              <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                Hours this week
+                <Info className="h-3.5 w-3.5" />
+              </div>
+              <div className="mt-1 text-2xl font-bold text-slate-900">
+                61:18
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6 border-t border-slate-100 pt-4">
+            <Link
+              href="/profile"
+              className="flex items-center justify-between text-sm font-semibold text-slate-700 transition hover:text-slate-900"
+            >
+              Update your profile
+              <ChevronRight className="h-4 w-4 text-slate-400" />
+            </Link>
+          </div>
+        </div>
+
+        {/* Refer Card */}
+        <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm">
+          <div className="flex gap-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-50">
+              <UserPlus className="h-5 w-5 text-teal-600" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-slate-900">
+                Refer and earn up to $300
+              </h3>
+              <p className="mt-1 text-xs leading-relaxed text-slate-500">
+                Earn money by inviting others to the platform.{" "}
+                <Link
+                  href="#"
+                  className="font-medium text-slate-700 hover:underline"
+                >
+                  View terms
+                </Link>
+              </p>
+              <button className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-slate-900">
+                <ClipboardList className="h-3.5 w-3.5" />
+                Copy referral link
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Try Versus Card */}
+        <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm">
+          <div className="flex gap-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-900">
+              <span className="text-sm font-bold text-[#a3e635]">VS</span>
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-slate-900">
+                Try Versus
+              </h3>
+              <p className="mt-1 text-xs leading-relaxed text-slate-500">
+                Get free access to premium AI models and compare which responses work best for you
+              </p>
+              <button className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-slate-900">
+                Try now
+                <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </aside>
     </div>
   );
 }
