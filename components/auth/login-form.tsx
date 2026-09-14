@@ -13,7 +13,7 @@ type LoginFormProps = {
   callbackUrl?: string;
 };
 
-export function LoginForm({ callbackUrl = "/dashboard" }: LoginFormProps) {
+export function LoginForm({ callbackUrl = "/home" }: LoginFormProps) {
   const [state, setState] = useState<LoginState>({
     status: "idle",
     message: "",

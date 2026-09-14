@@ -85,7 +85,7 @@ export function ApplicationSubmissionPage({
                 opening.
               </p>
               <p>
-                Open your dashboard to see whether the task is already available
+                Open your home page to see whether the task is already available
                 or whether the application is waiting for manual review.
               </p>
             </div>
@@ -113,7 +113,7 @@ export function ApplicationSubmissionPage({
               onClick={onClose}
               type="button"
             >
-              Go to dashboard
+              Go to home
             </button>
           ) : null}
         </div>

@@ -26,7 +26,7 @@ function getErrorMessage(payload: unknown) {
   return "Unable to create account";
 }
 
-export function RegisterForm({ callbackUrl = "/dashboard" }: RegisterFormProps) {
+export function RegisterForm({ callbackUrl = "/home" }: RegisterFormProps) {
   const [state, setState] = useState<RegisterState>({
     status: "idle",
     message: "",

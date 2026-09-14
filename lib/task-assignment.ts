@@ -690,7 +690,7 @@ export function buildTaskAssignment(
       {
         heading: "After upload",
         lines: [
-          "Your dashboard status will move to Pending task review after you submit.",
+          "Your home page status will move to Pending task review after you submit.",
           "Cash is credited only after reviewers mark the completed work successful and payout eligibility is confirmed.",
           template.partnerPaymentNote ??
             "If the task involves another participant, include their name and contact details in the submission notes for operations review.",

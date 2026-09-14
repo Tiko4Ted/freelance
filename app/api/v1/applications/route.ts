@@ -74,7 +74,7 @@ export async function POST(request: Request) {
 
       return NextResponse.json(
         {
-          error: `You already have an active application for ${activeJobTitle}. Open your dashboard, finish and submit that task, then apply to another job.`,
+          error: `You already have an active application for ${activeJobTitle}. Open your home page, finish and submit that task, then apply to another job.`,
         },
         { status: 409 },
       );

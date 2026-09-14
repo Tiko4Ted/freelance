@@ -24,7 +24,7 @@ Completed:
 - Candidate application form and `/api/v1/applications` submission route.
 - Referrer link and referred-application API routes.
 - Login and registration pages.
-- Referrer dashboard UI for links and referred applications.
+- Home page UI for links and referred applications.
 - Admin job and application management APIs.
 - Admin screens for jobs, applications, status changes, and progress logging.
 - Approved candidates can download role-matched task PDFs, submit completed work for review, and expose submitted task details in admin review.
@@ -114,7 +114,7 @@ Authentication is implemented through Auth.js credentials. The v1 authentication
 - `POST /api/v1/auth/refresh`
 - `/login`
 - `/register`
-- `/dashboard`
+- `/home`
 
 ## Admin
 
@@ -194,4 +194,4 @@ Referral links use `/jobs/[jobId]?ref=<referralCode>`. The proxy stores the firs
 
 Board-level referral links can also use `/jobs?referralCode=<referralCode>`. The jobs board treats `ref` and `referralCode` as aliases, personalizes with the referrer's first name when available, and falls back to neutral invited-copy for unknown or missing codes.
 
-When a candidate application is approved, the dashboard exposes a downloadable PDF task brief matched from the job title, description, payout type, and skill tags. Submitting work moves the application to pending task review; payout crediting remains tied to successful review and payout eligibility.
+When a candidate application is approved, the home page exposes a downloadable PDF task brief matched from the job title, description, payout type, and skill tags. Submitting work moves the application to pending task review; payout crediting remains tied to successful review and payout eligibility.
