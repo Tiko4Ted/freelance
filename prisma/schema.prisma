@@ -68,15 +68,43 @@ model User {
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
-  referrals             Referral[]
-  ledgerEntries         LedgerEntry[]
-  withdrawals           Withdrawal[]
-  walletTransfers       WalletTransfer[]
-  freelanceVerification UserFreelanceVerification?
+  referrals                   Referral[]
+  ledgerEntries               LedgerEntry[]
+  withdrawals                 Withdrawal[]
+  walletTransfers             WalletTransfer[]
+  freelanceVerification       UserFreelanceVerification?
+  onboarding                  UserOnboarding?
   freelanceVerificationAudits FreelanceIdentityVerificationAudit[]
-  applications          Application[]
+  applications                Application[]
 
   @@index([role])
+}
+
+model UserOnboarding {
+  userId                      String    @id
+  user                        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ndaSignedAt                 DateTime?
+  ndaSignerName               String?
+  ndaSignerTitle              String?
+  ndaSignatureText            String?
+  dataSubmissionSignedAt      DateTime?
+  dataSubmissionSignerName    String?
+  dataSubmissionSignerTitle   String?
+  dataSubmissionSignatureText String?
+  phoneCountryCode            String?
+  phoneNumber                 String?
+  phoneVerifiedAt             DateTime?
+  identityLegalName           String?
+  identityDateOfBirth         DateTime?
+  identityDocumentType        String?
+  identityDocumentLast4       String?
+  identityVerifiedAt          DateTime?
+  paymentMethod               String?
+  paymentDestination          String?
+  paymentSetupAt              DateTime?
+  completedAt                 DateTime?
+  createdAt                   DateTime  @default(now())
+  updatedAt                   DateTime  @updatedAt
 }
 
 model Job {
@@ -200,13 +228,13 @@ model FreelanceIdentityReference {
 }
 
 model FreelanceIdentitySyncRequest {
-  idempotencyKey     String   @id
-  payloadHash        String
-  payload            Json
+  idempotencyKey      String                      @id
+  payloadHash         String
+  payload             Json
   identityReferenceId String?
-  identityReference  FreelanceIdentityReference? @relation(fields: [identityReferenceId], references: [id], onDelete: SetNull)
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  identityReference   FreelanceIdentityReference? @relation(fields: [identityReferenceId], references: [id], onDelete: SetNull)
+  createdAt           DateTime                    @default(now())
+  updatedAt           DateTime                    @updatedAt
 
   @@index([identityReferenceId])
 }

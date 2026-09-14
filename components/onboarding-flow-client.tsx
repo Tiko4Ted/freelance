@@ -1,75 +1,133 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
+import { type FormEvent, useState } from "react";
 import {
+  CreditCard,
   FileText,
   Lock,
+  Phone,
   Shield,
   CheckCircle2,
   X,
   Check,
+  UserCheck,
 } from "lucide-react";
 
+type OnboardingStatus = {
+  ndaSignedAt: string | null;
+  dataSubmissionSignedAt: string | null;
+  phoneCountryCode: string | null;
+  phoneNumber: string | null;
+  phoneVerifiedAt: string | null;
+  identityLegalName: string | null;
+  identityDateOfBirth: string | null;
+  identityDocumentType: string | null;
+  identityDocumentLast4: string | null;
+  identityVerifiedAt: string | null;
+  paymentMethod: string | null;
+  paymentDestination: string | null;
+  paymentSetupAt: string | null;
+  payoutAccountReady: boolean;
+  completedAt: string | null;
+  legalComplete: boolean;
+  phoneVerified: boolean;
+  identityVerified: boolean;
+  paymentsSetup: boolean;
+  complete: boolean;
+};
+
+type FormState =
+  | { status: "idle"; message: string }
+  | { status: "submitting"; message: string }
+  | { status: "success"; message: string }
+  | { status: "error"; message: string };
+
+type PayoutMethod =
+  | "MPESA"
+  | "AIRTEL_MONEY"
+  | "BANK_CARD"
+  | "BINANCE"
+  | "PAYPAL";
+
 interface OnboardingFlowClientProps {
+  initialOnboarding: OnboardingStatus;
+  isAuthenticated: boolean;
   userName?: string;
 }
 
-const SIGNATURE_STORAGE_EVENT = "afterquery:onboarding-signature-change";
+const payoutMethods: Array<{ value: PayoutMethod; label: string }> = [
+  { value: "MPESA", label: "M-Pesa" },
+  { value: "AIRTEL_MONEY", label: "Airtel Money" },
+  { value: "BANK_CARD", label: "Bank card" },
+  { value: "BINANCE", label: "Binance" },
+  { value: "PAYPAL", label: "PayPal" },
+];
 
-function subscribeToSignatureStorage(onStoreChange: () => void) {
-  if (typeof window === "undefined") {
-    return () => {};
+const paymentPlaceholders: Record<PayoutMethod, string> = {
+  MPESA: "M-Pesa phone number",
+  AIRTEL_MONEY: "Airtel Money phone number",
+  BANK_CARD: "Bank account or card label",
+  BINANCE: "Binance email or account ID",
+  PAYPAL: "PayPal email",
+};
+
+function getErrorMessage(payload: unknown, fallback: string) {
+  if (
+    payload &&
+    typeof payload === "object" &&
+    "error" in payload &&
+    typeof payload.error === "string"
+  ) {
+    return payload.error;
   }
 
-  window.addEventListener("storage", onStoreChange);
-  window.addEventListener(SIGNATURE_STORAGE_EVENT, onStoreChange);
-
-  return () => {
-    window.removeEventListener("storage", onStoreChange);
-    window.removeEventListener(SIGNATURE_STORAGE_EVENT, onStoreChange);
-  };
-}
-
-function getStoredSignatureStatus(storageKey: string) {
-  if (typeof window === "undefined") {
-    return false;
-  }
-
-  try {
-    return localStorage.getItem(storageKey) === "true";
-  } catch {
-    return false;
-  }
-}
-
-function notifySignatureStorageChanged() {
-  if (typeof window !== "undefined") {
-    window.dispatchEvent(new Event(SIGNATURE_STORAGE_EVENT));
-  }
+  return fallback;
 }
 
 export function OnboardingFlowClient({
+  initialOnboarding,
+  isAuthenticated,
   userName = "Teddy",
 }: OnboardingFlowClientProps) {
-  const ndaSigned = useSyncExternalStore(
-    subscribeToSignatureStorage,
-    () => getStoredSignatureStatus("onboarding_nda_signed"),
-    () => false,
-  );
-  const dataSubmissionSigned = useSyncExternalStore(
-    subscribeToSignatureStorage,
-    () => getStoredSignatureStatus("onboarding_data_submission_signed"),
-    () => false,
-  );
+  const [onboarding, setOnboarding] =
+    useState<OnboardingStatus>(initialOnboarding);
+  const [state, setState] = useState<FormState>({
+    status: "idle",
+    message: "",
+  });
   const [activeModal, setActiveModal] = useState<"nda" | "dataSubmission" | null>(
     null,
   );
-
-  // Form states inside modal
   const [signerName, setSignerName] = useState(userName);
   const [signerTitle, setSignerTitle] = useState("Contractor");
   const [agreed, setAgreed] = useState(false);
   const [signatureText, setSignatureText] = useState(userName);
+  const [phoneCountryCode, setPhoneCountryCode] = useState(
+    onboarding.phoneCountryCode ?? "+1",
+  );
+  const [phoneNumber, setPhoneNumber] = useState(onboarding.phoneNumber ?? "");
+  const [verificationCode, setVerificationCode] = useState("123456");
+  const [identityLegalName, setIdentityLegalName] = useState(
+    onboarding.identityLegalName ?? userName,
+  );
+  const [identityDateOfBirth, setIdentityDateOfBirth] = useState(
+    onboarding.identityDateOfBirth ?? "",
+  );
+  const [identityDocumentType, setIdentityDocumentType] = useState(
+    onboarding.identityDocumentType ?? "national_id",
+  );
+  const [identityDocumentLast4, setIdentityDocumentLast4] = useState(
+    onboarding.identityDocumentLast4 ?? "",
+  );
+  const [paymentMethod, setPaymentMethod] = useState<PayoutMethod>(
+    (onboarding.paymentMethod as PayoutMethod | null) ?? "MPESA",
+  );
+  const [paymentDestination, setPaymentDestination] = useState(
+    onboarding.paymentDestination ?? "",
+  );
+
+  const ndaSigned = Boolean(onboarding.ndaSignedAt);
+  const dataSubmissionSigned = Boolean(onboarding.dataSubmissionSignedAt);
 
   const openSignModal = (doc: "nda" | "dataSubmission") => {
     setSignerName(userName);
@@ -79,26 +137,112 @@ export function OnboardingFlowClient({
     setActiveModal(doc);
   };
 
-  const handleSignConfirm = () => {
-    if (!agreed || !signerName.trim() || !signatureText.trim()) return;
-
-    if (activeModal === "nda") {
-      try {
-        localStorage.setItem("onboarding_nda_signed", "true");
-        notifySignatureStorageChanged();
-      } catch {
-        // ignore
-      }
-    } else if (activeModal === "dataSubmission") {
-      try {
-        localStorage.setItem("onboarding_data_submission_signed", "true");
-        notifySignatureStorageChanged();
-      } catch {
-        // ignore
-      }
+  const saveOnboardingAction = async (
+    payload: Record<string, unknown>,
+    successMessage: string,
+  ) => {
+    if (!isAuthenticated) {
+      setState({
+        status: "error",
+        message: "Sign in before saving onboarding progress.",
+      });
+      return false;
     }
 
-    setActiveModal(null);
+    setState({ status: "submitting", message: "Saving onboarding progress" });
+
+    let response: Response;
+    let responsePayload: unknown;
+
+    try {
+      response = await fetch("/api/v1/onboarding", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      responsePayload = await response.json();
+    } catch {
+      setState({ status: "error", message: "Unable to save onboarding" });
+      return false;
+    }
+
+    if (!response.ok) {
+      setState({
+        status: "error",
+        message: getErrorMessage(responsePayload, "Unable to save onboarding"),
+      });
+      return false;
+    }
+
+    if (
+      responsePayload &&
+      typeof responsePayload === "object" &&
+      "onboarding" in responsePayload
+    ) {
+      setOnboarding(responsePayload.onboarding as OnboardingStatus);
+    }
+
+    setState({ status: "success", message: successMessage });
+    return true;
+  };
+
+  const handleSignConfirm = async () => {
+    if (!agreed || !signerName.trim() || !signatureText.trim()) return;
+    if (!activeModal) return;
+
+    const saved = await saveOnboardingAction(
+      {
+        action: "signLegal",
+        document: activeModal,
+        signerName,
+        signerTitle,
+        signatureText,
+      },
+      "Legal signature saved",
+    );
+
+    if (saved) {
+      setActiveModal(null);
+    }
+  };
+
+  const handlePhoneSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    await saveOnboardingAction(
+      {
+        action: "verifyPhone",
+        phoneCountryCode,
+        phoneNumber,
+        verificationCode,
+      },
+      "Phone verification saved",
+    );
+  };
+
+  const handleIdentitySubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    await saveOnboardingAction(
+      {
+        action: "verifyIdentity",
+        legalName: identityLegalName,
+        dateOfBirth: identityDateOfBirth,
+        documentType: identityDocumentType,
+        documentLast4: identityDocumentLast4,
+      },
+      "Identity verification saved",
+    );
+  };
+
+  const handlePaymentSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    await saveOnboardingAction(
+      {
+        action: "setupPayments",
+        paymentMethod,
+        paymentDestination,
+      },
+      "Payment setup saved",
+    );
   };
 
   const todayFormatted = new Intl.DateTimeFormat("en-US", {
@@ -106,6 +250,33 @@ export function OnboardingFlowClient({
     day: "numeric",
     year: "numeric",
   }).format(new Date());
+  const saving = state.status === "submitting";
+  const steps = [
+    {
+      label: "Sign Legal",
+      complete: onboarding.legalComplete,
+      locked: false,
+      icon: FileText,
+    },
+    {
+      label: "Verify Phone",
+      complete: onboarding.phoneVerified,
+      locked: !onboarding.legalComplete,
+      icon: Phone,
+    },
+    {
+      label: "Verify Identity",
+      complete: onboarding.identityVerified,
+      locked: !onboarding.phoneVerified,
+      icon: UserCheck,
+    },
+    {
+      label: "Set up Payments",
+      complete: onboarding.paymentsSetup,
+      locked: !onboarding.identityVerified,
+      icon: CreditCard,
+    },
+  ];
 
   return (
     <div className="mx-auto max-w-[680px] pt-2">
@@ -124,180 +295,411 @@ export function OnboardingFlowClient({
         {/* Stepper Header */}
         <div className="border-b border-slate-100 px-8 py-6">
           <div className="flex items-center justify-between">
-            {/* Step 1 */}
-            <div className="flex flex-col items-center">
-              <div
-                className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all ${
-                  ndaSigned && dataSubmissionSigned
-                    ? "border-emerald-500 bg-emerald-50 text-emerald-600"
-                    : "border-[#0066cc] bg-[#eff6ff] text-[#0066cc]"
-                }`}
-              >
-                {ndaSigned && dataSubmissionSigned ? (
-                  <Check className="h-5 w-5 stroke-[2.5]" />
-                ) : (
-                  <FileText className="h-5 w-5 stroke-[2]" />
-                )}
-              </div>
-              <span
-                className={`mt-2 text-xs font-semibold ${
-                  ndaSigned && dataSubmissionSigned
-                    ? "text-emerald-700"
-                    : "text-[#0066cc]"
-                }`}
-              >
-                Sign Legal
-              </span>
-            </div>
+            {steps.map((step, index) => {
+              const StepIcon = step.icon;
+              const active = !step.complete && !step.locked;
 
-            {/* Connector Line 1-2 */}
-            <div className="mx-2 -mt-5 h-[1px] flex-1 bg-slate-200" />
-
-            {/* Step 2 */}
-            <div className="flex flex-col items-center">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-400">
-                <Lock className="h-4 w-4" strokeWidth={2} />
-              </div>
-              <span className="mt-2 text-xs font-medium text-slate-400">
-                Verify Phone
-              </span>
-            </div>
-
-            {/* Connector Line 2-3 */}
-            <div className="mx-2 -mt-5 h-[1px] flex-1 bg-slate-200" />
-
-            {/* Step 3 */}
-            <div className="flex flex-col items-center">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-400">
-                <Lock className="h-4 w-4" strokeWidth={2} />
-              </div>
-              <span className="mt-2 text-xs font-medium text-slate-400">
-                Verify Identity
-              </span>
-            </div>
-
-            {/* Connector Line 3-4 */}
-            <div className="mx-2 -mt-5 h-[1px] flex-1 bg-slate-200" />
-
-            {/* Step 4 */}
-            <div className="flex flex-col items-center">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-400">
-                <Lock className="h-4 w-4" strokeWidth={2} />
-              </div>
-              <span className="mt-2 text-xs font-medium text-slate-400">
-                Set up Payments
-              </span>
-            </div>
+              return (
+                <div className="contents" key={step.label}>
+                  {index > 0 ? (
+                    <div
+                      className={`mx-2 -mt-5 h-[1px] flex-1 ${
+                        steps[index - 1].complete
+                          ? "bg-emerald-200"
+                          : "bg-slate-200"
+                      }`}
+                    />
+                  ) : null}
+                  <div className="flex min-w-[72px] flex-col items-center">
+                    <div
+                      className={`flex h-10 w-10 items-center justify-center rounded-full border transition-all ${
+                        step.complete
+                          ? "border-emerald-500 bg-emerald-50 text-emerald-600"
+                          : active
+                            ? "border-[#0066cc] bg-[#eff6ff] text-[#0066cc]"
+                            : "border-slate-200 bg-slate-50 text-slate-400"
+                      }`}
+                    >
+                      {step.complete ? (
+                        <Check className="h-5 w-5 stroke-[2.5]" />
+                      ) : step.locked ? (
+                        <Lock className="h-4 w-4" strokeWidth={2} />
+                      ) : (
+                        <StepIcon className="h-5 w-5" strokeWidth={2} />
+                      )}
+                    </div>
+                    <span
+                      className={`mt-2 text-center text-xs font-semibold ${
+                        step.complete
+                          ? "text-emerald-700"
+                          : active
+                            ? "text-[#0066cc]"
+                            : "text-slate-400"
+                      }`}
+                    >
+                      {step.label}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Step 1 Body: Sign Legal Documents */}
-        <div className="p-7 sm:p-8">
+        <div className="space-y-8 p-7 sm:p-8">
           <div>
             <h2 className="text-lg font-bold text-slate-900">
-              Sign Legal Documents
+              Complete onboarding
             </h2>
             <p className="mt-1 text-sm text-slate-500">
-              Complete the required documents below to continue.
+              Save each required step to unlock work and payments.
             </p>
           </div>
 
-          <div className="mt-6 space-y-3.5">
-            {/* Document 1: Non-Disclosure Agreement */}
-            <div className="flex items-center justify-between rounded-xl border border-slate-200/90 bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition hover:border-slate-300">
-              <div className="flex items-center gap-3.5">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-slate-100 bg-slate-50 text-slate-600">
-                  <Shield className="h-5 w-5" strokeWidth={1.8} />
-                </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-slate-900">
-                    Non-Disclosure Agreement
-                  </h3>
-                  {ndaSigned ? (
-                    <p className="mt-0.5 flex items-center gap-1 text-xs font-medium text-emerald-600">
-                      <CheckCircle2 className="h-3.5 w-3.5" /> Signed
-                    </p>
-                  ) : (
-                    <p className="mt-0.5 text-xs text-slate-500">
-                      Needs signature
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {ndaSigned ? (
-                <button
-                  type="button"
-                  onClick={() => openSignModal("nda")}
-                  className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
-                >
-                  View Signed
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => openSignModal("nda")}
-                  className="rounded-xl bg-[#0066cc] px-5 py-2 text-sm font-semibold text-white shadow-xs transition hover:bg-[#0052a3]"
-                >
-                  Sign
-                </button>
-              )}
+          {state.message ? (
+            <div
+              className={`rounded-xl border p-3 text-sm ${
+                state.status === "error"
+                  ? "border-red-200 bg-red-50 text-red-800"
+                  : "border-emerald-200 bg-emerald-50 text-emerald-800"
+              }`}
+            >
+              {state.message}
             </div>
+          ) : null}
 
-            {/* Document 2: Data Submission Form */}
-            <div className="flex items-center justify-between rounded-xl border border-slate-200/90 bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition hover:border-slate-300">
-              <div className="flex items-center gap-3.5">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-slate-100 bg-slate-50 text-slate-600">
-                  <FileText className="h-5 w-5" strokeWidth={1.8} />
-                </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-slate-900">
-                    Data Submission Form
-                  </h3>
-                  {dataSubmissionSigned ? (
-                    <p className="mt-0.5 flex items-center gap-1 text-xs font-medium text-emerald-600">
-                      <CheckCircle2 className="h-3.5 w-3.5" /> Signed
-                    </p>
-                  ) : (
-                    <p className="mt-0.5 text-xs text-slate-500">
-                      Needs signature
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {dataSubmissionSigned ? (
-                <button
-                  type="button"
-                  onClick={() => openSignModal("dataSubmission")}
-                  className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
-                >
-                  View Signed
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => openSignModal("dataSubmission")}
-                  className="rounded-xl bg-[#0066cc] px-5 py-2 text-sm font-semibold text-white shadow-xs transition hover:bg-[#0052a3]"
-                >
-                  Sign
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* All Signed Status Banner */}
-          {ndaSigned && dataSubmissionSigned ? (
-            <div className="mt-6 flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50/80 p-4 text-sm text-emerald-900">
+          {onboarding.complete ? (
+            <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50/80 p-4 text-sm text-emerald-900">
               <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" />
               <div>
-                <p className="font-semibold">All legal documents signed!</p>
+                <p className="font-semibold">Onboarding complete</p>
                 <p className="text-xs text-emerald-700">
-                  Your legal agreements have been submitted and recorded.
+                  Your onboarding state is saved to your account.
                 </p>
               </div>
             </div>
           ) : null}
+
+          <section>
+            <div>
+              <h3 className="text-base font-bold text-slate-900">
+                Legal documents
+              </h3>
+              <p className="mt-1 text-sm text-slate-500">
+                Sign both agreements before continuing.
+              </p>
+            </div>
+
+            <div className="mt-4 space-y-3.5">
+              <div className="flex items-center justify-between rounded-xl border border-slate-200/90 bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition hover:border-slate-300">
+                <div className="flex items-center gap-3.5">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-slate-100 bg-slate-50 text-slate-600">
+                    <Shield className="h-5 w-5" strokeWidth={1.8} />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-slate-900">
+                      Non-Disclosure Agreement
+                    </h4>
+                    {ndaSigned ? (
+                      <p className="mt-0.5 flex items-center gap-1 text-xs font-medium text-emerald-600">
+                        <CheckCircle2 className="h-3.5 w-3.5" /> Signed
+                      </p>
+                    ) : (
+                      <p className="mt-0.5 text-xs text-slate-500">
+                        Needs signature
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => openSignModal("nda")}
+                  className={
+                    ndaSigned
+                      ? "rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+                      : "rounded-xl bg-[#0066cc] px-5 py-2 text-sm font-semibold text-white shadow-xs transition hover:bg-[#0052a3]"
+                  }
+                >
+                  {ndaSigned ? "View Signed" : "Sign"}
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between rounded-xl border border-slate-200/90 bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition hover:border-slate-300">
+                <div className="flex items-center gap-3.5">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-slate-100 bg-slate-50 text-slate-600">
+                    <FileText className="h-5 w-5" strokeWidth={1.8} />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold text-slate-900">
+                      Data Submission Form
+                    </h4>
+                    {dataSubmissionSigned ? (
+                      <p className="mt-0.5 flex items-center gap-1 text-xs font-medium text-emerald-600">
+                        <CheckCircle2 className="h-3.5 w-3.5" /> Signed
+                      </p>
+                    ) : (
+                      <p className="mt-0.5 text-xs text-slate-500">
+                        Needs signature
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => openSignModal("dataSubmission")}
+                  className={
+                    dataSubmissionSigned
+                      ? "rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+                      : "rounded-xl bg-[#0066cc] px-5 py-2 text-sm font-semibold text-white shadow-xs transition hover:bg-[#0052a3]"
+                  }
+                >
+                  {dataSubmissionSigned ? "View Signed" : "Sign"}
+                </button>
+              </div>
+            </div>
+
+            {onboarding.legalComplete ? (
+              <div className="mt-4 flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50/80 p-4 text-sm text-emerald-900">
+                <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" />
+                <div>
+                  <p className="font-semibold">Legal documents saved</p>
+                  <p className="text-xs text-emerald-700">
+                    Your legal agreements were recorded in the database.
+                  </p>
+                </div>
+              </div>
+            ) : null}
+          </section>
+
+          <form
+            className={`space-y-4 border-t border-slate-100 pt-8 ${
+              !onboarding.legalComplete ? "opacity-60" : ""
+            }`}
+            onSubmit={handlePhoneSubmit}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 className="text-base font-bold text-slate-900">
+                  Verify phone
+                </h3>
+                <p className="mt-1 text-sm text-slate-500">
+                  Add the phone number used for account updates.
+                </p>
+              </div>
+              {onboarding.phoneVerified ? (
+                <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                  Verified
+                </span>
+              ) : null}
+            </div>
+            <fieldset
+              className="grid grid-cols-1 gap-3 sm:grid-cols-[110px_1fr]"
+              disabled={!onboarding.legalComplete || saving}
+            >
+              <label className="block">
+                <span className="text-xs font-semibold text-slate-600">
+                  Code
+                </span>
+                <input
+                  className="mt-1 h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100"
+                  onChange={(event) => setPhoneCountryCode(event.target.value)}
+                  required
+                  value={phoneCountryCode}
+                />
+              </label>
+              <label className="block">
+                <span className="text-xs font-semibold text-slate-600">
+                  Phone number
+                </span>
+                <input
+                  className="mt-1 h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100"
+                  onChange={(event) => setPhoneNumber(event.target.value)}
+                  placeholder="555 123 4567"
+                  required
+                  value={phoneNumber}
+                />
+              </label>
+              <label className="block sm:col-span-2">
+                <span className="text-xs font-semibold text-slate-600">
+                  Verification code
+                </span>
+                <input
+                  className="mt-1 h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100"
+                  inputMode="numeric"
+                  onChange={(event) => setVerificationCode(event.target.value)}
+                  required
+                  value={verificationCode}
+                />
+              </label>
+            </fieldset>
+            <button
+              className="inline-flex h-11 items-center justify-center rounded-xl bg-[#0066cc] px-5 text-sm font-semibold text-white shadow-xs transition hover:bg-[#0052a3] disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={!onboarding.legalComplete || saving}
+              type="submit"
+            >
+              {onboarding.phoneVerified ? "Update Phone" : "Verify Phone"}
+            </button>
+          </form>
+
+          <form
+            className={`space-y-4 border-t border-slate-100 pt-8 ${
+              !onboarding.phoneVerified ? "opacity-60" : ""
+            }`}
+            onSubmit={handleIdentitySubmit}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 className="text-base font-bold text-slate-900">
+                  Verify identity
+                </h3>
+                <p className="mt-1 text-sm text-slate-500">
+                  Confirm the legal identity attached to this account.
+                </p>
+              </div>
+              {onboarding.identityVerified ? (
+                <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                  Verified
+                </span>
+              ) : null}
+            </div>
+            <fieldset
+              className="grid grid-cols-1 gap-3 sm:grid-cols-2"
+              disabled={!onboarding.phoneVerified || saving}
+            >
+              <label className="block sm:col-span-2">
+                <span className="text-xs font-semibold text-slate-600">
+                  Legal name
+                </span>
+                <input
+                  className="mt-1 h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100"
+                  onChange={(event) => setIdentityLegalName(event.target.value)}
+                  required
+                  value={identityLegalName}
+                />
+              </label>
+              <label className="block">
+                <span className="text-xs font-semibold text-slate-600">
+                  Date of birth
+                </span>
+                <input
+                  className="mt-1 h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100"
+                  onChange={(event) =>
+                    setIdentityDateOfBirth(event.target.value)
+                  }
+                  required
+                  type="date"
+                  value={identityDateOfBirth}
+                />
+              </label>
+              <label className="block">
+                <span className="text-xs font-semibold text-slate-600">
+                  Document type
+                </span>
+                <select
+                  className="mt-1 h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100"
+                  onChange={(event) =>
+                    setIdentityDocumentType(event.target.value)
+                  }
+                  value={identityDocumentType}
+                >
+                  <option value="national_id">National ID</option>
+                  <option value="passport">Passport</option>
+                  <option value="drivers_license">Driver license</option>
+                </select>
+              </label>
+              <label className="block sm:col-span-2">
+                <span className="text-xs font-semibold text-slate-600">
+                  Document last 4
+                </span>
+                <input
+                  className="mt-1 h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm uppercase outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100"
+                  maxLength={4}
+                  minLength={4}
+                  onChange={(event) =>
+                    setIdentityDocumentLast4(event.target.value)
+                  }
+                  required
+                  value={identityDocumentLast4}
+                />
+              </label>
+            </fieldset>
+            <button
+              className="inline-flex h-11 items-center justify-center rounded-xl bg-[#0066cc] px-5 text-sm font-semibold text-white shadow-xs transition hover:bg-[#0052a3] disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={!onboarding.phoneVerified || saving}
+              type="submit"
+            >
+              {onboarding.identityVerified
+                ? "Update Identity"
+                : "Verify Identity"}
+            </button>
+          </form>
+
+          <form
+            className={`space-y-4 border-t border-slate-100 pt-8 ${
+              !onboarding.identityVerified ? "opacity-60" : ""
+            }`}
+            onSubmit={handlePaymentSubmit}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 className="text-base font-bold text-slate-900">
+                  Set up payments
+                </h3>
+                <p className="mt-1 text-sm text-slate-500">
+                  Choose where approved payouts should be sent.
+                </p>
+              </div>
+              {onboarding.paymentsSetup ? (
+                <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                  Ready
+                </span>
+              ) : null}
+            </div>
+            <fieldset
+              className="grid grid-cols-1 gap-3 sm:grid-cols-2"
+              disabled={!onboarding.identityVerified || saving}
+            >
+              <label className="block">
+                <span className="text-xs font-semibold text-slate-600">
+                  Payout method
+                </span>
+                <select
+                  className="mt-1 h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100"
+                  onChange={(event) =>
+                    setPaymentMethod(event.target.value as PayoutMethod)
+                  }
+                  value={paymentMethod}
+                >
+                  {payoutMethods.map((method) => (
+                    <option key={method.value} value={method.value}>
+                      {method.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block">
+                <span className="text-xs font-semibold text-slate-600">
+                  Destination
+                </span>
+                <input
+                  className="mt-1 h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:bg-slate-100"
+                  onChange={(event) => setPaymentDestination(event.target.value)}
+                  placeholder={paymentPlaceholders[paymentMethod]}
+                  required
+                  value={paymentDestination}
+                />
+              </label>
+            </fieldset>
+            <button
+              className="inline-flex h-11 items-center justify-center rounded-xl bg-[#0066cc] px-5 text-sm font-semibold text-white shadow-xs transition hover:bg-[#0052a3] disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={!onboarding.identityVerified || saving}
+              type="submit"
+            >
+              {onboarding.paymentsSetup ? "Update Payments" : "Save Payments"}
+            </button>
+          </form>
         </div>
       </div>
 
@@ -844,10 +1246,10 @@ export function OnboardingFlowClient({
               <button
                 type="button"
                 onClick={handleSignConfirm}
-                disabled={!agreed || !signerName.trim()}
+                disabled={saving || !agreed || !signerName.trim()}
                 className="rounded-xl bg-[#0066cc] px-6 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-[#0052a3] disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Sign &amp; Accept
+                {saving ? "Saving..." : "Sign & Accept"}
               </button>
             </div>
           </div>
