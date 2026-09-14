@@ -49,6 +49,8 @@ type PayoutMethod =
   | "BINANCE"
   | "PAYPAL";
 
+type OnboardingStep = "legal" | "phone" | "identity" | "payments";
+
 interface OnboardingFlowClientProps {
   initialOnboarding: OnboardingStatus;
   isAuthenticated: boolean;
@@ -84,6 +86,22 @@ function getErrorMessage(payload: unknown, fallback: string) {
   return fallback;
 }
 
+function getInitialStep(onboarding: OnboardingStatus): OnboardingStep {
+  if (!onboarding.legalComplete) {
+    return "legal";
+  }
+
+  if (!onboarding.phoneVerified) {
+    return "phone";
+  }
+
+  if (!onboarding.identityVerified) {
+    return "identity";
+  }
+
+  return "payments";
+}
+
 export function OnboardingFlowClient({
   initialOnboarding,
   isAuthenticated,
@@ -91,6 +109,9 @@ export function OnboardingFlowClient({
 }: OnboardingFlowClientProps) {
   const [onboarding, setOnboarding] =
     useState<OnboardingStatus>(initialOnboarding);
+  const [activeStep, setActiveStep] = useState<OnboardingStep>(() =>
+    getInitialStep(initialOnboarding),
+  );
   const [state, setState] = useState<FormState>({
     status: "idle",
     message: "",
@@ -253,30 +274,40 @@ export function OnboardingFlowClient({
   const saving = state.status === "submitting";
   const steps = [
     {
+      id: "legal" as const,
       label: "Sign Legal",
       complete: onboarding.legalComplete,
       locked: false,
       icon: FileText,
     },
     {
+      id: "phone" as const,
       label: "Verify Phone",
       complete: onboarding.phoneVerified,
       locked: !onboarding.legalComplete,
       icon: Phone,
     },
     {
+      id: "identity" as const,
       label: "Verify Identity",
       complete: onboarding.identityVerified,
       locked: !onboarding.phoneVerified,
       icon: UserCheck,
     },
     {
+      id: "payments" as const,
       label: "Set up Payments",
       complete: onboarding.paymentsSetup,
       locked: !onboarding.identityVerified,
       icon: CreditCard,
     },
   ];
+  const currentStep = steps.find((step) => step.id === activeStep) ?? steps[0];
+
+  const goToStep = (step: OnboardingStep) => {
+    setActiveStep(step);
+    setState({ status: "idle", message: "" });
+  };
 
   return (
     <div className="mx-auto max-w-[680px] pt-2">
@@ -297,7 +328,7 @@ export function OnboardingFlowClient({
           <div className="flex items-center justify-between">
             {steps.map((step, index) => {
               const StepIcon = step.icon;
-              const active = !step.complete && !step.locked;
+              const active = step.id === activeStep;
 
               return (
                 <div className="contents" key={step.label}>
@@ -316,7 +347,7 @@ export function OnboardingFlowClient({
                         step.complete
                           ? "border-emerald-500 bg-emerald-50 text-emerald-600"
                           : active
-                            ? "border-[#0066cc] bg-[#eff6ff] text-[#0066cc]"
+                            ? "border-[#0066cc] bg-[#eff6ff] text-[#0066cc] shadow-[0_0_0_4px_rgba(0,102,204,0.08)]"
                             : "border-slate-200 bg-slate-50 text-slate-400"
                       }`}
                     >
@@ -349,10 +380,10 @@ export function OnboardingFlowClient({
         <div className="space-y-8 p-7 sm:p-8">
           <div>
             <h2 className="text-lg font-bold text-slate-900">
-              Complete onboarding
+              {currentStep.label}
             </h2>
             <p className="mt-1 text-sm text-slate-500">
-              Save each required step to unlock work and payments.
+              Complete this step, then continue to the next one.
             </p>
           </div>
 
@@ -380,6 +411,7 @@ export function OnboardingFlowClient({
             </div>
           ) : null}
 
+          {activeStep === "legal" ? (
           <section>
             <div>
               <h3 className="text-base font-bold text-slate-900">
@@ -471,8 +503,21 @@ export function OnboardingFlowClient({
                 </div>
               </div>
             ) : null}
-          </section>
 
+            <div className="mt-5 flex justify-end">
+              <button
+                className="inline-flex h-11 items-center justify-center rounded-xl bg-[#0066cc] px-5 text-sm font-semibold text-white shadow-xs transition hover:bg-[#0052a3] disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={!onboarding.legalComplete}
+                onClick={() => goToStep("phone")}
+                type="button"
+              >
+                Next
+              </button>
+            </div>
+          </section>
+          ) : null}
+
+          {activeStep === "phone" ? (
           <form
             className={`space-y-4 border-t border-slate-100 pt-8 ${
               !onboarding.legalComplete ? "opacity-60" : ""
@@ -534,15 +579,36 @@ export function OnboardingFlowClient({
                 />
               </label>
             </fieldset>
-            <button
-              className="inline-flex h-11 items-center justify-center rounded-xl bg-[#0066cc] px-5 text-sm font-semibold text-white shadow-xs transition hover:bg-[#0052a3] disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={!onboarding.legalComplete || saving}
-              type="submit"
-            >
-              {onboarding.phoneVerified ? "Update Phone" : "Verify Phone"}
-            </button>
+            <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <button
+                className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                onClick={() => goToStep("legal")}
+                type="button"
+              >
+                Back
+              </button>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <button
+                  className="inline-flex h-11 items-center justify-center rounded-xl bg-[#0066cc] px-5 text-sm font-semibold text-white shadow-xs transition hover:bg-[#0052a3] disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={!onboarding.legalComplete || saving}
+                  type="submit"
+                >
+                  {onboarding.phoneVerified ? "Update Phone" : "Verify Phone"}
+                </button>
+                <button
+                  className="inline-flex h-11 items-center justify-center rounded-xl bg-slate-900 px-5 text-sm font-semibold text-white shadow-xs transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={!onboarding.phoneVerified}
+                  onClick={() => goToStep("identity")}
+                  type="button"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
           </form>
+          ) : null}
 
+          {activeStep === "identity" ? (
           <form
             className={`space-y-4 border-t border-slate-100 pt-8 ${
               !onboarding.phoneVerified ? "opacity-60" : ""
@@ -625,17 +691,38 @@ export function OnboardingFlowClient({
                 />
               </label>
             </fieldset>
-            <button
-              className="inline-flex h-11 items-center justify-center rounded-xl bg-[#0066cc] px-5 text-sm font-semibold text-white shadow-xs transition hover:bg-[#0052a3] disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={!onboarding.phoneVerified || saving}
-              type="submit"
-            >
-              {onboarding.identityVerified
-                ? "Update Identity"
-                : "Verify Identity"}
-            </button>
+            <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <button
+                className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                onClick={() => goToStep("phone")}
+                type="button"
+              >
+                Back
+              </button>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <button
+                  className="inline-flex h-11 items-center justify-center rounded-xl bg-[#0066cc] px-5 text-sm font-semibold text-white shadow-xs transition hover:bg-[#0052a3] disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={!onboarding.phoneVerified || saving}
+                  type="submit"
+                >
+                  {onboarding.identityVerified
+                    ? "Update Identity"
+                    : "Verify Identity"}
+                </button>
+                <button
+                  className="inline-flex h-11 items-center justify-center rounded-xl bg-slate-900 px-5 text-sm font-semibold text-white shadow-xs transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={!onboarding.identityVerified}
+                  onClick={() => goToStep("payments")}
+                  type="button"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
           </form>
+          ) : null}
 
+          {activeStep === "payments" ? (
           <form
             className={`space-y-4 border-t border-slate-100 pt-8 ${
               !onboarding.identityVerified ? "opacity-60" : ""
@@ -692,14 +779,24 @@ export function OnboardingFlowClient({
                 />
               </label>
             </fieldset>
-            <button
-              className="inline-flex h-11 items-center justify-center rounded-xl bg-[#0066cc] px-5 text-sm font-semibold text-white shadow-xs transition hover:bg-[#0052a3] disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={!onboarding.identityVerified || saving}
-              type="submit"
-            >
-              {onboarding.paymentsSetup ? "Update Payments" : "Save Payments"}
-            </button>
+            <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <button
+                className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                onClick={() => goToStep("identity")}
+                type="button"
+              >
+                Back
+              </button>
+              <button
+                className="inline-flex h-11 items-center justify-center rounded-xl bg-[#0066cc] px-5 text-sm font-semibold text-white shadow-xs transition hover:bg-[#0052a3] disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={!onboarding.identityVerified || saving}
+                type="submit"
+              >
+                {onboarding.paymentsSetup ? "Update Payments" : "Save Payments"}
+              </button>
+            </div>
           </form>
+          ) : null}
         </div>
       </div>
 
