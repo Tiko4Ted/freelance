@@ -152,13 +152,13 @@ export function HomeDashboardClient({
                 Your projects{" "}
                 <span className="font-normal text-slate-400">(3)</span>
               </h2>
-              <button
-                type="button"
+              <Link
+                href="/about-us"
                 className="flex items-center gap-1.5 text-xs font-medium text-slate-500 transition hover:text-slate-800"
               >
                 <Info className="h-3.5 w-3.5" strokeWidth={2} />
                 About us
-              </button>
+              </Link>
             </div>
 
             {/* Project Cards Grid */}
