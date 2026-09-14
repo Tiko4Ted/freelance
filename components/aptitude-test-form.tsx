@@ -202,7 +202,7 @@ export function AptitudeTestForm({
       setState({
         status: "success",
         message: autoApproved
-          ? `Your aptitude score was ${score}%, so your application was automatically approved and the task is now available in your dashboard.`
+          ? `Your aptitude score was ${score}%, so your application was automatically approved and the task is now available on your home page.`
           : `Your aptitude score was ${score ?? "recorded"}%. Your application is pending manual review before the task unlocks.`,
       });
     } catch {
@@ -217,7 +217,7 @@ export function AptitudeTestForm({
     return (
       <ApplicationSubmissionPage
         message={state.message}
-        onClose={() => router.push("/dashboard")}
+        onClose={() => router.push("/home")}
         status={state.status}
       />
     );
