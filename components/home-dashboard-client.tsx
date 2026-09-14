@@ -499,13 +499,13 @@ export function HomeDashboardClient({
           <div className="w-[calc(100vw-3rem)] max-w-sm overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
             <div className="flex items-start justify-between gap-4 border-b border-slate-100 bg-slate-950 px-5 py-4 text-white">
               <div>
-                <h2 className="text-sm font-semibold">Help center</h2>
+                <h2 className="text-sm font-semibold">Support</h2>
                 <p className="mt-1 text-xs text-slate-300">
                   Chat with support about work, payments, or your account.
                 </p>
               </div>
               <button
-                aria-label="Close help center"
+                aria-label="Close support"
                 className="rounded-lg p-1 text-slate-300 transition hover:bg-white/10 hover:text-white"
                 onClick={() => setHelpOpen(false)}
                 type="button"
@@ -582,7 +582,7 @@ export function HomeDashboardClient({
           type="button"
         >
           <MessageCircle className="h-5 w-5" />
-          Help center
+          Support
         </button>
       </div>
     </div>
