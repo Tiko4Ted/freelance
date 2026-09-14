@@ -44,6 +44,35 @@ const faqs = [
     answer:
       "Check your project status, submitted work, and wallet records first. If the numbers still do not match your work, contact support with the project name and the hours or payment record you expected to see.",
   },
+  {
+    question: "How do I identify fraud or scams?",
+    answer: (
+      <>
+        Use a simple three-part check: ask what the message wants from you,
+        look for red flags, and verify the source before taking action. Be
+        careful with requests for passwords, bank details, verification codes,
+        urgent payment demands, shortened links, unusual email domains, or
+        requests to move the conversation to WhatsApp, Google Forms, or another
+        unofficial channel. If anything feels wrong, stop and contact our{" "}
+        <Link
+          className="font-semibold text-blue-600 hover:text-blue-700 hover:underline"
+          href="/help-center"
+        >
+          Help Center
+        </Link>
+        . You can also review this external safety guide on{" "}
+        <a
+          className="font-semibold text-blue-600 hover:text-blue-700 hover:underline"
+          href="https://ai-support.joinhandshake.com/articles/39833609805463"
+          rel="noreferrer"
+          target="_blank"
+        >
+          how to identify fraud and scams
+        </a>
+        .
+      </>
+    ),
+  },
 ];
 
 export function HomeDashboardClient({
@@ -368,8 +397,8 @@ export function HomeDashboardClient({
                 Frequently asked questions
               </h2>
               <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500">
-                Quick answers about projects, hours, payments, and what to check
-                next.
+                Quick answers about projects, hours, payments, safety, and what
+                to check next.
               </p>
             </div>
             <Link
@@ -393,9 +422,9 @@ export function HomeDashboardClient({
                     strokeWidth={2}
                   />
                 </summary>
-                <p className="px-5 pb-5 text-sm leading-6 text-slate-600">
+                <div className="px-5 pb-5 text-sm leading-6 text-slate-600">
                   {faq.answer}
-                </p>
+                </div>
               </details>
             ))}
           </div>
