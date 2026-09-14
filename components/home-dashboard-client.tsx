@@ -10,6 +10,9 @@ import {
   Info,
   ChevronDown,
   Wallet,
+  MessageCircle,
+  Send,
+  X,
 } from "lucide-react";
 
 interface HomeDashboardClientProps {
@@ -50,6 +53,16 @@ export function HomeDashboardClient({
   const [activeTab, setActiveTab] = useState<"projects" | "applications">(
     "projects",
   );
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [supportMessage, setSupportMessage] = useState("");
+  const [supportMessages, setSupportMessages] = useState<
+    Array<{ from: "support" | "user"; text: string }>
+  >([
+    {
+      from: "support",
+      text: "Hi, I can help with onboarding, payments, tasks, and account questions.",
+    },
+  ]);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     pendingPaused: false,
     pastProjects: false,
@@ -61,6 +74,24 @@ export function HomeDashboardClient({
       ...prev,
       [key]: !prev[key],
     }));
+  };
+
+  const sendSupportMessage = (message: string) => {
+    const trimmedMessage = message.trim();
+
+    if (!trimmedMessage) {
+      return;
+    }
+
+    setSupportMessages((messages) => [
+      ...messages,
+      { from: "user", text: trimmedMessage },
+      {
+        from: "support",
+        text: "Thanks. A support teammate can pick this up from here once live chat is connected.",
+      },
+    ]);
+    setSupportMessage("");
   };
 
   return (
@@ -462,6 +493,98 @@ export function HomeDashboardClient({
           </div>
         </div>
       </aside>
+
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+        {helpOpen ? (
+          <div className="w-[calc(100vw-3rem)] max-w-sm overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+            <div className="flex items-start justify-between gap-4 border-b border-slate-100 bg-slate-950 px-5 py-4 text-white">
+              <div>
+                <h2 className="text-sm font-semibold">Help center</h2>
+                <p className="mt-1 text-xs text-slate-300">
+                  Chat with support about work, payments, or your account.
+                </p>
+              </div>
+              <button
+                aria-label="Close help center"
+                className="rounded-lg p-1 text-slate-300 transition hover:bg-white/10 hover:text-white"
+                onClick={() => setHelpOpen(false)}
+                type="button"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="max-h-72 space-y-3 overflow-y-auto px-5 py-4">
+              {supportMessages.map((message, index) => (
+                <div
+                  className={`flex ${
+                    message.from === "user" ? "justify-end" : "justify-start"
+                  }`}
+                  key={`${message.from}-${index}`}
+                >
+                  <div
+                    className={`max-w-[82%] rounded-2xl px-3 py-2 text-sm leading-5 ${
+                      message.from === "user"
+                        ? "bg-[#0066cc] text-white"
+                        : "bg-slate-100 text-slate-700"
+                    }`}
+                  >
+                    {message.text}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="border-t border-slate-100 px-5 py-4">
+              <div className="mb-3 flex flex-wrap gap-2">
+                {["Payment issue", "Onboarding help", "Task question"].map(
+                  (topic) => (
+                    <button
+                      className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                      key={topic}
+                      onClick={() => setSupportMessage(topic)}
+                      type="button"
+                    >
+                      {topic}
+                    </button>
+                  ),
+                )}
+              </div>
+              <form
+                className="flex items-center gap-2"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  sendSupportMessage(supportMessage);
+                }}
+              >
+                <input
+                  className="h-11 min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  onChange={(event) => setSupportMessage(event.target.value)}
+                  placeholder="Type your question"
+                  value={supportMessage}
+                />
+                <button
+                  aria-label="Send support message"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#0066cc] text-white transition hover:bg-[#0052a3] disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={!supportMessage.trim()}
+                  type="submit"
+                >
+                  <Send className="h-4 w-4" />
+                </button>
+              </form>
+            </div>
+          </div>
+        ) : null}
+
+        <button
+          className="flex h-14 items-center gap-2 rounded-full bg-slate-950 px-5 text-sm font-semibold text-white shadow-xl transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          onClick={() => setHelpOpen((open) => !open)}
+          type="button"
+        >
+          <MessageCircle className="h-5 w-5" />
+          Help center
+        </button>
+      </div>
     </div>
   );
 }
