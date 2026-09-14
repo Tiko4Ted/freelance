@@ -15,9 +15,9 @@ import { auth } from "@/auth";
 import { PortalSidebar } from "@/components/portal-sidebar";
 
 export const metadata: Metadata = {
-  title: "About ReferralJobs",
+  title: "About Trinity-AI",
   description:
-    "A detailed explanation of the ReferralJobs project, its solution, and its goals.",
+    "A detailed explanation of the Trinity-AI project, its solution, and its goals.",
 };
 
 const principles = [
@@ -69,13 +69,13 @@ export default async function AboutUsPage() {
           <header className="grid gap-8 border-b border-slate-200 pb-10 lg:grid-cols-[1fr_360px] lg:items-end">
             <div>
               <p className="text-sm font-semibold text-blue-700">
-                About ReferralJobs
+                About Trinity-AI
               </p>
               <h1 className="mt-4 max-w-4xl text-4xl font-semibold leading-tight tracking-tight text-slate-950 md:text-6xl">
                 A work platform built around trust, progress, and fair payment.
               </h1>
               <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-600">
-                ReferralJobs is designed to connect people with project-based
+                Trinity-AI is designed to connect people with project-based
                 freelance work while keeping the important records in one place:
                 applications, tasks, hours worked, wallet balances, referral
                 activity, and payout status.
@@ -114,7 +114,7 @@ export default async function AboutUsPage() {
                 unclear process creates support questions.
               </p>
               <p>
-                ReferralJobs addresses that problem by organizing the journey
+                Trinity-AI addresses that problem by organizing the journey
                 around visible records. A user should be able to answer basic
                 questions without needing an explanation from an administrator:
                 What have I applied for? What work is active? How many hours are
@@ -285,7 +285,7 @@ export default async function AboutUsPage() {
               mysterious. It should teach users where they are in the process,
               show the records that matter, and keep payment information aligned
               with the work that produced it. That is the long-term goal of
-              ReferralJobs: a clearer bridge between people who can do valuable
+              Trinity-AI: a clearer bridge between people who can do valuable
               work and the systems that need that work done.
             </p>
           </section>

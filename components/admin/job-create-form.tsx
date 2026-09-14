@@ -50,7 +50,7 @@ export function JobCreateForm() {
         payoutAmountCents: Math.round(payoutDollars * 100),
         payoutType: String(formData.get("payoutType") ?? "HOURS_10"),
         currency: String(formData.get("currency") ?? "USD"),
-        companyName: String(formData.get("companyName") ?? "ReferralJobs"),
+        companyName: String(formData.get("companyName") ?? "Trinity-AI"),
         openings: Number(formData.get("openings") ?? 1),
         hourlyMinCents:
           hourlyMinDollars === null ? null : Math.round(hourlyMinDollars * 100),
@@ -82,7 +82,7 @@ export function JobCreateForm() {
       />
       <input
         className="h-10 w-full border border-slate-300 px-3 text-sm outline-none focus:border-teal-700"
-        defaultValue="ReferralJobs"
+        defaultValue="Trinity-AI"
         name="companyName"
         placeholder="Company"
         required

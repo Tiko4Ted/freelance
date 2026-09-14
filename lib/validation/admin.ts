@@ -9,7 +9,7 @@ export const adminCreateJobSchema = z.object({
     .enum([PayoutTrigger.HOURS_10, PayoutTrigger.TASK_1])
     .default(PayoutTrigger.HOURS_10),
   currency: z.string().trim().length(3).default("USD"),
-  companyName: z.string().trim().min(2).max(120).default("ReferralJobs"),
+  companyName: z.string().trim().min(2).max(120).default("Trinity-AI"),
   openings: z.coerce.number().int().positive().default(1),
   hourlyMinCents: z.coerce.number().int().positive().nullable().optional(),
   hourlyMaxCents: z.coerce.number().int().positive().nullable().optional(),

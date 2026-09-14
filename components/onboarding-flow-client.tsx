@@ -317,7 +317,7 @@ export function OnboardingFlowClient({
           Welcome, {userName}!
         </h1>
         <p className="mt-2 text-sm text-slate-500">
-          Complete the steps below to get started with AfterQuery.
+          Complete the steps below to get started with Trinity-AI.
         </p>
       </div>
 
@@ -834,7 +834,7 @@ export function OnboardingFlowClient({
                       NON‑DISCLOSURE AGREEMENT
                     </h4>
                     <p className="mt-1 text-slate-500 text-[11px]">
-                      Cronus Technologies, Inc., d/b/a AfterQuery
+                      Cronus Technologies, Inc., d/b/a Trinity-AI
                     </p>
                   </div>
 
@@ -842,12 +842,12 @@ export function OnboardingFlowClient({
                     This Non‑Disclosure Agreement (the &ldquo;Agreement&rdquo;)
                     is entered into as of the date of the last signature below
                     (the &ldquo;Effective Date&rdquo;) by and between Cronus
-                    Technologies, Inc., d/b/a AfterQuery, (the
-                    &ldquo;Discloser&rdquo; or &ldquo;AfterQuery&rdquo;) and the
+                    Technologies, Inc., d/b/a Trinity-AI, (the
+                    &ldquo;Discloser&rdquo; or &ldquo;Trinity-AI&rdquo;) and the
                     contractor identified below (the &ldquo;Recipient&rdquo;).
                     The Discloser intends to provide certain confidential
                     information to the Recipient in connection with the
-                    Recipient’s performance of services for AfterQuery (the
+                    Recipient’s performance of services for Trinity-AI (the
                     &ldquo;Purpose&rdquo;). In consideration of receiving such
                     Confidential Information, the Recipient agrees as follows:
                   </p>
@@ -1052,7 +1052,7 @@ export function OnboardingFlowClient({
                     <div className="mt-3 grid grid-cols-2 gap-4 rounded-lg bg-slate-50 p-3 text-[11px]">
                       <div>
                         <p className="font-bold text-slate-900">
-                          AfterQuery (Discloser)
+                          Trinity-AI (Discloser)
                         </p>
                         <p className="mt-1">
                           Signature: <em>Cronus Technologies, Inc.</em>
@@ -1085,20 +1085,20 @@ export function OnboardingFlowClient({
                       DATA SUBMISSION AND OWNERSHIP AGREEMENT
                     </h4>
                     <p className="mt-1 text-slate-500 text-[11px]">
-                      Cronus Technologies, Inc., d/b/a AfterQuery
+                      Cronus Technologies, Inc., d/b/a Trinity-AI
                     </p>
                   </div>
 
                   <p>
                     This Data Submission and Ownership Agreement
                     (&ldquo;Agreement&rdquo;) is entered into by and between
-                    Cronus Technologies, Inc., d/b/a AfterQuery, a Delaware
+                    Cronus Technologies, Inc., d/b/a Trinity-AI, a Delaware
                     corporation with its registered office in the state of
                     Delaware at 251 Little Falls Drive, Wilmington, New Castle
                     County (&ldquo;Company&rdquo;), and any individual or entity
                     (&ldquo;User&rdquo;) submitting data, including but not
                     limited to Google Sheets, Excel models, documents, and other
-                    data files, through experts.afterquery.com
+                    data files, through experts.Trinity-AI.com
                     (&ldquo;Website&rdquo; or &ldquo;Platform&rdquo;).
                   </p>
                   <p>
@@ -1246,7 +1246,7 @@ export function OnboardingFlowClient({
                     <div className="mt-3 grid grid-cols-2 gap-4 rounded-lg bg-slate-50 p-3 text-[11px]">
                       <div>
                         <p className="font-bold text-slate-900">
-                          AfterQuery (Company)
+                          Trinity-AI (Company)
                         </p>
                         <p className="mt-1">
                           Signature: <em>Cronus Technologies, Inc.</em>

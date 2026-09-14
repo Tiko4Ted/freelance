@@ -14,7 +14,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "ReferralJobs",
+  title: "Trinity-AI",
   description: "A referral-job platform with locked attribution and auditable payouts.",
 };
 

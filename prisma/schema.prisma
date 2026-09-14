@@ -115,7 +115,7 @@ model Job {
   payoutType        PayoutTrigger @default(HOURS_10)
   currency          String        @default("USD")
   isActive          Boolean       @default(true)
-  companyName       String        @default("ReferralJobs")
+  companyName       String        @default("Trinity-AI")
   openings          Int           @default(1)
   hourlyMinCents    Int?
   hourlyMaxCents    Int?

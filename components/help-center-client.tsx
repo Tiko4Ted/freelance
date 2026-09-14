@@ -19,6 +19,33 @@ const categories = [
   "Payments",
 ];
 
+const categoryIds: Record<string, string> = {
+  "Getting Started": "getting-started",
+  "Fellowship Expectations": "fellowship-expectations",
+  "Project Participation": "project-participation",
+  Policies: "policies",
+  Payments: "payments",
+};
+
+function toId(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+function getCategoryById(categoryId?: string) {
+  return (
+    categories.find((category) => categoryIds[category] === categoryId) ??
+    categories[0]
+  );
+}
+
+function categoryHref(category: string) {
+  return `/help-center/${categoryIds[category]}`;
+}
+
 const sidebarGroups = [
   {
     title: "Getting Started",
@@ -70,11 +97,11 @@ const sidebarGroups = [
 const articles: Article[] = [
   {
     category: "Getting Started",
-    title: "Introduction to the AfterQuery AI program",
+    title: "Introduction to the Trinity-AI program",
     summary:
-      "A practical overview of how flexible project-based AI work runs on AfterQuery.",
+      "A practical overview of how flexible project-based AI work runs on Trinity-AI.",
     body: [
-      "AfterQuery connects qualified contributors with remote projects that evaluate, improve, and operate AI systems. Most people begin by creating an account, completing onboarding, and waiting for project matching.",
+      "Trinity-AI connects qualified contributors with remote projects that evaluate, improve, and operate AI systems. Most people begin by creating an account, completing onboarding, and waiting for project matching.",
       "Your dashboard shows required tasks, applications, total hours, expected earnings, and support shortcuts. Complete each required verification step before applying for projects with stricter client requirements.",
       "When you are ready to work, use the Apply page to review available roles and follow the project instructions shown there.",
     ],
@@ -82,7 +109,7 @@ const articles: Article[] = [
   {
     category: "Getting Started",
     title: "Age requirement",
-    summary: "Who can create an account and participate in AfterQuery work.",
+    summary: "Who can create an account and participate in Trinity-AI work.",
     body: [
       "You must be old enough to enter a work agreement in your location and satisfy any project-specific eligibility rules before accepting tasks.",
       "Some projects may require additional checks based on client, country, payment, or safety requirements. If a requirement appears in onboarding, complete it before submitting work.",
@@ -102,7 +129,7 @@ const articles: Article[] = [
   {
     category: "Getting Started",
     title: "Sign up",
-    summary: "How to create an AfterQuery account and avoid duplicate profiles.",
+    summary: "How to create a Trinity-AI account and avoid duplicate profiles.",
     body: [
       "Use one email address and one phone number for your account. Duplicate profiles can slow down verification and may block project access.",
       "Enter your legal name exactly as it appears on the identity document you plan to use for verification.",
@@ -192,7 +219,7 @@ const articles: Article[] = [
   {
     category: "Fellowship Expectations",
     title: "Work authorization and eligibility",
-    summary: "What to check before accepting work on AfterQuery.",
+    summary: "What to check before accepting work on Trinity-AI.",
     body: [
       "Project eligibility can depend on your location, identity verification, client requirements, and task availability.",
       "If a project has additional requirements, complete them before submitting work. Missing requirements can delay review or payment.",
@@ -216,7 +243,7 @@ const articles: Article[] = [
       "How to recognize official workflow steps and avoid risky requests.",
     body: [
       "Use the in-app onboarding flow for legal documents, phone verification, identity verification, and payment setup.",
-      "AfterQuery will not ask you to move payment setup to unverified channels. Keep project details, files, and payment questions inside approved workflows.",
+      "Trinity-AI will not ask you to move payment setup to unverified channels. Keep project details, files, and payment questions inside approved workflows.",
       "If something feels suspicious, pause before submitting personal information and contact support from this page.",
     ],
   },
@@ -303,7 +330,7 @@ const articles: Article[] = [
   {
     category: "Policies",
     title: "Code of conduct",
-    summary: "The behavior expected from everyone using AfterQuery.",
+    summary: "The behavior expected from everyone using Trinity-AI.",
     body: [
       "Be respectful, truthful, and professional in account details, project communication, and submitted work.",
       "Do not harass others, impersonate another person, submit another person's work, or bypass project rules.",
@@ -326,7 +353,7 @@ const articles: Article[] = [
     summary: "How to protect your login and payment information.",
     body: [
       "Use a strong password and do not share login credentials, identity documents, verification codes, or payout details with anyone.",
-      "Be careful with links that claim to be urgent payment or identity checks. Open AfterQuery directly and use the in-app flow.",
+      "Be careful with links that claim to be urgent payment or identity checks. Open Trinity-AI directly and use the in-app flow.",
       "If you think someone accessed your account, contact support and change your password immediately.",
     ],
   },
@@ -374,7 +401,7 @@ const articles: Article[] = [
 
 const sidebarArticleTitleByItem: Record<string, string> = {
   "Age requirement": "Age requirement",
-  "Program overview": "Introduction to the AfterQuery AI program",
+  "Program overview": "Introduction to the Trinity-AI program",
   "Getting started": "Getting started",
   "Sign up": "Sign up",
   "Post-application": "Next steps after applying to a project",
@@ -405,14 +432,14 @@ const sidebarArticleTitleByItem: Record<string, string> = {
 };
 
 const popularTitles = [
-  "Introduction to the AfterQuery AI program",
+  "Introduction to the Trinity-AI program",
   "Getting started and staying safe",
   "Work authorization and eligibility",
   "Next steps after applying to a project",
 ];
 
 const fallbackPopularArticles = [
-  "Introduction to the AfterQuery AI program",
+  "Introduction to the Trinity-AI program",
   "Getting started and staying safe",
   "Expected earnings and wallet timing",
   "Next steps after applying to a project",
@@ -422,10 +449,21 @@ function getArticle(title: string) {
   return articles.find((article) => article.title === title) ?? articles[0];
 }
 
-export function HelpCenterClient() {
+type HelpCenterClientProps = {
+  categoryId?: string;
+};
+
+export function HelpCenterClient({ categoryId }: HelpCenterClientProps) {
+  const initialCategory = getCategoryById(categoryId);
+  const isCategoryPage = Boolean(categoryId);
+  const initialArticle =
+    articles.find((article) => article.category === initialCategory) ??
+    articles[0];
   const [query, setQuery] = useState("");
-  const [activeCategory, setActiveCategory] = useState(categories[0]);
-  const [activeArticleTitle, setActiveArticleTitle] = useState(articles[0].title);
+  const [activeCategory, setActiveCategory] = useState(initialCategory);
+  const [activeArticleTitle, setActiveArticleTitle] = useState(
+    initialArticle.title,
+  );
   const [supportMessage, setSupportMessage] = useState("");
   const [preparedMessage, setPreparedMessage] = useState("");
 
@@ -461,8 +499,8 @@ export function HelpCenterClient() {
     setPreparedMessage(trimmedMessage);
   };
 
-  const mailtoHref = `mailto:support@afterquery.com?subject=${encodeURIComponent(
-    "AfterQuery support request",
+  const mailtoHref = `mailto:support@trinity-ai.com?subject=${encodeURIComponent(
+    "Trinity-AI support request",
   )}&body=${encodeURIComponent(preparedMessage)}`;
 
   return (
@@ -473,12 +511,12 @@ export function HelpCenterClient() {
             className="text-3xl font-black italic text-[#071b24]"
             href="/home"
           >
-            AfterQuery
+            Trinity-AI
           </Link>
           <div className="hidden items-center gap-9 text-sm font-semibold text-[#071b24] md:flex">
             <Link href="/apply">Find work</Link>
             <Link href="/about-us">About</Link>
-            <Link href="/help-center">AfterQuery AI</Link>
+            <Link href="/help-center">Trinity-AI</Link>
             <Link href="/help-center#contact-support">Support</Link>
           </div>
           <div className="flex items-center gap-2">
@@ -504,7 +542,7 @@ export function HelpCenterClient() {
             </h1>
             <p className="mt-6 max-w-2xl text-xl font-medium leading-7 text-[#111827]">
               Whether you are starting onboarding, applying for projects, or
-              sorting out payments, this is your support home for AfterQuery AI.
+              sorting out payments, this is your support home for Trinity-AI.
             </p>
           </div>
           <label className="flex h-14 items-center gap-3 rounded border border-[#b6bdd6] bg-white px-4 shadow-sm">
@@ -525,25 +563,31 @@ export function HelpCenterClient() {
         <aside className="space-y-8">
           {sidebarGroups.map((group) => (
             <section key={group.title}>
-              <h2 className="text-lg font-bold text-[#111827]">
+              <Link
+                className="text-lg font-bold text-[#111827] hover:underline"
+                href={categoryHref(group.title)}
+              >
                 {group.title}
-              </h2>
+              </Link>
               <div className="mt-4 space-y-4">
                 {group.items.map((item) => {
                   const articleTitle = sidebarArticleTitleByItem[item];
+                  const article = getArticle(articleTitle);
                   const isActive = activeArticle.title === articleTitle;
 
                   return (
-                    <button
-                className={`block text-left text-sm font-medium leading-5 transition ${
+                    <Link
+                      className={`block text-left text-sm font-medium leading-5 transition ${
                         isActive ? "text-[#071b24]" : "text-[#4b5563]"
                       } hover:text-[#111827]`}
+                      href={`${categoryHref(article.category)}#${toId(
+                        article.title,
+                      )}`}
                       key={item}
                       onClick={() => openArticle(articleTitle)}
-                      type="button"
                     >
                       {item}
-                    </button>
+                    </Link>
                   );
                 })}
               </div>
@@ -552,12 +596,31 @@ export function HelpCenterClient() {
         </aside>
 
         <section className="min-w-0">
+          {isCategoryPage ? (
+            <div className="max-w-3xl">
+              <Link
+                className="text-sm font-bold text-[#071b24] underline"
+                href="/help-center"
+              >
+                Back to help center
+              </Link>
+              <h2 className="mt-6 text-4xl font-semibold text-[#111827]">
+                {activeCategory}
+              </h2>
+              <p className="mt-6 text-base font-medium leading-7 text-[#111827]">
+                Browse all {activeCategory.toLowerCase()} articles for
+                Trinity-AI. Each article opens on this category page with a
+                stable id in the URL.
+              </p>
+            </div>
+          ) : (
+          <>
           <div className="max-w-3xl">
             <h2 className="text-4xl font-semibold text-[#111827]">
-              Welcome to AfterQuery AI
+              Welcome to Trinity-AI
             </h2>
             <p className="mt-8 text-base font-medium leading-7 text-[#111827]">
-              AfterQuery AI connects skilled contributors with flexible project
+              Trinity-AI connects skilled contributors with flexible project
               work that helps evaluate, improve, and operate AI systems.
             </p>
           </div>
@@ -573,15 +636,17 @@ export function HelpCenterClient() {
                   getArticle(fallbackPopularArticles[index]);
 
                 return (
-                  <button
+                  <Link
                     className="flex min-h-32 items-center justify-between rounded-2xl border border-[#e5e7eb] bg-white px-8 py-6 text-left text-xl font-semibold leading-6 transition hover:border-[#071b24] focus:outline-none focus:ring-2 focus:ring-[#071b24]"
+                    href={`${categoryHref(article.category)}#${toId(
+                      article.title,
+                    )}`}
                     key={title}
                     onClick={() => openArticle(article.title)}
-                    type="button"
                   >
                     <span>{article.title}</span>
                     <ChevronRight className="h-6 w-6 shrink-0" />
-                  </button>
+                  </Link>
                 );
               })}
             </div>
@@ -593,28 +658,23 @@ export function HelpCenterClient() {
             </h2>
             <div className="mt-8 max-w-2xl space-y-3">
               {categories.map((category) => (
-                <button
+                <Link
                   className={`flex h-20 w-full items-center justify-between rounded-2xl border px-8 text-left text-xl font-semibold transition focus:outline-none focus:ring-2 focus:ring-[#071b24] ${
                     activeCategory === category
                       ? "border-[#071b24] bg-[#f8ffff]"
                       : "border-[#e5e7eb] bg-white hover:border-[#071b24]"
                   }`}
+                  href={categoryHref(category)}
                   key={category}
-                  onClick={() => {
-                    const firstArticle =
-                      articles.find((article) => article.category === category) ??
-                      articles[0];
-                    setActiveCategory(category);
-                    openArticle(firstArticle.title);
-                  }}
-                  type="button"
                 >
                   {category}
                   <ChevronRight className="h-6 w-6" />
-                </button>
+                </Link>
               ))}
             </div>
           </section>
+          </>
+          )}
 
           <section className="mt-20 grid gap-8 lg:grid-cols-[280px_1fr]">
             <div>
@@ -624,18 +684,20 @@ export function HelpCenterClient() {
               <div className="mt-5 space-y-2">
                 {displayedArticles.length ? (
                   displayedArticles.map((article) => (
-                    <button
+                    <Link
                       className={`w-full rounded-xl px-4 py-3 text-left text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-[#071b24] ${
                         activeArticle.title === article.title
                           ? "bg-[#071b24] text-white"
                           : "bg-[#f4f7fb] text-[#111827] hover:bg-[#e8eef6]"
                       }`}
+                      href={`${categoryHref(article.category)}#${toId(
+                        article.title,
+                      )}`}
                       key={article.title}
                       onClick={() => openArticle(article.title)}
-                      type="button"
                     >
                       {article.title}
-                    </button>
+                    </Link>
                   ))
                 ) : (
                   <p className="rounded-xl bg-[#f4f7fb] p-4 text-sm text-[#4b5563]">
@@ -740,7 +802,7 @@ export function HelpCenterClient() {
           <div className="grid grid-cols-2 gap-8 text-sm md:grid-cols-4">
             {[
               ["Contributors", "Find work", "Career tips"],
-              ["AfterQuery AI", "Program", "Opportunities", "Help center"],
+              ["Trinity-AI", "Program", "Opportunities", "Help center"],
               ["Clients", "Pricing", "Request demo"],
               ["Company", "About", "Support", "Contact"],
             ].map(([heading, ...items]) => (
@@ -766,10 +828,10 @@ export function HelpCenterClient() {
           </div>
         </div>
         <p className="mt-12 text-[92px] font-black italic leading-none text-[#ccff33] sm:text-[140px] md:text-[220px]">
-          AfterQuery
+          Trinity-AI
         </p>
         <div className="mx-auto flex max-w-7xl flex-wrap gap-6 text-xs font-semibold text-[#9cb8b8]">
-          <span>&copy;2026 AfterQuery. All rights reserved</span>
+          <span>&copy;2026 Trinity-AI. All rights reserved</span>
           <Link href="/home">Privacy policy</Link>
           <Link href="/home">Accessibility</Link>
           <Link href="/home">Terms of service</Link>
