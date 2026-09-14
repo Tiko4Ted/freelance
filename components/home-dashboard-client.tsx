@@ -13,10 +13,15 @@ import {
 } from "lucide-react";
 
 interface HomeDashboardClientProps {
+  paymentSummary: {
+    formattedAwaitingPayment: string;
+    formattedHoursWorked: string;
+  };
   userName?: string;
 }
 
 export function HomeDashboardClient({
+  paymentSummary,
   userName = "Teddy",
 }: HomeDashboardClientProps) {
   const [activeTab, setActiveTab] = useState<"projects" | "applications">(
@@ -305,79 +310,44 @@ export function HomeDashboardClient({
 
       {/* Right Column Sidebar */}
       <aside className="w-full shrink-0 space-y-6 lg:w-[320px]">
-        {/* Account & Stats Card */}
+        {/* Payments Summary Card */}
         <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm">
-          {/* Account Balance Section */}
           <div className="border-b border-slate-100 bg-slate-50/50 p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-sm font-medium text-slate-500">
                 <Wallet className="h-4 w-4 text-slate-400" />
-                Account Balance
+                Payments
               </div>
               <Link
                 href="/wallet"
                 className="text-xs font-semibold text-blue-600 transition hover:text-blue-700 hover:underline"
               >
-                View wallet
+                Wallet
               </Link>
-            </div>
-            <div className="mt-3 flex items-baseline gap-1.5">
-              <span className="text-[32px] font-bold tracking-tight text-slate-900">
-                $1,240.50
-              </span>
-              <span className="text-sm font-semibold text-slate-500">USD</span>
             </div>
           </div>
 
           <div className="p-6">
-            <div className="grid grid-cols-2 gap-x-4 gap-y-6">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-1">
               <div>
                 <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                  Awaiting payout
+                  Hours worked
                   <Info className="h-3.5 w-3.5" />
                 </div>
                 <div className="mt-1 text-2xl font-bold text-slate-900">
-                  $5562.28
+                  {paymentSummary.formattedHoursWorked}
                 </div>
               </div>
               <div>
                 <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                  Total paid
+                  Awaiting payment
                   <Info className="h-3.5 w-3.5" />
                 </div>
                 <div className="mt-1 text-2xl font-bold text-slate-900">
-                  $6927.17
-                </div>
-              </div>
-              <div>
-                <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                  Tasks this week
-                  <Info className="h-3.5 w-3.5" />
-                </div>
-                <div className="mt-1 text-2xl font-bold text-slate-900">
-                  20
-                </div>
-              </div>
-              <div>
-                <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                  Hours this week
-                  <Info className="h-3.5 w-3.5" />
-                </div>
-                <div className="mt-1 text-2xl font-bold text-slate-900">
-                  61:18
+                  {paymentSummary.formattedAwaitingPayment}
                 </div>
               </div>
             </div>
-          </div>
-
-          <div className="border-t border-slate-100 px-6 py-4">
-            <Link
-              href="/profile"
-              className="flex items-center justify-between text-sm font-semibold text-slate-700 transition hover:text-slate-900"
-            >
-              Update your profile
-              <ChevronRight className="h-4 w-4 text-slate-400" />
-            </Link>
           </div>
         </div>
 
