@@ -10,6 +10,9 @@ import {
   Info,
   ChevronDown,
   Wallet,
+  MessageCircle,
+  Send,
+  X,
 } from "lucide-react";
 
 interface HomeDashboardClientProps {
@@ -20,6 +23,29 @@ interface HomeDashboardClientProps {
   userName?: string;
 }
 
+const faqs = [
+  {
+    question: "How do I start working on a project?",
+    answer:
+      "Begin by completing onboarding and applying for an available role. Once your application is reviewed and matched, your project activity will appear on the home page with the next steps clearly shown.",
+  },
+  {
+    question: "Where can I see my hours and payment status?",
+    answer:
+      "The home page gives a quick summary of your hours worked and awaiting payment. For the full account record, including balances, ledger history, transfers, and withdrawals, use the wallet page.",
+  },
+  {
+    question: "Why does some money show as awaiting payment?",
+    answer:
+      "Awaiting payment means the work has been recorded but the money is still being held until the required review, eligibility, or verification step is complete. This keeps the payout process traceable and easier to audit.",
+  },
+  {
+    question: "What should I do if my progress looks incorrect?",
+    answer:
+      "Check your project status, submitted work, and wallet records first. If the numbers still do not match your work, contact support with the project name and the hours or payment record you expected to see.",
+  },
+];
+
 export function HomeDashboardClient({
   paymentSummary,
   userName = "Teddy",
@@ -27,6 +53,16 @@ export function HomeDashboardClient({
   const [activeTab, setActiveTab] = useState<"projects" | "applications">(
     "projects",
   );
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [supportMessage, setSupportMessage] = useState("");
+  const [supportMessages, setSupportMessages] = useState<
+    Array<{ from: "support" | "user"; text: string }>
+  >([
+    {
+      from: "support",
+      text: "Hi, I can help with onboarding, payments, tasks, and account questions.",
+    },
+  ]);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     pendingPaused: false,
     pastProjects: false,
@@ -38,6 +74,24 @@ export function HomeDashboardClient({
       ...prev,
       [key]: !prev[key],
     }));
+  };
+
+  const sendSupportMessage = (message: string) => {
+    const trimmedMessage = message.trim();
+
+    if (!trimmedMessage) {
+      return;
+    }
+
+    setSupportMessages((messages) => [
+      ...messages,
+      { from: "user", text: trimmedMessage },
+      {
+        from: "support",
+        text: "Thanks. A support teammate can pick this up from here once live chat is connected.",
+      },
+    ]);
+    setSupportMessage("");
   };
 
   return (
@@ -306,6 +360,46 @@ export function HomeDashboardClient({
           </p>
         </section>
         )}
+
+        <section className="space-y-4 pt-2">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-bold text-slate-900">
+                Frequently asked questions
+              </h2>
+              <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500">
+                Quick answers about projects, hours, payments, and what to check
+                next.
+              </p>
+            </div>
+            <Link
+              href="/about-us"
+              className="text-sm font-semibold text-blue-600 transition hover:text-blue-700 hover:underline"
+            >
+              Learn more
+            </Link>
+          </div>
+
+          <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_1px_3px_rgba(15,23,42,0.04)]">
+            {faqs.map((faq) => (
+              <details
+                className="group border-b border-slate-200/70 last:border-b-0"
+                key={faq.question}
+              >
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-left text-sm font-semibold text-slate-900 transition hover:bg-slate-50 [&::-webkit-details-marker]:hidden">
+                  <span>{faq.question}</span>
+                  <ChevronDown
+                    className="h-4 w-4 shrink-0 text-slate-400 transition-transform group-open:rotate-180"
+                    strokeWidth={2}
+                  />
+                </summary>
+                <p className="px-5 pb-5 text-sm leading-6 text-slate-600">
+                  {faq.answer}
+                </p>
+              </details>
+            ))}
+          </div>
+        </section>
       </div>
 
       {/* Right Column Sidebar */}
@@ -399,6 +493,98 @@ export function HomeDashboardClient({
           </div>
         </div>
       </aside>
+
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+        {helpOpen ? (
+          <div className="w-[calc(100vw-3rem)] max-w-sm overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+            <div className="flex items-start justify-between gap-4 border-b border-slate-100 bg-slate-950 px-5 py-4 text-white">
+              <div>
+                <h2 className="text-sm font-semibold">Help center</h2>
+                <p className="mt-1 text-xs text-slate-300">
+                  Chat with support about work, payments, or your account.
+                </p>
+              </div>
+              <button
+                aria-label="Close help center"
+                className="rounded-lg p-1 text-slate-300 transition hover:bg-white/10 hover:text-white"
+                onClick={() => setHelpOpen(false)}
+                type="button"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="max-h-72 space-y-3 overflow-y-auto px-5 py-4">
+              {supportMessages.map((message, index) => (
+                <div
+                  className={`flex ${
+                    message.from === "user" ? "justify-end" : "justify-start"
+                  }`}
+                  key={`${message.from}-${index}`}
+                >
+                  <div
+                    className={`max-w-[82%] rounded-2xl px-3 py-2 text-sm leading-5 ${
+                      message.from === "user"
+                        ? "bg-[#0066cc] text-white"
+                        : "bg-slate-100 text-slate-700"
+                    }`}
+                  >
+                    {message.text}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="border-t border-slate-100 px-5 py-4">
+              <div className="mb-3 flex flex-wrap gap-2">
+                {["Payment issue", "Onboarding help", "Task question"].map(
+                  (topic) => (
+                    <button
+                      className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                      key={topic}
+                      onClick={() => setSupportMessage(topic)}
+                      type="button"
+                    >
+                      {topic}
+                    </button>
+                  ),
+                )}
+              </div>
+              <form
+                className="flex items-center gap-2"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  sendSupportMessage(supportMessage);
+                }}
+              >
+                <input
+                  className="h-11 min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  onChange={(event) => setSupportMessage(event.target.value)}
+                  placeholder="Type your question"
+                  value={supportMessage}
+                />
+                <button
+                  aria-label="Send support message"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#0066cc] text-white transition hover:bg-[#0052a3] disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={!supportMessage.trim()}
+                  type="submit"
+                >
+                  <Send className="h-4 w-4" />
+                </button>
+              </form>
+            </div>
+          </div>
+        ) : null}
+
+        <button
+          className="flex h-14 items-center gap-2 rounded-full bg-slate-950 px-5 text-sm font-semibold text-white shadow-xl transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          onClick={() => setHelpOpen((open) => !open)}
+          type="button"
+        >
+          <MessageCircle className="h-5 w-5" />
+          Help center
+        </button>
+      </div>
     </div>
   );
 }
