@@ -6,7 +6,7 @@ import {
   ShoppingBag,
   ClipboardList,
   UserPlus,
-  FileText,
+  LifeBuoy,
   User,
   Wallet,
 } from "lucide-react";
@@ -16,7 +16,7 @@ export type PortalTab =
   | "apply"
   | "onboarding"
   | "referrals"
-  | "documents"
+  | "help"
   | "payments"
   | "profile";
 
@@ -70,10 +70,10 @@ export function PortalSidebar({
       hasDot: false,
     },
     {
-      id: "documents" as const,
-      label: "Documents",
-      href: "/documents",
-      icon: FileText,
+      id: "help" as const,
+      label: "Help",
+      href: "/help-center",
+      icon: LifeBuoy,
       hasDot: true,
     },
     {
