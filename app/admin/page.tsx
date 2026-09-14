@@ -25,7 +25,7 @@ export default async function AdminPage() {
       <section className="border-b border-slate-200 bg-white">
         <div className="mx-auto max-w-6xl px-6 py-8 md:px-8">
           <Link className="text-sm font-medium text-teal-700" href="/">
-            ReferralJobs
+            Trinity-AI
           </Link>
           <h1 className="mt-5 text-3xl font-semibold text-slate-950 md:text-5xl">
             Admin

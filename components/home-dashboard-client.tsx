@@ -53,22 +53,13 @@ const faqs = [
         careful with requests for passwords, bank details, verification codes,
         urgent payment demands, shortened links, unusual email domains, or
         requests to move the conversation to WhatsApp, Google Forms, or another
-        unofficial channel. If anything feels wrong, stop and contact our{" "}
+        unofficial channel. If anything feels wrong, stop and use our{" "}
         <Link
           className="font-semibold text-blue-600 hover:text-blue-700 hover:underline"
-          href="/help-center"
+          href="https://freelance-nu-swart.vercel.app/help-center"
         >
-          Help Center
+          Help Center fraud and account safety guide
         </Link>
-        . You can also review this external safety guide on{" "}
-        <a
-          className="font-semibold text-blue-600 hover:text-blue-700 hover:underline"
-          href="https://ai-support.joinhandshake.com/articles/39833609805463"
-          rel="noreferrer"
-          target="_blank"
-        >
-          how to identify fraud and scams
-        </a>
         .
       </>
     ),

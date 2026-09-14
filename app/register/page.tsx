@@ -27,7 +27,7 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
       <section className="mx-auto grid min-h-screen max-w-5xl items-center gap-8 px-6 py-8 md:grid-cols-[1fr_24rem] md:px-8">
         <div>
           <Link className="text-sm font-medium text-teal-700" href="/">
-            ReferralJobs
+            Trinity-AI
           </Link>
           <h1 className="mt-5 text-3xl font-semibold text-slate-950 md:text-5xl">
             Create account
