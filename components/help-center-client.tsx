@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { ArrowRight, ChevronRight, Mail, Search, Send } from "lucide-react";
 
@@ -449,11 +449,38 @@ function getArticle(title: string) {
   return articles.find((article) => article.title === title) ?? articles[0];
 }
 
+function subscribeToHashChange(onStoreChange: () => void) {
+  window.addEventListener("hashchange", onStoreChange);
+  window.addEventListener("popstate", onStoreChange);
+
+  return () => {
+    window.removeEventListener("hashchange", onStoreChange);
+    window.removeEventListener("popstate", onStoreChange);
+  };
+}
+
+function getHashSnapshot() {
+  return window.location.hash.replace("#", "");
+}
+
+function getServerHashSnapshot() {
+  return "";
+}
+
+function useCurrentHash() {
+  return useSyncExternalStore(
+    subscribeToHashChange,
+    getHashSnapshot,
+    getServerHashSnapshot,
+  );
+}
+
 type HelpCenterClientProps = {
   categoryId?: string;
 };
 
 export function HelpCenterClient({ categoryId }: HelpCenterClientProps) {
+  const currentHash = useCurrentHash();
   const initialCategory = getCategoryById(categoryId);
   const isCategoryPage = Boolean(categoryId);
   const initialArticle =
@@ -467,7 +494,16 @@ export function HelpCenterClient({ categoryId }: HelpCenterClientProps) {
   const [supportMessage, setSupportMessage] = useState("");
   const [preparedMessage, setPreparedMessage] = useState("");
 
-  const activeArticle = getArticle(activeArticleTitle);
+  const hashArticle = useMemo(
+    () =>
+      articles.find(
+        (article) =>
+          article.category === activeCategory &&
+          toId(article.title) === currentHash,
+      ),
+    [activeCategory, currentHash],
+  );
+  const activeArticle = hashArticle ?? getArticle(activeArticleTitle);
 
   const displayedArticles = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -676,7 +712,7 @@ export function HelpCenterClient({ categoryId }: HelpCenterClientProps) {
           </>
           )}
 
-          <section className="mt-20 grid gap-8 lg:grid-cols-[280px_1fr]">
+          <section className="mt-20 grid gap-8 lg:grid-cols-[280px_minmax(0,1fr)]">
             <div>
               <h2 className="text-2xl font-semibold">
                 {query.trim() ? "Search results" : "Articles"}
@@ -685,7 +721,7 @@ export function HelpCenterClient({ categoryId }: HelpCenterClientProps) {
                 {displayedArticles.length ? (
                   displayedArticles.map((article) => (
                     <Link
-                      className={`w-full rounded-xl px-4 py-3 text-left text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-[#071b24] ${
+                      className={`flex min-h-12 w-full items-center rounded-xl px-4 py-3 text-left text-sm font-semibold leading-5 transition focus:outline-none focus:ring-2 focus:ring-[#071b24] ${
                         activeArticle.title === article.title
                           ? "bg-[#071b24] text-white"
                           : "bg-[#f4f7fb] text-[#111827] hover:bg-[#e8eef6]"
@@ -708,7 +744,10 @@ export function HelpCenterClient({ categoryId }: HelpCenterClientProps) {
               </div>
             </div>
 
-            <article className="rounded-2xl border border-[#e5e7eb] bg-white p-6">
+            <article
+              className="scroll-mt-8 rounded-2xl border border-[#e5e7eb] bg-white p-6"
+              id={toId(activeArticle.title)}
+            >
               <p className="text-sm font-bold text-[#4b5563]">
                 {activeArticle.category}
               </p>
