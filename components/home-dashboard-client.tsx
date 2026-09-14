@@ -20,6 +20,29 @@ interface HomeDashboardClientProps {
   userName?: string;
 }
 
+const faqs = [
+  {
+    question: "How do I start working on a project?",
+    answer:
+      "Begin by completing onboarding and applying for an available role. Once your application is reviewed and matched, your project activity will appear on the home page with the next steps clearly shown.",
+  },
+  {
+    question: "Where can I see my hours and payment status?",
+    answer:
+      "The home page gives a quick summary of your hours worked and awaiting payment. For the full account record, including balances, ledger history, transfers, and withdrawals, use the wallet page.",
+  },
+  {
+    question: "Why does some money show as awaiting payment?",
+    answer:
+      "Awaiting payment means the work has been recorded but the money is still being held until the required review, eligibility, or verification step is complete. This keeps the payout process traceable and easier to audit.",
+  },
+  {
+    question: "What should I do if my progress looks incorrect?",
+    answer:
+      "Check your project status, submitted work, and wallet records first. If the numbers still do not match your work, contact support with the project name and the hours or payment record you expected to see.",
+  },
+];
+
 export function HomeDashboardClient({
   paymentSummary,
   userName = "Teddy",
@@ -306,6 +329,46 @@ export function HomeDashboardClient({
           </p>
         </section>
         )}
+
+        <section className="space-y-4 pt-2">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-bold text-slate-900">
+                Frequently asked questions
+              </h2>
+              <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500">
+                Quick answers about projects, hours, payments, and what to check
+                next.
+              </p>
+            </div>
+            <Link
+              href="/about-us"
+              className="text-sm font-semibold text-blue-600 transition hover:text-blue-700 hover:underline"
+            >
+              Learn more
+            </Link>
+          </div>
+
+          <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_1px_3px_rgba(15,23,42,0.04)]">
+            {faqs.map((faq) => (
+              <details
+                className="group border-b border-slate-200/70 last:border-b-0"
+                key={faq.question}
+              >
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-left text-sm font-semibold text-slate-900 transition hover:bg-slate-50 [&::-webkit-details-marker]:hidden">
+                  <span>{faq.question}</span>
+                  <ChevronDown
+                    className="h-4 w-4 shrink-0 text-slate-400 transition-transform group-open:rotate-180"
+                    strokeWidth={2}
+                  />
+                </summary>
+                <p className="px-5 pb-5 text-sm leading-6 text-slate-600">
+                  {faq.answer}
+                </p>
+              </details>
+            ))}
+          </div>
+        </section>
       </div>
 
       {/* Right Column Sidebar */}
