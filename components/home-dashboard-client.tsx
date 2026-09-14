@@ -152,13 +152,13 @@ export function HomeDashboardClient({
                 Your projects{" "}
                 <span className="font-normal text-slate-400">(3)</span>
               </h2>
-              <button
-                type="button"
+              <Link
+                href="/about-us"
                 className="flex items-center gap-1.5 text-xs font-medium text-slate-500 transition hover:text-slate-800"
               >
                 <Info className="h-3.5 w-3.5" strokeWidth={2} />
                 About us
-              </button>
+              </Link>
             </div>
 
             {/* Project Cards Grid */}
@@ -331,8 +331,8 @@ export function HomeDashboardClient({
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-1">
               <div>
                 <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                  Hours worked
-                  <Info className="h-3.5 w-3.5" />
+                  Total hours
+                  <Clock className="h-3.5 w-3.5" />
                 </div>
                 <div className="mt-1 text-2xl font-bold text-slate-900">
                   {paymentSummary.formattedHoursWorked}
@@ -340,8 +340,8 @@ export function HomeDashboardClient({
               </div>
               <div>
                 <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                  Awaiting payment
-                  <Info className="h-3.5 w-3.5" />
+                  Expected earnings
+                  <Wallet className="h-3.5 w-3.5" />
                 </div>
                 <div className="mt-1 text-2xl font-bold text-slate-900">
                   {paymentSummary.formattedAwaitingPayment}
