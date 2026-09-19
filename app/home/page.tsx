@@ -3,6 +3,7 @@ import { PortalSidebar } from "@/components/portal-sidebar";
 import { HomeDashboardClient } from "@/components/home-dashboard-client";
 import { prisma } from "@/lib/db/prisma";
 import { LedgerService } from "@/lib/services/ledger-service";
+import { buildTaskAssignment } from "@/lib/task-assignment";
 
 export const dynamic = "force-dynamic";
 
@@ -76,6 +77,7 @@ export default async function HomePage() {
               select: {
                 title: true,
                 description: true,
+                companyName: true,
                 payoutAmountCents: true,
                 payoutType: true,
                 skills: {
@@ -93,6 +95,11 @@ export default async function HomePage() {
             const canSubmit =
               !application.taskSubmittedAt &&
               ["ACTIVE", "MATCHED", "CERTIFIED"].includes(application.status);
+            const taskAssignment = buildTaskAssignment({
+              id: application.id,
+              candidateName: userName,
+              job: application.job,
+            });
 
             return {
               id: application.id,
@@ -117,6 +124,9 @@ export default async function HomePage() {
               isSubmitted: Boolean(application.taskSubmittedAt),
               submittedFileName: application.taskSubmissionFileName,
               briefHref: `/api/v1/applications/${application.id}/task-material`,
+              taskBrief: taskAssignment.sections.filter(
+                (section) => section.heading !== "Candidate and role",
+              ),
             };
           }),
         )

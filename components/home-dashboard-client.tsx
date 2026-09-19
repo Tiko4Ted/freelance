@@ -34,6 +34,10 @@ type DashboardProject = {
   isSubmitted: boolean;
   submittedFileName?: string | null;
   briefHref?: string;
+  taskBrief: Array<{
+    heading: string;
+    lines: string[];
+  }>;
 };
 
 interface HomeDashboardClientProps {
@@ -88,6 +92,102 @@ const faqs = [
   },
 ];
 
+const demoProjectBriefs: Record<string, DashboardProject["taskBrief"]> = {
+  "demo-artifacts": [
+    {
+      heading: "Before you start",
+      lines: [
+        "Review the artifact request and decide which file best proves the completed work.",
+        "Estimated time: 30 to 45 minutes for a complete, reviewable submission.",
+      ],
+    },
+    {
+      heading: "Task to complete",
+      lines: [
+        "Prepare one completed project artifact that matches the selected role or task.",
+        "Make sure the file is named clearly and includes enough context for a reviewer to understand it without asking follow-up questions.",
+      ],
+    },
+    {
+      heading: "What to submit",
+      lines: [
+        "A file name or share link for the completed artifact.",
+        "Notes explaining what you completed, any assumptions, and anything reviewers should check first.",
+      ],
+    },
+    {
+      heading: "Review checklist",
+      lines: [
+        "The artifact is accessible and clearly named.",
+        "The notes explain the outcome and review context.",
+        "The submission is complete enough for approval review.",
+      ],
+    },
+  ],
+  "demo-rewrite": [
+    {
+      heading: "Before you start",
+      lines: [
+        "Choose a short AI-written sample that needs clearer structure, tone, or factual caution.",
+        "Estimated time: 45 to 60 minutes including editing and notes.",
+      ],
+    },
+    {
+      heading: "Task to complete",
+      lines: [
+        "Rewrite the sample so it sounds natural, accurate, and useful to the intended reader.",
+        "Keep a short note showing the main edits you made and why.",
+      ],
+    },
+    {
+      heading: "What to submit",
+      lines: [
+        "A document or link containing the original text, rewritten version, and edit notes.",
+        "A reviewer note covering tone, clarity, accuracy checks, and any unresolved assumptions.",
+      ],
+    },
+    {
+      heading: "Review checklist",
+      lines: [
+        "The rewrite is clearer than the source text.",
+        "Changes are explained with practical editing judgment.",
+        "Any uncertain claims are flagged instead of silently rewritten.",
+      ],
+    },
+  ],
+  "demo-aid": [
+    {
+      heading: "Before you start",
+      lines: [
+        "Read the support scenario and identify the user's goal, missing facts, and safest next step.",
+        "Estimated time: 45 to 75 minutes for answers and reviewer notes.",
+      ],
+    },
+    {
+      heading: "Task to complete",
+      lines: [
+        "Answer three structured support prompts with clear reasoning and concise user-facing language.",
+        "Flag any case where you would need more information before giving a final answer.",
+      ],
+    },
+    {
+      heading: "What to submit",
+      lines: [
+        "A completed answer sheet or share link.",
+        "Notes describing your reasoning, assumptions, and escalation decisions.",
+      ],
+    },
+    {
+      heading: "Review checklist",
+      lines: [
+        "Answers are helpful, direct, and safe.",
+        "Reasoning separates facts from assumptions.",
+        "Escalation decisions are clear where the scenario is incomplete.",
+      ],
+    },
+  ],
+};
+
 export function HomeDashboardClient({
   paymentSummary,
   projects = [],
@@ -105,6 +205,7 @@ export function HomeDashboardClient({
       skills: ["Files", "Review", "Documentation"],
       canSubmit: true,
       isSubmitted: false,
+      taskBrief: demoProjectBriefs["demo-artifacts"],
     },
     {
       id: "demo-rewrite",
@@ -117,6 +218,7 @@ export function HomeDashboardClient({
       skills: ["Writing", "AI review", "Editing"],
       canSubmit: true,
       isSubmitted: false,
+      taskBrief: demoProjectBriefs["demo-rewrite"],
     },
     {
       id: "demo-aid",
@@ -129,6 +231,7 @@ export function HomeDashboardClient({
       skills: ["Research", "Reasoning", "Quality"],
       canSubmit: true,
       isSubmitted: false,
+      taskBrief: demoProjectBriefs["demo-aid"],
     },
   ];
   const visibleProjects = projects.length ? projects : fallbackProjects;
@@ -556,19 +659,54 @@ export function HomeDashboardClient({
                       ))}
                     </div>
 
+                    <div className="rounded-xl border border-slate-200 bg-white p-4">
+                      <div className="flex items-start gap-3">
+                        <FileText className="mt-0.5 h-5 w-5 shrink-0 text-blue-700" />
+                        <div>
+                          <h4 className="text-sm font-bold text-slate-950">
+                            Task details
+                          </h4>
+                          <p className="mt-1 text-sm leading-6 text-slate-600">
+                            Review these instructions before preparing your
+                            file or share link.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 grid gap-3">
+                        {selectedProject.taskBrief.map((section) => (
+                          <section
+                            className="rounded-xl border border-slate-200 bg-slate-50 p-4"
+                            key={section.heading}
+                          >
+                            <h5 className="text-sm font-bold text-slate-900">
+                              {section.heading}
+                            </h5>
+                            <ul className="mt-2 space-y-2 text-sm leading-6 text-slate-600">
+                              {section.lines.map((line) => (
+                                <li className="flex gap-2" key={line}>
+                                  <CheckCircle2 className="mt-1 h-3.5 w-3.5 shrink-0 text-emerald-600" />
+                                  <span>{line}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </section>
+                        ))}
+                      </div>
+                    </div>
+
                     {workspaceMode === "brief" ? (
                       <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
                         <div className="flex items-start gap-3">
-                          <FileText className="mt-0.5 h-5 w-5 shrink-0 text-blue-700" />
+                          <PlayCircle className="mt-0.5 h-5 w-5 shrink-0 text-blue-700" />
                           <div>
                             <h4 className="text-sm font-bold text-blue-950">
-                              Project brief
+                              Ready to work?
                             </h4>
                             <p className="mt-1 text-sm leading-6 text-blue-900">
-                              Start by downloading the brief, checking the
-                              deliverables, and preparing the completed file.
-                              When your work is ready, use Start task to open
-                              the submission step.
+                              Use Start task when you have read the details and
+                              are ready to enter the completed file or share
+                              link for review.
                             </p>
                           </div>
                         </div>
