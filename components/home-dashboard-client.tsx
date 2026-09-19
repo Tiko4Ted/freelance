@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   Clock,
@@ -103,7 +103,7 @@ export function HomeDashboardClient({
       payoutLabel: "Task review",
       payoutType: "Demo flow",
       skills: ["Files", "Review", "Documentation"],
-      canSubmit: false,
+      canSubmit: true,
       isSubmitted: false,
     },
     {
@@ -115,7 +115,7 @@ export function HomeDashboardClient({
       payoutLabel: "$10.00/task",
       payoutType: "Demo flow",
       skills: ["Writing", "AI review", "Editing"],
-      canSubmit: false,
+      canSubmit: true,
       isSubmitted: false,
     },
     {
@@ -127,7 +127,7 @@ export function HomeDashboardClient({
       payoutLabel: "$10.00/task",
       payoutType: "Demo flow",
       skills: ["Research", "Reasoning", "Quality"],
-      canSubmit: false,
+      canSubmit: true,
       isSubmitted: false,
     },
   ];
@@ -144,6 +144,8 @@ export function HomeDashboardClient({
   const [submissionStatus, setSubmissionStatus] = useState<
     "idle" | "submitting" | "submitted" | "error"
   >("idle");
+  const taskWorkspaceRef = useRef<HTMLDivElement | null>(null);
+  const taskInputRef = useRef<HTMLInputElement | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
   const [supportMessage, setSupportMessage] = useState("");
   const [supportMessages, setSupportMessages] = useState<
@@ -177,12 +179,36 @@ export function HomeDashboardClient({
     setSubmissionStatus("idle");
   };
 
+  const startProjectTask = () => {
+    setWorkspaceMode("work");
+    setSubmissionStatus("idle");
+  };
+
+  useEffect(() => {
+    if (workspaceMode !== "work") {
+      return;
+    }
+
+    taskWorkspaceRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+    taskInputRef.current?.focus({ preventScroll: true });
+  }, [workspaceMode, selectedProjectId]);
+
   const submitProjectTask = async () => {
-    if (!selectedProject?.applicationId || !selectedProject.canSubmit) {
+    if (!selectedProject?.canSubmit) {
       return;
     }
 
     setSubmissionStatus("submitting");
+
+    if (!selectedProject.applicationId) {
+      setSubmissionStatus("submitted");
+      setTaskFileName("");
+      setTaskNotes("");
+      return;
+    }
 
     try {
       const response = await fetch(
@@ -478,12 +504,20 @@ export function HomeDashboardClient({
                       </a>
                     ) : null}
                     <button
-                      className="inline-flex h-10 items-center gap-2 rounded-xl bg-slate-950 px-3 text-sm font-semibold text-white transition hover:bg-slate-800"
-                      onClick={() => setWorkspaceMode("work")}
+                      className={`inline-flex h-10 items-center gap-2 rounded-xl px-3 text-sm font-semibold transition ${
+                        workspaceMode === "work"
+                          ? "bg-blue-600 text-white hover:bg-blue-700"
+                          : "bg-slate-950 text-white hover:bg-slate-800"
+                      }`}
+                      onClick={startProjectTask}
                       type="button"
                     >
-                      <PlayCircle className="h-4 w-4" />
-                      Start task
+                      {workspaceMode === "work" ? (
+                        <CheckCircle2 className="h-4 w-4" />
+                      ) : (
+                        <PlayCircle className="h-4 w-4" />
+                      )}
+                      {workspaceMode === "work" ? "Task form open" : "Start task"}
                     </button>
                   </div>
                 </div>
@@ -540,7 +574,10 @@ export function HomeDashboardClient({
                         </div>
                       </div>
                     ) : (
-                      <div className="rounded-xl border border-slate-200 p-4">
+                      <div
+                        className="rounded-xl border border-blue-200 bg-white p-4 shadow-[0_0_0_3px_rgba(37,99,235,0.08)]"
+                        ref={taskWorkspaceRef}
+                      >
                         <div className="flex items-center gap-2">
                           <Upload className="h-5 w-5 text-slate-700" />
                           <h4 className="text-sm font-bold text-slate-950">
@@ -558,6 +595,7 @@ export function HomeDashboardClient({
                                 setTaskFileName(event.target.value)
                               }
                               placeholder="completed-work.pdf"
+                              ref={taskInputRef}
                               value={taskFileName}
                             />
                           </label>
