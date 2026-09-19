@@ -12,6 +12,33 @@ function formatHoursWorked(hours: number) {
   }).format(hours);
 }
 
+function formatCurrency(cents: number | null | undefined) {
+  return new Intl.NumberFormat("en-US", {
+    currency: "USD",
+    style: "currency",
+  }).format((cents ?? 0) / 100);
+}
+
+function projectStatusLabel(status: string, submittedAt?: Date | null) {
+  if (submittedAt) {
+    return "Submitted for review";
+  }
+
+  const labels: Record<string, string> = {
+    APPLIED: "Application under review",
+    CERTIFYING: "Submission under review",
+    CERTIFIED: "Ready to start",
+    MATCHED: "Matched",
+    ACTIVE: "Active",
+    PAYOUT_ELIGIBLE: "Payment eligible",
+    PAID: "Paid",
+    EXPIRED: "Expired",
+    REJECTED: "Not selected",
+  };
+
+  return labels[status] ?? status;
+}
+
 export default async function HomePage() {
   const session = await auth();
   const userName = session?.user?.name || "Teddy";
@@ -33,6 +60,68 @@ export default async function HomePage() {
         formattedHoursWorked: "0",
       };
 
+  const projects = userId
+    ? await prisma.application
+        .findMany({
+          where: { applicantUserId: userId },
+          orderBy: { updatedAt: "desc" },
+          take: 6,
+          select: {
+            id: true,
+            status: true,
+            lockedPayoutCents: true,
+            taskSubmittedAt: true,
+            taskSubmissionFileName: true,
+            job: {
+              select: {
+                title: true,
+                description: true,
+                payoutAmountCents: true,
+                payoutType: true,
+                skills: {
+                  select: {
+                    label: true,
+                  },
+                },
+              },
+            },
+          },
+        })
+        .then((applications) =>
+          applications.map((application) => {
+            const skills = application.job.skills.map((skill) => skill.label);
+            const canSubmit =
+              !application.taskSubmittedAt &&
+              ["ACTIVE", "MATCHED", "CERTIFIED"].includes(application.status);
+
+            return {
+              id: application.id,
+              applicationId: application.id,
+              title: application.job.title,
+              description: application.job.description,
+              status: application.status,
+              statusLabel: projectStatusLabel(
+                application.status,
+                application.taskSubmittedAt,
+              ),
+              payoutLabel: formatCurrency(
+                application.lockedPayoutCents ??
+                  application.job.payoutAmountCents,
+              ),
+              payoutType:
+                application.job.payoutType === "TASK_1"
+                  ? "Per approved task"
+                  : "After approved hours",
+              skills,
+              canSubmit,
+              isSubmitted: Boolean(application.taskSubmittedAt),
+              submittedFileName: application.taskSubmissionFileName,
+              briefHref: `/api/v1/applications/${application.id}/task-material`,
+            };
+          }),
+        )
+    : [];
+
   return (
     <div className="flex min-h-screen bg-[#fafafc] text-slate-900">
       <PortalSidebar activeTab="home" userName={userName} avatarColor="#c2410c" />
@@ -40,6 +129,7 @@ export default async function HomePage() {
         <div className="mx-auto max-w-[1040px]">
           <HomeDashboardClient
             paymentSummary={paymentSummary}
+            projects={projects}
             userName={userName}
           />
         </div>

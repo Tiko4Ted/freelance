@@ -13,13 +13,35 @@ import {
   MessageCircle,
   Send,
   X,
+  Download,
+  FileText,
+  PlayCircle,
+  Upload,
+  CheckCircle2,
 } from "lucide-react";
+
+type DashboardProject = {
+  id: string;
+  applicationId?: string;
+  title: string;
+  description: string;
+  status: string;
+  statusLabel: string;
+  payoutLabel: string;
+  payoutType: string;
+  skills: string[];
+  canSubmit: boolean;
+  isSubmitted: boolean;
+  submittedFileName?: string | null;
+  briefHref?: string;
+};
 
 interface HomeDashboardClientProps {
   paymentSummary: {
     formattedAwaitingPayment: string;
     formattedHoursWorked: string;
   };
+  projects?: DashboardProject[];
   userName?: string;
 }
 
@@ -68,11 +90,60 @@ const faqs = [
 
 export function HomeDashboardClient({
   paymentSummary,
+  projects = [],
   userName = "Teddy",
 }: HomeDashboardClientProps) {
+  const fallbackProjects: DashboardProject[] = [
+    {
+      id: "demo-artifacts",
+      title: "Project Artifacts",
+      description: "Submit files for review.",
+      status: "DEMO",
+      statusLabel: "Ready to preview",
+      payoutLabel: "Task review",
+      payoutType: "Demo flow",
+      skills: ["Files", "Review", "Documentation"],
+      canSubmit: false,
+      isSubmitted: false,
+    },
+    {
+      id: "demo-rewrite",
+      title: "Project Rewrite",
+      description: "Improve AI-written text.",
+      status: "DEMO",
+      statusLabel: "Ready to preview",
+      payoutLabel: "$10.00/task",
+      payoutType: "Demo flow",
+      skills: ["Writing", "AI review", "Editing"],
+      canSubmit: false,
+      isSubmitted: false,
+    },
+    {
+      id: "demo-aid",
+      title: "Project Aid",
+      description: "Answer structured support and reasoning tasks.",
+      status: "DEMO",
+      statusLabel: "Ready to preview",
+      payoutLabel: "$10.00/task",
+      payoutType: "Demo flow",
+      skills: ["Research", "Reasoning", "Quality"],
+      canSubmit: false,
+      isSubmitted: false,
+    },
+  ];
+  const visibleProjects = projects.length ? projects : fallbackProjects;
   const [activeTab, setActiveTab] = useState<"projects" | "applications">(
     "projects",
   );
+  const [selectedProjectId, setSelectedProjectId] = useState(
+    visibleProjects[0]?.id ?? "",
+  );
+  const [workspaceMode, setWorkspaceMode] = useState<"brief" | "work">("brief");
+  const [taskFileName, setTaskFileName] = useState("");
+  const [taskNotes, setTaskNotes] = useState("");
+  const [submissionStatus, setSubmissionStatus] = useState<
+    "idle" | "submitting" | "submitted" | "error"
+  >("idle");
   const [helpOpen, setHelpOpen] = useState(false);
   const [supportMessage, setSupportMessage] = useState("");
   const [supportMessages, setSupportMessages] = useState<
@@ -94,6 +165,51 @@ export function HomeDashboardClient({
       ...prev,
       [key]: !prev[key],
     }));
+  };
+
+  const selectedProject =
+    visibleProjects.find((project) => project.id === selectedProjectId) ??
+    visibleProjects[0];
+
+  const openProject = (projectId: string) => {
+    setSelectedProjectId(projectId);
+    setWorkspaceMode("brief");
+    setSubmissionStatus("idle");
+  };
+
+  const submitProjectTask = async () => {
+    if (!selectedProject?.applicationId || !selectedProject.canSubmit) {
+      return;
+    }
+
+    setSubmissionStatus("submitting");
+
+    try {
+      const response = await fetch(
+        `/api/v1/applications/${selectedProject.applicationId}/task-submission`,
+        {
+          body: JSON.stringify({
+            fileName: taskFileName,
+            notes: taskNotes,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+          method: "POST",
+        },
+      );
+
+      if (response.ok) {
+        setSubmissionStatus("submitted");
+        setTaskFileName("");
+        setTaskNotes("");
+        return;
+      }
+
+      setSubmissionStatus("error");
+    } catch {
+      setSubmissionStatus("error");
+    }
   };
 
   const sendSupportMessage = (message: string) => {
@@ -224,7 +340,9 @@ export function HomeDashboardClient({
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold text-slate-900">
                 Your projects{" "}
-                <span className="font-normal text-slate-400">(3)</span>
+                <span className="font-normal text-slate-400">
+                  ({visibleProjects.length})
+                </span>
               </h2>
               <Link
                 href="/about-us"
@@ -237,8 +355,48 @@ export function HomeDashboardClient({
 
             {/* Project Cards Grid */}
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              {visibleProjects.map((project) => {
+                const isSelected = selectedProject?.id === project.id;
+
+                return (
+                  <button
+                    className={`flex min-h-[160px] flex-col justify-between rounded-2xl border bg-white p-5 text-left shadow-[0_1px_2px_rgba(0,0,0,0.03)] transition hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      isSelected
+                        ? "border-blue-300 ring-1 ring-blue-100"
+                        : "border-slate-200/90 hover:border-slate-300"
+                    }`}
+                    key={project.id}
+                    onClick={() => openProject(project.id)}
+                    type="button"
+                  >
+                    <div>
+                      <div className="flex items-start justify-between gap-3">
+                        <h3 className="text-base font-semibold text-slate-900">
+                          {project.title}
+                        </h3>
+                        {isSelected ? (
+                          <CheckCircle2 className="h-4 w-4 shrink-0 text-blue-600" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4 shrink-0 text-slate-400" />
+                        )}
+                      </div>
+                      <p className="mt-1 line-clamp-2 text-sm text-slate-500">
+                        {project.description}
+                      </p>
+                    </div>
+                    <div className="mt-5 flex flex-wrap items-center gap-2 text-xs">
+                      <span className="rounded-full bg-blue-50 px-2.5 py-1 font-semibold text-blue-700">
+                        {project.statusLabel}
+                      </span>
+                      <span className="font-medium text-slate-600">
+                        {project.payoutLabel}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
               {/* Card 1: Project Artifacts */}
-              <div className="flex min-h-[136px] flex-col justify-between rounded-2xl border border-slate-200/90 bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.03)] transition hover:shadow-md">
+              <div className="hidden min-h-[136px] flex-col justify-between rounded-2xl border border-slate-200/90 bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.03)] transition hover:shadow-md">
                 <div>
                   <h3 className="text-base font-semibold text-slate-900">
                     Project Artifacts
@@ -255,7 +413,7 @@ export function HomeDashboardClient({
               </div>
 
               {/* Card 2: Project Rewrite */}
-              <div className="flex min-h-[136px] flex-col justify-between rounded-2xl border border-slate-200/90 bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.03)] transition hover:shadow-md">
+              <div className="hidden min-h-[136px] flex-col justify-between rounded-2xl border border-slate-200/90 bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.03)] transition hover:shadow-md">
                 <div>
                   <h3 className="text-base font-semibold text-slate-900">
                     Project Rewrite
@@ -274,7 +432,7 @@ export function HomeDashboardClient({
               </div>
 
               {/* Card 3: Project Aid */}
-              <div className="flex min-h-[136px] flex-col justify-between rounded-2xl border border-slate-200/90 bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.03)] transition hover:shadow-md">
+              <div className="hidden min-h-[136px] flex-col justify-between rounded-2xl border border-slate-200/90 bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.03)] transition hover:shadow-md">
                 <div>
                   <h3 className="text-base font-semibold text-slate-900">
                     Project Aid
@@ -289,6 +447,230 @@ export function HomeDashboardClient({
                 </div>
               </div>
             </div>
+
+            {selectedProject ? (
+              <section className="rounded-2xl border border-slate-200/90 bg-white shadow-sm">
+                <div className="flex flex-col gap-4 border-b border-slate-100 p-5 md:flex-row md:items-start md:justify-between">
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">
+                        {selectedProject.statusLabel}
+                      </span>
+                      <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                        {selectedProject.payoutLabel}
+                      </span>
+                    </div>
+                    <h3 className="mt-3 text-xl font-bold text-slate-950">
+                      {selectedProject.title}
+                    </h3>
+                    <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+                      {selectedProject.description}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedProject.briefHref ? (
+                      <a
+                        className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                        href={selectedProject.briefHref}
+                      >
+                        <Download className="h-4 w-4" />
+                        Download brief
+                      </a>
+                    ) : null}
+                    <button
+                      className="inline-flex h-10 items-center gap-2 rounded-xl bg-slate-950 px-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+                      onClick={() => setWorkspaceMode("work")}
+                      type="button"
+                    >
+                      <PlayCircle className="h-4 w-4" />
+                      Start task
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid gap-6 p-5 lg:grid-cols-[1fr_280px]">
+                  <div className="space-y-5">
+                    <div className="grid gap-3 sm:grid-cols-3">
+                      {[
+                        [
+                          "Review brief",
+                          "Open the task material and confirm the required deliverables.",
+                        ],
+                        [
+                          "Do the work",
+                          "Complete the task outside the dashboard using the client instructions.",
+                        ],
+                        [
+                          "Submit proof",
+                          "Upload the file name and notes so reviewers can process it.",
+                        ],
+                      ].map(([title, text], index) => (
+                        <div
+                          className="rounded-xl border border-slate-200 bg-slate-50 p-4"
+                          key={title}
+                        >
+                          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-xs font-bold text-slate-700 shadow-sm">
+                            {index + 1}
+                          </div>
+                          <h4 className="mt-3 text-sm font-bold text-slate-900">
+                            {title}
+                          </h4>
+                          <p className="mt-1 text-xs leading-5 text-slate-500">
+                            {text}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {workspaceMode === "brief" ? (
+                      <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
+                        <div className="flex items-start gap-3">
+                          <FileText className="mt-0.5 h-5 w-5 shrink-0 text-blue-700" />
+                          <div>
+                            <h4 className="text-sm font-bold text-blue-950">
+                              Project brief
+                            </h4>
+                            <p className="mt-1 text-sm leading-6 text-blue-900">
+                              Start by downloading the brief, checking the
+                              deliverables, and preparing the completed file.
+                              When your work is ready, use Start task to open
+                              the submission step.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="rounded-xl border border-slate-200 p-4">
+                        <div className="flex items-center gap-2">
+                          <Upload className="h-5 w-5 text-slate-700" />
+                          <h4 className="text-sm font-bold text-slate-950">
+                            Submit completed work
+                          </h4>
+                        </div>
+                        <div className="mt-4 grid gap-3">
+                          <label className="block">
+                            <span className="text-xs font-semibold text-slate-600">
+                              File name or share link
+                            </span>
+                            <input
+                              className="mt-1 h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                              onChange={(event) =>
+                                setTaskFileName(event.target.value)
+                              }
+                              placeholder="completed-work.pdf"
+                              value={taskFileName}
+                            />
+                          </label>
+                          <label className="block">
+                            <span className="text-xs font-semibold text-slate-600">
+                              Notes for reviewers
+                            </span>
+                            <textarea
+                              className="mt-1 min-h-24 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                              onChange={(event) =>
+                                setTaskNotes(event.target.value)
+                              }
+                              placeholder="Mention what you completed, any assumptions, and anything reviewers should know."
+                              value={taskNotes}
+                            />
+                          </label>
+                          <div className="flex flex-wrap items-center gap-3">
+                            <button
+                              className="inline-flex h-11 items-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                              disabled={
+                                !selectedProject.canSubmit ||
+                                !taskFileName.trim() ||
+                                submissionStatus === "submitting"
+                              }
+                              onClick={() => {
+                                void submitProjectTask();
+                              }}
+                              type="button"
+                            >
+                              <Upload className="h-4 w-4" />
+                              {submissionStatus === "submitting"
+                                ? "Submitting"
+                                : "Submit work"}
+                            </button>
+                            {!selectedProject.canSubmit ? (
+                              <span className="text-xs font-medium text-slate-500">
+                                This project is not ready for submission yet.
+                              </span>
+                            ) : null}
+                            {submissionStatus === "submitted" ? (
+                              <span className="text-xs font-semibold text-emerald-700">
+                                Submitted for review.
+                              </span>
+                            ) : null}
+                            {submissionStatus === "error" ? (
+                              <span className="text-xs font-semibold text-red-600">
+                                Submission failed. Check the project status and
+                                try again.
+                              </span>
+                            ) : null}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <aside className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <h4 className="text-sm font-bold text-slate-900">
+                      Project details
+                    </h4>
+                    <dl className="mt-4 space-y-3 text-sm">
+                      <div>
+                        <dt className="text-xs font-semibold text-slate-500">
+                          Payment
+                        </dt>
+                        <dd className="mt-1 font-semibold text-slate-900">
+                          {selectedProject.payoutLabel}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-xs font-semibold text-slate-500">
+                          Payment rule
+                        </dt>
+                        <dd className="mt-1 text-slate-700">
+                          {selectedProject.payoutType}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-xs font-semibold text-slate-500">
+                          Skills
+                        </dt>
+                        <dd className="mt-2 flex flex-wrap gap-2">
+                          {selectedProject.skills.length ? (
+                            selectedProject.skills.slice(0, 5).map((skill) => (
+                              <span
+                                className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-slate-600"
+                                key={skill}
+                              >
+                                {skill}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="text-slate-500">
+                              Role-specific review
+                            </span>
+                          )}
+                        </dd>
+                      </div>
+                      {selectedProject.isSubmitted ? (
+                        <div>
+                          <dt className="text-xs font-semibold text-slate-500">
+                            Submitted file
+                          </dt>
+                          <dd className="mt-1 text-slate-700">
+                            {selectedProject.submittedFileName ?? "Submitted"}
+                          </dd>
+                        </div>
+                      ) : null}
+                    </dl>
+                  </aside>
+                </div>
+              </section>
+            ) : null}
           </section>
 
           {/* Collapsible Accordion Sections */}
