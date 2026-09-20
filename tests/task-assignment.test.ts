@@ -14,7 +14,7 @@ test("builds a conversation recording task for audio and language roles", () => 
       title: "Spanish Voice Actor",
       description:
         "Record clear language samples and natural speech for remote audio review.",
-      companyName: "micro1",
+      companyName: "Trinity-AI",
       payoutType: PayoutTrigger.TASK_1,
       skills: [
         { label: "Spanish" },
@@ -40,7 +40,7 @@ test("builds a role-matched software work sample", () => {
       title: "React Developer",
       description:
         "Build, review, test, and improve production software for remote client projects.",
-      companyName: "micro1",
+      companyName: "Trinity-AI",
       payoutType: PayoutTrigger.HOURS_10,
       skills: [
         { label: "React" },
@@ -66,7 +66,7 @@ test("does not classify science engineering roles as software work", () => {
       title: "Mechanical Engineering Subject Matter Expert",
       description:
         "Evaluate specialized engineering tasks for online expert-review projects.",
-      companyName: "micro1",
+      companyName: "Trinity-AI",
       payoutType: PayoutTrigger.HOURS_10,
       skills: [
         { label: "Mechanical Engineering" },

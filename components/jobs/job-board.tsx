@@ -65,7 +65,7 @@ function JobCard({
           {job.title}
         </h2>
         <p className="mt-2 text-xs font-medium text-[#4f5667]">
-          micro1 <span className="px-2 text-[#a8adba]">|</span>
+          Trinity-AI <span className="px-2 text-[#a8adba]">|</span>
           {openingLabel(job.openings)}
         </p>
 

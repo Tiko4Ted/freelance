@@ -3,6 +3,7 @@ import { ApplicationStatus, Prisma, Role } from "@prisma/client";
 import { scoreAptitudeTest } from "@/lib/aptitude-test";
 import { prisma } from "@/lib/db/prisma";
 import { createSimplePdf } from "@/lib/pdf/simple-pdf";
+import { EmailNotificationService } from "@/lib/services/email-notification-service";
 import { buildTaskAssignment } from "@/lib/task-assignment";
 import type { ApplicationInput } from "@/lib/validation/application";
 import type { TaskSubmissionInput } from "@/lib/validation/task-submission";
@@ -247,6 +248,8 @@ export const ApplicationService = {
         });
       });
 
+      await EmailNotificationService.notifyApplicationSubmitted(application.id);
+
       return toApplicationResponse(application);
     } catch (error) {
       if (isUniqueConstraintError(error)) {
@@ -307,6 +310,28 @@ export const ApplicationService = {
     applicantUserId: string,
     input: TaskSubmissionInput,
   ) {
+    const existingApplication = await prisma.application.findFirst({
+      where: {
+        id: applicationId,
+        applicantUserId,
+        taskSubmittedAt: null,
+        status: {
+          in: [
+            ApplicationStatus.ACTIVE,
+            ApplicationStatus.MATCHED,
+            ApplicationStatus.CERTIFIED,
+          ],
+        },
+      },
+      select: {
+        status: true,
+      },
+    });
+
+    if (!existingApplication) {
+      throw new Error("TASK_NOT_SUBMITTABLE");
+    }
+
     const updatedApplication = await prisma.application.updateMany({
       where: {
         id: applicationId,
@@ -332,5 +357,10 @@ export const ApplicationService = {
     if (updatedApplication.count !== 1) {
       throw new Error("TASK_NOT_SUBMITTABLE");
     }
+
+    await EmailNotificationService.notifyApplicationStatusChanged(
+      applicationId,
+      existingApplication.status,
+    );
   },
 };
