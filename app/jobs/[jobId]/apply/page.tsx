@@ -17,9 +17,9 @@ type ApplyPageProps = {
   }>;
 };
 
-const ABOUT_MICRO1 = [
-  "micro1 is the leading AI data lab for training frontier models and evaluating AI agents. Experts contribute their diverse subject matter knowledge across domains such as finance, healthcare, STEM engineering, and more. micro1 transforms that real-world expertise into high-quality training data, evaluations, and feedback loops that improve how AI systems learn, reason, and perform.",
-  "Our platform identifies and vets top talent through an AI recruiter, enabling high-quality expert contributions at scale. We aim to enable 1 billion people to do meaningful work by applying their expertise to AI. As our global expert network grows, micro1 is building the human intelligence layer for frontier AI.",
+const ABOUT_TRINITY_AI = [
+  "Trinity-AI is an AI talent and data platform for training frontier models and evaluating AI agents. Experts contribute diverse subject matter knowledge across finance, healthcare, STEM, engineering, and more. Trinity-AI turns real-world expertise into high-quality training data, evaluations, and feedback loops that improve how AI systems learn, reason, and perform.",
+  "Our platform identifies and vets top talent through an AI-powered application flow, enabling high-quality expert contributions at scale. As our global expert network grows, Trinity-AI is building the human intelligence layer for frontier AI.",
 ];
 
 function formatApplyPay(formattedHourlyPay: string | null) {
@@ -89,7 +89,7 @@ export default async function ApplyPage({
       <div className="mx-auto grid max-w-[1050px] gap-10 px-5 pb-16 pt-6 sm:px-8 lg:grid-cols-[minmax(0,1fr)_24.25rem] lg:gap-11 lg:px-0">
         <article className="min-w-0">
           <p className="text-[30px] font-black leading-none tracking-normal text-black">
-            micro1.
+            Trinity-AI
           </p>
 
           <header className="mt-7">
@@ -125,10 +125,10 @@ export default async function ApplyPage({
 
           <section className="mt-6 rounded-md bg-[#f2f1fb] px-4 py-4 text-[12px] leading-[1.45] text-[#303241] sm:px-5">
             <h2 className="text-[14px] font-semibold text-black">
-              About micro1
+              About Trinity-AI
             </h2>
             <div className="mt-2 space-y-3">
-              {ABOUT_MICRO1.map((paragraph) => (
+                {ABOUT_TRINITY_AI.map((paragraph) => (
                 <p key={paragraph}>{paragraph}</p>
               ))}
             </div>

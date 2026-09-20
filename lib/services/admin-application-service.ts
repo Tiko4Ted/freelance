@@ -1,6 +1,7 @@
 import { ApplicationStatus } from "@prisma/client";
 
 import { prisma } from "@/lib/db/prisma";
+import { EmailNotificationService } from "@/lib/services/email-notification-service";
 import type {
   AdminProgressInput,
   AdminStatusInput,
@@ -146,6 +147,10 @@ export const AdminApplicationService = {
 
   async updateStatus(id: string, input: AdminStatusInput) {
     const now = new Date();
+    const existingApplication = await prisma.application.findUnique({
+      where: { id },
+      select: { status: true },
+    });
     const activationData =
       input.status === ApplicationStatus.ACTIVE
         ? {
@@ -162,6 +167,11 @@ export const AdminApplicationService = {
       },
       select: applicationSelect,
     });
+
+    await EmailNotificationService.notifyApplicationStatusChanged(
+      application.id,
+      existingApplication?.status,
+    );
 
     return toApplicationResponse(application);
   },

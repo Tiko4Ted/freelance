@@ -74,7 +74,7 @@ export default async function AptitudePage({
     <main className="min-h-screen bg-white px-5 py-6 text-[#0f1019] sm:px-8">
       <div className="mx-auto max-w-[960px]">
         <p className="text-[30px] font-black leading-none tracking-normal text-black">
-          micro1.
+          Trinity-AI
         </p>
 
         <header className="mt-7 border-b border-[#ececf4] pb-6">

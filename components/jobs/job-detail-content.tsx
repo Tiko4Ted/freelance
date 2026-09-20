@@ -18,7 +18,7 @@ export function JobDetailContent({ job }: JobDetailContentProps) {
         {job.title}
       </h1>
       <p className="mt-4 text-sm font-medium text-[#555b6c]">
-        Posted by micro1
+        Posted by Trinity-AI
       </p>
 
       <div className="mt-7 flex flex-wrap items-center gap-3">

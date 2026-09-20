@@ -49,7 +49,7 @@ export function buildJobDetailCopy(job: JobDetailSource): JobDetailCopy {
   if (isCrmOperationsRole(job)) {
     return {
       intro:
-        "micro1 is engaging CRM Operations Specialists to support a customer's project focused on optimizing sales and customer relationship management processes. In this role, you'll apply your expertise to help train next-generation AI systems. Your work will shape how models learn, reason, and perform through high-quality, real-world input. No prior experience in AI is required - your domain knowledge is what matters. This is an opportunity to leverage your CRM operations skills and deep knowledge of platforms like Salesforce and HubSpot, directly impacting the way leading organizations manage and grow customer relationships.",
+        "Trinity-AI is engaging CRM Operations Specialists to support a customer's project focused on optimizing sales and customer relationship management processes. In this role, you'll apply your expertise to help train next-generation AI systems. Your work will shape how models learn, reason, and perform through high-quality, real-world input. No prior experience in AI is required - your domain knowledge is what matters. This is an opportunity to leverage your CRM operations skills and deep knowledge of platforms like Salesforce and HubSpot, directly impacting the way leading organizations manage and grow customer relationships.",
       scope: [
         "Evaluate and provide input on CRM workflows, sales processes, and automation logic using Salesforce, HubSpot, and other leading platforms.",
         "Document current sales operations practices, identifying pain points and opportunities for process improvement.",
@@ -72,7 +72,7 @@ export function buildJobDetailCopy(job: JobDetailSource): JobDetailCopy {
 
   if (isAudioRole(job)) {
     return {
-      intro: `micro1 is engaging ${job.title} to contribute their advanced skills to a dynamic customer project. In this role, you'll apply your expertise to help train next-generation AI systems. Your work will shape how models learn, reason, and perform through high-quality, real-world input. No prior experience in AI is required - your domain knowledge is what matters. We seek professionals with a strong background in recording professional-grade audio, preferably with experience delivering content for linguistics, voice technology, or media production purposes. This opportunity is ideal for specialists who take pride in the precision, clarity, and authenticity of their delivered recordings and who thrive in remote, results-driven project environments.`,
+      intro: `Trinity-AI is engaging ${job.title} to contribute their advanced skills to a dynamic customer project. In this role, you'll apply your expertise to help train next-generation AI systems. Your work will shape how models learn, reason, and perform through high-quality, real-world input. No prior experience in AI is required - your domain knowledge is what matters. We seek professionals with a strong background in recording professional-grade audio, preferably with experience delivering content for linguistics, voice technology, or media production purposes. This opportunity is ideal for specialists who take pride in the precision, clarity, and authenticity of their delivered recordings and who thrive in remote, results-driven project environments.`,
       scope: [
         `Record high-quality audio samples using professional-grade equipment, adhering to specified guidelines and standards.`,
         `Deliver clear, authentic voice recordings across a range of prompts and scenarios to ensure coverage of diverse linguistic data.`,
@@ -97,7 +97,7 @@ export function buildJobDetailCopy(job: JobDetailSource): JobDetailCopy {
   }
 
   return {
-    intro: `micro1 is engaging ${job.title} to contribute advanced ${primarySkill.toLowerCase()} expertise to a dynamic customer project. In this role, you'll apply your expertise to help train next-generation AI systems. Your work will shape how models learn, reason, and perform through high-quality, real-world input. No prior experience in AI is required - your domain knowledge is what matters. We seek professionals with a strong background in ${skillSummary}, preferably with experience delivering precise, well-reasoned work in remote, results-driven project environments.`,
+    intro: `Trinity-AI is engaging ${job.title} to contribute advanced ${primarySkill.toLowerCase()} expertise to a dynamic customer project. In this role, you'll apply your expertise to help train next-generation AI systems. Your work will shape how models learn, reason, and perform through high-quality, real-world input. No prior experience in AI is required - your domain knowledge is what matters. We seek professionals with a strong background in ${skillSummary}, preferably with experience delivering precise, well-reasoned work in remote, results-driven project environments.`,
     scope: [
       `Review project guidelines and complete domain-specific tasks with careful attention to accuracy, clarity, and completeness.`,
       `Apply expertise in ${skillSummary} to evaluate prompts, outputs, examples, or deliverables for a customer project.`,
