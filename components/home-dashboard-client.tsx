@@ -259,19 +259,6 @@ export function HomeDashboardClient({
       text: "Hi, I can help with onboarding, payments, tasks, and account questions.",
     },
   ]);
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    pendingPaused: false,
-    pastProjects: false,
-    hidden: false,
-  });
-
-  const toggleSection = (key: string) => {
-    setOpenSections((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
-  };
-
   const selectedProject =
     visibleProjects.find((project) => project.id === selectedProjectId) ??
     visibleProjects[0];
@@ -848,84 +835,6 @@ export function HomeDashboardClient({
               </section>
             ) : null}
           </section>
-
-          {/* Collapsible Accordion Sections */}
-          <div className="space-y-3 pt-3">
-            {/* Accordion 1: Pending & paused (1) */}
-            <div className="overflow-hidden">
-              <button
-                type="button"
-                onClick={() => toggleSection("pendingPaused")}
-                className="flex w-full items-center justify-between py-2.5 text-left text-sm font-semibold text-slate-700 transition hover:text-slate-900"
-              >
-                <span>
-                  Pending &amp; paused{" "}
-                  <span className="font-normal text-slate-400">(1)</span>
-                </span>
-                <ChevronDown
-                  className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${
-                    openSections.pendingPaused ? "rotate-180" : ""
-                  }`}
-                  strokeWidth={2}
-                />
-              </button>
-              {openSections.pendingPaused ? (
-                <div className="rounded-xl border border-slate-200/70 bg-white p-4 text-xs text-slate-500 shadow-xs">
-                  1 task awaiting client review and verification.
-                </div>
-              ) : null}
-            </div>
-
-            {/* Accordion 2: Past projects (2) */}
-            <div className="overflow-hidden">
-              <button
-                type="button"
-                onClick={() => toggleSection("pastProjects")}
-                className="flex w-full items-center justify-between py-2.5 text-left text-sm font-semibold text-slate-700 transition hover:text-slate-900"
-              >
-                <span>
-                  Past projects{" "}
-                  <span className="font-normal text-slate-400">(2)</span>
-                </span>
-                <ChevronDown
-                  className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${
-                    openSections.pastProjects ? "rotate-180" : ""
-                  }`}
-                  strokeWidth={2}
-                />
-              </button>
-              {openSections.pastProjects ? (
-                <div className="rounded-xl border border-slate-200/70 bg-white p-4 text-xs text-slate-500 shadow-xs">
-                  2 completed project contracts archived.
-                </div>
-              ) : null}
-            </div>
-
-            {/* Accordion 3: Hidden (0) */}
-            <div className="overflow-hidden">
-              <button
-                type="button"
-                onClick={() => toggleSection("hidden")}
-                className="flex w-full items-center justify-between py-2.5 text-left text-sm font-semibold text-slate-700 transition hover:text-slate-900"
-              >
-                <span>
-                  Hidden{" "}
-                  <span className="font-normal text-slate-400">(0)</span>
-                </span>
-                <ChevronDown
-                  className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${
-                    openSections.hidden ? "rotate-180" : ""
-                  }`}
-                  strokeWidth={2}
-                />
-              </button>
-              {openSections.hidden ? (
-                <div className="rounded-xl border border-slate-200/70 bg-white p-4 text-xs text-slate-500 shadow-xs">
-                  No hidden projects.
-                </div>
-              ) : null}
-            </div>
-          </div>
         </>
       ) : (
         <section className="rounded-2xl border border-slate-200/80 bg-white p-8 text-center shadow-xs">
