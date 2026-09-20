@@ -23,6 +23,7 @@ import {
 type DashboardProject = {
   id: string;
   applicationId?: string;
+  applyHref?: string;
   title: string;
   description: string;
   status: string;
@@ -202,6 +203,7 @@ export function HomeDashboardClient({
       statusLabel: "Ready to preview",
       payoutLabel: "Task review",
       payoutType: "Demo flow",
+      applyHref: "/jobs/09babb4e-6899-4784-b9dd-dbea81c5566a/apply",
       skills: ["Files", "Review", "Documentation"],
       canSubmit: true,
       isSubmitted: false,
@@ -215,6 +217,7 @@ export function HomeDashboardClient({
       statusLabel: "Ready to preview",
       payoutLabel: "$10.00/task",
       payoutType: "Demo flow",
+      applyHref: "/apply",
       skills: ["Writing", "AI review", "Editing"],
       canSubmit: true,
       isSubmitted: false,
@@ -228,6 +231,7 @@ export function HomeDashboardClient({
       statusLabel: "Ready to preview",
       payoutLabel: "$10.00/task",
       payoutType: "Demo flow",
+      applyHref: "/apply",
       skills: ["Research", "Reasoning", "Quality"],
       canSubmit: true,
       isSubmitted: false,
@@ -237,9 +241,6 @@ export function HomeDashboardClient({
   const visibleProjects = projects.length ? projects : fallbackProjects;
   const [activeTab, setActiveTab] = useState<"projects" | "applications">(
     "projects",
-  );
-  const [selectedProjectId, setSelectedProjectId] = useState(
-    visibleProjects[0]?.id ?? "",
   );
   const [workspaceMode, setWorkspaceMode] = useState<"brief" | "work">("brief");
   const [taskFileName, setTaskFileName] = useState("");
@@ -259,15 +260,7 @@ export function HomeDashboardClient({
       text: "Hi, I can help with onboarding, payments, tasks, and account questions.",
     },
   ]);
-  const selectedProject =
-    visibleProjects.find((project) => project.id === selectedProjectId) ??
-    visibleProjects[0];
-
-  const openProject = (projectId: string) => {
-    setSelectedProjectId(projectId);
-    setWorkspaceMode("brief");
-    setSubmissionStatus("idle");
-  };
+  const selectedProject = visibleProjects[0];
 
   const startProjectTask = () => {
     setWorkspaceMode("work");
@@ -284,7 +277,7 @@ export function HomeDashboardClient({
       block: "center",
     });
     taskInputRef.current?.focus({ preventScroll: true });
-  }, [workspaceMode, selectedProjectId]);
+  }, [workspaceMode, selectedProject?.id]);
 
   const submitProjectTask = async () => {
     if (!selectedProject?.canSubmit) {
@@ -475,15 +468,14 @@ export function HomeDashboardClient({
                 const isSelected = selectedProject?.id === project.id;
 
                 return (
-                  <button
+                  <Link
                     className={`flex min-h-[160px] flex-col justify-between rounded-2xl border bg-white p-5 text-left shadow-[0_1px_2px_rgba(0,0,0,0.03)] transition hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                       isSelected
                         ? "border-blue-300 ring-1 ring-blue-100"
                         : "border-slate-200/90 hover:border-slate-300"
                     }`}
+                    href={project.applyHref ?? "/apply"}
                     key={project.id}
-                    onClick={() => openProject(project.id)}
-                    type="button"
                   >
                     <div>
                       <div className="flex items-start justify-between gap-3">
@@ -508,7 +500,7 @@ export function HomeDashboardClient({
                         {project.payoutLabel}
                       </span>
                     </div>
-                  </button>
+                  </Link>
                 );
               })}
               {/* Card 1: Project Artifacts */}

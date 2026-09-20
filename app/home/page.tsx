@@ -69,6 +69,7 @@ export default async function HomePage() {
           take: 6,
           select: {
             id: true,
+            jobId: true,
             status: true,
             lockedPayoutCents: true,
             taskSubmittedAt: true,
@@ -104,6 +105,7 @@ export default async function HomePage() {
             return {
               id: application.id,
               applicationId: application.id,
+              applyHref: `/jobs/${application.jobId}/apply`,
               title: application.job.title,
               description: application.job.description,
               status: application.status,
