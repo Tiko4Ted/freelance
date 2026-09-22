@@ -72,26 +72,26 @@ export default async function AptitudePage({
   const aptitudeTest = buildAptitudeTest(job);
 
   return (
-    <main className="min-h-screen bg-white px-5 py-6 text-[#0f1019] sm:px-8">
+    <main className="min-h-screen bg-brand-canvas px-5 py-6 text-brand-ink sm:px-8">
       <div className="mx-auto max-w-[960px]">
         <BrandLogo
           imageClassName="h-12 w-12 shadow-sm"
-          nameClassName="text-[24px] font-black leading-none tracking-normal text-black"
+          nameClassName="text-[24px] font-black leading-none tracking-normal text-brand-ink"
           showName
           size={48}
         />
 
-        <header className="mt-7 border-b border-[#ececf4] pb-6">
-          <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[#60677c]">
+        <header className="mt-7 border-b border-brand-sand pb-6">
+          <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-brand-gold-strong">
             Application aptitude
           </p>
-          <h1 className="mt-2 text-[30px] font-semibold leading-tight tracking-normal text-black">
+          <h1 className="mt-2 text-[30px] font-semibold leading-tight tracking-normal text-brand-ink">
             {job.title}
           </h1>
           <div className="mt-4 flex flex-wrap gap-1.5">
             {job.skills.map((skill) => (
               <span
-                className="rounded bg-[#eeeef6] px-3 py-2 text-[14px] leading-none text-[#272936]"
+                className="rounded border border-brand-sand bg-brand-ivory px-3 py-2 text-[14px] leading-none text-brand-muted"
                 key={skill.id}
               >
                 {formatSkillLabel(skill.label)}
