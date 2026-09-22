@@ -200,13 +200,13 @@ export function WithdrawalForm({
       <form className="space-y-3" onSubmit={requestTransfer}>
         <div>
           <label
-            className="text-sm font-medium text-slate-700"
+            className="text-sm font-medium text-brand-ink"
             htmlFor="transferAmountDollars"
           >
             Transfer amount
           </label>
           <input
-            className="mt-2 h-10 w-full border border-slate-300 px-3 text-sm outline-none focus:border-teal-700 disabled:cursor-not-allowed disabled:bg-slate-100"
+            className="mt-2 h-10 w-full rounded-lg border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold disabled:cursor-not-allowed disabled:bg-brand-sand/50"
             disabled={state.status === "submitting"}
             id="transferAmountDollars"
             min={1}
@@ -218,7 +218,7 @@ export function WithdrawalForm({
           />
         </div>
         <button
-          className="inline-flex h-10 w-full items-center justify-center border border-slate-950 bg-white px-4 text-sm font-semibold text-slate-950 transition hover:border-teal-700 hover:text-teal-700 disabled:cursor-not-allowed disabled:border-slate-300 disabled:text-slate-400"
+          className="inline-flex h-10 w-full items-center justify-center rounded-lg border border-brand-sand bg-brand-ivory px-4 text-sm font-semibold text-brand-ink transition hover:border-brand-gold hover:bg-[#f2e8d7] hover:text-brand-gold-strong disabled:cursor-not-allowed disabled:opacity-50"
           disabled={state.status === "submitting"}
           type="submit"
         >
@@ -228,11 +228,11 @@ export function WithdrawalForm({
 
       <form className="space-y-3" onSubmit={requestWithdrawal}>
         <div>
-          <label className="text-sm font-medium text-slate-700" htmlFor="amountDollars">
+          <label className="text-sm font-medium text-brand-ink" htmlFor="amountDollars">
             Withdraw from Funding
           </label>
           <input
-            className="mt-2 h-10 w-full border border-slate-300 px-3 text-sm outline-none focus:border-teal-700 disabled:cursor-not-allowed disabled:bg-slate-100"
+            className="mt-2 h-10 w-full rounded-lg border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold disabled:cursor-not-allowed disabled:bg-brand-sand/50"
             disabled={fundingBalanceCents < 1000 || state.status === "submitting"}
             id="amountDollars"
             max={Math.floor(fundingBalanceCents / 100)}
@@ -245,7 +245,7 @@ export function WithdrawalForm({
           />
         </div>
         <select
-          className="h-10 w-full border border-slate-300 bg-white px-3 text-sm outline-none focus:border-teal-700"
+          className="h-10 w-full rounded-lg border border-brand-sand bg-brand-ivory px-3 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
           onChange={(event) => setPayoutMethod(event.target.value as PayoutMethod)}
           value={payoutMethod}
         >
@@ -256,14 +256,14 @@ export function WithdrawalForm({
           ))}
         </select>
         <input
-          className="h-10 w-full border border-slate-300 px-3 text-sm outline-none focus:border-teal-700 disabled:cursor-not-allowed disabled:bg-slate-100"
+          className="h-10 w-full rounded-lg border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold disabled:cursor-not-allowed disabled:bg-brand-sand/50"
           disabled={fundingBalanceCents < 1000 || state.status === "submitting"}
           name="destinationDetails"
           placeholder={destinationPlaceholders[payoutMethod]}
           required
         />
         <button
-          className="inline-flex h-10 w-full items-center justify-center border border-slate-950 bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+          className="inline-flex h-10 w-full items-center justify-center rounded-lg bg-brand-ink px-4 text-sm font-semibold text-brand-ivory transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold/40 disabled:cursor-not-allowed disabled:opacity-50"
           disabled={fundingBalanceCents < 1000 || state.status === "submitting"}
           type="submit"
         >
@@ -276,7 +276,7 @@ export function WithdrawalForm({
           className={
             state.status === "error"
               ? "text-sm font-medium text-red-700"
-              : "text-sm font-medium text-teal-700"
+              : "text-sm font-medium text-emerald-700"
           }
         >
           {state.message}
@@ -284,20 +284,20 @@ export function WithdrawalForm({
       ) : null}
 
       {showVerification ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 px-4">
-          <div className="w-full max-w-md border border-slate-200 bg-white p-5 shadow-xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-brand-ink/70 px-4">
+          <div className="w-full max-w-md rounded-xl border border-brand-sand bg-brand-ivory p-5 shadow-xl">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h3 className="text-lg font-semibold text-slate-950">
+                <h3 className="text-lg font-semibold text-brand-ink">
                   Complete transfer
                 </h3>
-                <p className="mt-2 text-sm leading-6 text-slate-600">
+                <p className="mt-2 text-sm leading-6 text-brand-muted">
                   Enter your Freelance ID and serial number to complete this
                   transfer from Holding to Funding.
                 </p>
               </div>
               <button
-                className="text-xl leading-none text-slate-500 transition hover:text-slate-950"
+                className="text-xl leading-none text-brand-muted transition hover:text-brand-ink"
                 onClick={() => setShowVerification(false)}
                 type="button"
               >
@@ -306,19 +306,19 @@ export function WithdrawalForm({
             </div>
             <form className="mt-5 space-y-3" onSubmit={verifyAndTransfer}>
               <input
-                className="h-10 w-full border border-slate-300 px-3 text-sm outline-none focus:border-teal-700"
+                className="h-10 w-full rounded-lg border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
                 name="freelanceIdCode"
                 placeholder="Freelance ID"
                 required
               />
               <input
-                className="h-10 w-full border border-slate-300 px-3 text-sm outline-none focus:border-teal-700"
+                className="h-10 w-full rounded-lg border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
                 name="serialNumber"
                 placeholder="Serial number"
                 required
               />
               <button
-                className="inline-flex h-10 w-full items-center justify-center border border-slate-950 bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+                className="inline-flex h-10 w-full items-center justify-center rounded-lg bg-brand-ink px-4 text-sm font-semibold text-brand-ivory transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold/40 disabled:cursor-not-allowed disabled:opacity-50"
                 disabled={state.status === "submitting"}
                 type="submit"
               >
