@@ -87,10 +87,6 @@ function getErrorMessage(payload: unknown, fallback: string) {
 }
 
 function getInitialStep(onboarding: OnboardingStatus): OnboardingStep {
-  if (!onboarding.legalComplete) {
-    return "legal";
-  }
-
   if (!onboarding.phoneVerified) {
     return "phone";
   }
@@ -99,7 +95,11 @@ function getInitialStep(onboarding: OnboardingStatus): OnboardingStep {
     return "identity";
   }
 
-  return "payments";
+  if (!onboarding.paymentsSetup) {
+    return "payments";
+  }
+
+  return "legal";
 }
 
 export function OnboardingFlowClient({
@@ -274,17 +274,10 @@ export function OnboardingFlowClient({
   const saving = state.status === "submitting";
   const steps = [
     {
-      id: "legal" as const,
-      label: "Sign Legal",
-      complete: onboarding.legalComplete,
-      locked: false,
-      icon: FileText,
-    },
-    {
       id: "phone" as const,
       label: "Verify Phone",
       complete: onboarding.phoneVerified,
-      locked: !onboarding.legalComplete,
+      locked: false,
       icon: Phone,
     },
     {
@@ -300,6 +293,13 @@ export function OnboardingFlowClient({
       complete: onboarding.paymentsSetup,
       locked: !onboarding.identityVerified,
       icon: CreditCard,
+    },
+    {
+      id: "legal" as const,
+      label: "Sign Legal",
+      complete: onboarding.legalComplete,
+      locked: !onboarding.paymentsSetup,
+      icon: FileText,
     },
   ];
   const currentStep = steps.find((step) => step.id === activeStep) ?? steps[0];
@@ -418,7 +418,7 @@ export function OnboardingFlowClient({
                 Legal documents
               </h3>
               <p className="mt-1 text-sm text-slate-500">
-                Sign both agreements before continuing.
+                Sign both agreements to finish onboarding.
               </p>
             </div>
 
@@ -504,14 +504,13 @@ export function OnboardingFlowClient({
               </div>
             ) : null}
 
-            <div className="mt-5 flex justify-end">
+            <div className="mt-5 flex justify-start">
               <button
-                className="inline-flex h-11 items-center justify-center rounded-xl bg-[#0066cc] px-5 text-sm font-semibold text-white shadow-xs transition hover:bg-[#0052a3] disabled:cursor-not-allowed disabled:opacity-50"
-                disabled={!onboarding.legalComplete}
-                onClick={() => goToStep("phone")}
+                className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                onClick={() => goToStep("payments")}
                 type="button"
               >
-                Next
+                Back
               </button>
             </div>
           </section>
@@ -519,9 +518,7 @@ export function OnboardingFlowClient({
 
           {activeStep === "phone" ? (
           <form
-            className={`space-y-4 border-t border-slate-100 pt-8 ${
-              !onboarding.legalComplete ? "opacity-60" : ""
-            }`}
+            className="space-y-4 border-t border-slate-100 pt-8"
             onSubmit={handlePhoneSubmit}
           >
             <div className="flex items-start justify-between gap-4">
@@ -541,7 +538,7 @@ export function OnboardingFlowClient({
             </div>
             <fieldset
               className="grid grid-cols-1 gap-3 sm:grid-cols-[110px_1fr]"
-              disabled={!onboarding.legalComplete || saving}
+              disabled={saving}
             >
               <label className="block">
                 <span className="text-xs font-semibold text-slate-600">
@@ -579,18 +576,11 @@ export function OnboardingFlowClient({
                 />
               </label>
             </fieldset>
-            <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <button
-                className="inline-flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-                onClick={() => goToStep("legal")}
-                type="button"
-              >
-                Back
-              </button>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <button
                   className="inline-flex h-11 items-center justify-center rounded-xl bg-[#0066cc] px-5 text-sm font-semibold text-white shadow-xs transition hover:bg-[#0052a3] disabled:cursor-not-allowed disabled:opacity-50"
-                  disabled={!onboarding.legalComplete || saving}
+                  disabled={saving}
                   type="submit"
                 >
                   {onboarding.phoneVerified ? "Update Phone" : "Verify Phone"}
@@ -787,13 +777,23 @@ export function OnboardingFlowClient({
               >
                 Back
               </button>
-              <button
-                className="inline-flex h-11 items-center justify-center rounded-xl bg-[#0066cc] px-5 text-sm font-semibold text-white shadow-xs transition hover:bg-[#0052a3] disabled:cursor-not-allowed disabled:opacity-50"
-                disabled={!onboarding.identityVerified || saving}
-                type="submit"
-              >
-                {onboarding.paymentsSetup ? "Update Payments" : "Save Payments"}
-              </button>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <button
+                  className="inline-flex h-11 items-center justify-center rounded-xl bg-[#0066cc] px-5 text-sm font-semibold text-white shadow-xs transition hover:bg-[#0052a3] disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={!onboarding.identityVerified || saving}
+                  type="submit"
+                >
+                  {onboarding.paymentsSetup ? "Update Payments" : "Save Payments"}
+                </button>
+                <button
+                  className="inline-flex h-11 items-center justify-center rounded-xl bg-slate-900 px-5 text-sm font-semibold text-white shadow-xs transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={!onboarding.paymentsSetup}
+                  onClick={() => goToStep("legal")}
+                  type="button"
+                >
+                  Next
+                </button>
+              </div>
             </div>
           </form>
           ) : null}
