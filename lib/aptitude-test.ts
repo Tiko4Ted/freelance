@@ -1,6 +1,6 @@
 import type { PayoutTrigger } from "@prisma/client";
 
-export const APTITUDE_PASS_PERCENT = 40;
+export const APTITUDE_MIN_CORRECT_ANSWERS = 12;
 
 export type AptitudeJob = {
   title: string;
@@ -299,6 +299,6 @@ export function scoreAptitudeTest(job: AptitudeJob, answers: AptitudeAnswer[]) {
     correctCount,
     totalQuestions,
     scorePercent,
-    passed: scorePercent > APTITUDE_PASS_PERCENT,
+    passed: correctCount >= APTITUDE_MIN_CORRECT_ANSWERS,
   };
 }

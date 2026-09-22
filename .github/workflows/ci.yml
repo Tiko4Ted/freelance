@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [fixes, main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: referraljobs_test
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d referraljobs_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      APP_URL: http://localhost:3000
+      AUTH_SECRET: ci-only-auth-secret
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/referraljobs_test?schema=public
+      TEST_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/referraljobs_test?schema=public
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          cache: npm
+          node-version: 24
+      - run: npm ci
+      - run: npx prisma migrate deploy
+      - run: npm test
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run build

@@ -55,26 +55,26 @@ test("builds a simple aptitude test related to the selected task", () => {
   assert.match(content, /Technical implementation and testing/);
 });
 
-test("passes applicants who score above 40 percent", () => {
+test("passes applicants who answer at least 12 of 15 questions correctly", () => {
   const answers: AptitudeAnswer[] = questionIds.map((questionId, index) => ({
     questionId,
-    selectedOptionId: index < 7 ? "a" : "b",
+    selectedOptionId: index < 12 ? "a" : "b",
   }));
   const result = scoreAptitudeTest(softwareJob, answers);
 
-  assert.equal(result.correctCount, 7);
-  assert.equal(result.scorePercent, 47);
+  assert.equal(result.correctCount, 12);
+  assert.equal(result.scorePercent, 80);
   assert.equal(result.passed, true);
 });
 
-test("does not auto-approve applicants who score exactly 40 percent", () => {
+test("does not auto-approve applicants who answer fewer than 12 correctly", () => {
   const answers: AptitudeAnswer[] = questionIds.map((questionId, index) => ({
     questionId,
-    selectedOptionId: index < 6 ? "a" : "b",
+    selectedOptionId: index < 11 ? "a" : "b",
   }));
   const result = scoreAptitudeTest(softwareJob, answers);
 
-  assert.equal(result.correctCount, 6);
-  assert.equal(result.scorePercent, 40);
+  assert.equal(result.correctCount, 11);
+  assert.equal(result.scorePercent, 73);
   assert.equal(result.passed, false);
 });

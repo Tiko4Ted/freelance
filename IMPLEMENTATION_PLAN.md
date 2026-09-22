@@ -243,21 +243,21 @@ Acceptance criteria:
 ### Phase 10: Tests and Fraud Checklist
 
 Tasks:
-- Add service unit tests for attribution, payout eligibility, ledger, and withdrawals.
-- Add repository or integration tests around Prisma transactions.
-- Add API tests for core routes.
-- Add UI smoke tests for public jobs, application submission, dashboard, and admin flow.
-- Convert every item in Section 9 of the spec into an automated test.
+- [x] Add service unit tests for attribution, payout eligibility, ledger, and withdrawals.
+- [x] Add repository or integration tests around Prisma transactions.
+- [x] Add API tests for core routes.
+- [x] Add UI smoke tests for public jobs, application submission, dashboard, and admin flow.
+- [x] Convert every item in Section 9 of the spec into an automated test.
 
 Required fraud tests:
-- Self-referral is blocked.
-- Application without cookie creates no referral.
-- First referral cookie wins.
-- Payout amount is locked at application time.
-- Candidate can only generate one referral payout ever.
-- Rapid duplicate withdrawals cannot double-pay.
-- Expired applications do not create ledger entries.
-- Wallet balance matches ledger sum.
+- [x] Self-referral is blocked.
+- [x] Application without cookie creates no referral.
+- [x] First referral cookie wins.
+- [x] Payout amount is locked at application time.
+- [x] Candidate can only generate one referral payout ever.
+- [x] Rapid duplicate withdrawals cannot double-pay.
+- [x] Expired applications do not create ledger entries.
+- [x] Wallet balance matches ledger sum.
 
 Acceptance criteria:
 - Fraud checklist is automated.

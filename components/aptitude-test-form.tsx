@@ -266,8 +266,8 @@ export function AptitudeTestForm({
                 Task aptitude test
               </h1>
               <p className="mt-1 max-w-[620px] text-[13px] leading-[1.55] text-[#4d5060]">
-                Answer all 15 role-related questions. A score above 40%
-                automatically approves you for this task.
+                Answer all 15 role-related questions. A minimum score of 12 out
+                of 15 automatically approves you for this task.
               </p>
             </div>
           </div>

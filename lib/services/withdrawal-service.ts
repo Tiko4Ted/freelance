@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db/prisma";
 import { getPayoutProvider } from "@/lib/payments";
 import type { WithdrawalRequestInput } from "@/lib/validation/withdrawal";
 
-const MIN_WITHDRAWAL_CENTS = 1000;
+export const MIN_WITHDRAWAL_CENTS = 1000;
 
 function toWithdrawalResponse(withdrawal: {
   id: string;
@@ -51,9 +51,23 @@ export const WithdrawalService = {
     }
 
     const withdrawal = await prisma.$transaction(async (tx) => {
+      const user = await tx.user.findUnique({
+        where: { id: userId },
+        select: { payoutAccountReady: true },
+      });
+
+      if (!user) {
+        throw new Error("USER_NOT_FOUND");
+      }
+
+      if (!user.payoutAccountReady) {
+        throw new Error("PAYOUT_ACCOUNT_NOT_READY");
+      }
+
       const debit = await tx.user.updateMany({
         where: {
           id: userId,
+          payoutAccountReady: true,
           fundingBalanceCents: { gte: input.amountCents },
         },
         data: {
@@ -182,19 +196,32 @@ export const WithdrawalService = {
   },
 
   async failWithdrawal(id: string, failureReason: string) {
-    await prisma.$transaction(async (tx) => {
-      const withdrawal = await tx.withdrawal.update({
+    return prisma.$transaction(async (tx) => {
+      const withdrawal = await tx.withdrawal.findUnique({
         where: { id },
-        data: {
-          status: WithdrawalStatus.FAILED,
-          failureReason,
-        },
         select: {
           id: true,
           userId: true,
           amountCents: true,
+          status: true,
         },
       });
+
+      if (!withdrawal || withdrawal.status !== WithdrawalStatus.PROCESSING) {
+        return false;
+      }
+
+      const failed = await tx.withdrawal.updateMany({
+        where: { id, status: WithdrawalStatus.PROCESSING },
+        data: {
+          status: WithdrawalStatus.FAILED,
+          failureReason,
+        },
+      });
+
+      if (failed.count !== 1) {
+        return false;
+      }
 
       await tx.ledgerEntry.create({
         data: {
@@ -214,6 +241,8 @@ export const WithdrawalService = {
           },
         },
       });
+
+      return true;
     });
   },
 };

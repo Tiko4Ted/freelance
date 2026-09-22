@@ -276,15 +276,15 @@ Webhooks
 
 ## 9. Fraud/edge-case checklist (test these explicitly)
 
-- [ ] Self-referral blocked (`candidateEmail === referrer.email`)
-- [ ] Candidate applies with no `ref_code` cookie → application created, no `Referral` row, no error
-- [ ] Candidate applies to Job A via ref link, later applies to Job B independently → Job A referral stands, Job B has none
-- [ ] Two different referral links clicked before applying → first cookie set wins, second click does not overwrite it
-- [ ] Job's payout amount changed after Application X already exists → X keeps its `lockedPayoutCents`, new applications get new amount
-- [ ] Candidate matched/hired at two different jobs → only the first to cross the payout threshold pays out; second is marked PAID with $0 and logged
-- [ ] Withdrawal requested twice rapidly (double-click) → idempotency key + DB-transaction debit prevents double payout
-- [ ] Application sits past 3-month deadline without hitting threshold → auto-EXPIRED, no payout, referrer notified
-- [ ] Wallet balance is never written directly — always derived from/reconciled against `LedgerEntry` sum in tests
+- [x] Self-referral blocked (`candidateEmail === referrer.email`)
+- [x] Candidate applies with no `ref_code` cookie → application created, no `Referral` row, no error
+- [x] Candidate applies to Job A via ref link, later applies to Job B independently → Job A referral stands, Job B has none
+- [x] Two different referral links clicked before applying → first cookie set wins, second click does not overwrite it
+- [x] Job's payout amount changed after Application X already exists → X keeps its `lockedPayoutCents`, new applications get new amount
+- [x] Candidate matched/hired at two different jobs → only the first to cross the payout threshold pays out; second is marked PAID with $0 and logged
+- [x] Withdrawal requested twice rapidly (double-click) → idempotency key + DB-transaction debit prevents double payout
+- [x] Application sits past 3-month deadline without hitting threshold → auto-EXPIRED, no payout, referrer notified
+- [x] Wallet balance is never written directly — always derived from/reconciled against `LedgerEntry` sum in tests
 
 ---
 

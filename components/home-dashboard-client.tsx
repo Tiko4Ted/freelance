@@ -24,8 +24,11 @@ type DashboardProject = {
   id: string;
   applicationId?: string;
   applyHref?: string;
+  jobHref?: string;
+  appliedAt?: string;
   title: string;
   description: string;
+  companyName?: string;
   status: string;
   statusLabel: string;
   payoutLabel: string;
@@ -49,6 +52,10 @@ interface HomeDashboardClientProps {
   projects?: DashboardProject[];
   userName?: string;
 }
+
+const applicationDateFormatter = new Intl.DateTimeFormat("en-US", {
+  dateStyle: "medium",
+});
 
 const faqs = [
   {
@@ -829,15 +836,95 @@ export function HomeDashboardClient({
           </section>
         </>
       ) : (
-        <section className="rounded-2xl border border-slate-200/80 bg-white p-8 text-center shadow-xs">
-          <p className="text-sm text-slate-500">
-            View and manage your job applications on the{" "}
-            <Link href="/apply" className="font-semibold text-blue-600 hover:underline">
-              Apply
-            </Link>{" "}
-            page.
-          </p>
-        </section>
+          <section className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-lg font-bold text-slate-900">
+                Your applications{" "}
+                <span className="font-normal text-slate-400">
+                  ({projects.length})
+                </span>
+              </h2>
+              <Link
+                href="/apply"
+                className="text-sm font-semibold text-blue-600 transition hover:text-blue-700 hover:underline"
+              >
+                Browse roles
+              </Link>
+            </div>
+
+            {projects.length ? (
+              <div className="space-y-3">
+                {projects.map((application) => (
+                  <article
+                    className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-[0_1px_3px_rgba(15,23,42,0.04)]"
+                    key={application.id}
+                  >
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
+                            {application.statusLabel}
+                          </span>
+                          {application.appliedAt ? (
+                            <span className="text-xs text-slate-500">
+                              Applied{" "}
+                              {applicationDateFormatter.format(
+                                new Date(application.appliedAt),
+                              )}
+                            </span>
+                          ) : null}
+                        </div>
+                        <h3 className="mt-3 text-base font-bold text-slate-950">
+                          {application.title}
+                        </h3>
+                        {application.companyName ? (
+                          <p className="mt-1 text-sm font-medium text-slate-600">
+                            {application.companyName}
+                          </p>
+                        ) : null}
+                        <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-500">
+                          {application.description}
+                        </p>
+                      </div>
+
+                      <div className="flex shrink-0 items-center gap-3 sm:flex-col sm:items-end">
+                        <span className="text-sm font-semibold text-slate-700">
+                          {application.payoutLabel}
+                        </span>
+                        <Link
+                          href={
+                            application.jobHref ??
+                            application.applyHref ??
+                            "/apply"
+                          }
+                          className="inline-flex items-center gap-1 text-sm font-semibold text-blue-600 transition hover:text-blue-700 hover:underline"
+                        >
+                          View role
+                          <ChevronRight className="h-4 w-4" />
+                        </Link>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-slate-200/80 bg-white p-8 text-center shadow-xs">
+                <p className="text-sm font-medium text-slate-700">
+                  You have not submitted any applications yet.
+                </p>
+                <p className="mt-1 text-sm text-slate-500">
+                  Browse open roles and apply when you find a good match.
+                </p>
+                <Link
+                  href="/apply"
+                  className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-blue-600 hover:underline"
+                >
+                  Browse roles
+                  <ChevronRight className="h-4 w-4" />
+                </Link>
+              </div>
+            )}
+          </section>
         )}
 
         <section className="space-y-4 pt-2">
