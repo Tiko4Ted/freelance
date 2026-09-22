@@ -16,6 +16,23 @@ function isUniqueConstraintError(error: unknown) {
   );
 }
 
+export function reconcileLedgerBalances(
+  ledgerEntries: Array<{ account: LedgerAccount; amountCents: number }>,
+) {
+  return ledgerEntries.reduce(
+    (balances, entry) => {
+      if (entry.account === LedgerAccount.HOLDING) {
+        balances.holdingBalanceCents += entry.amountCents;
+      } else if (entry.account === LedgerAccount.FUNDING) {
+        balances.fundingBalanceCents += entry.amountCents;
+      }
+
+      return balances;
+    },
+    { holdingBalanceCents: 0, fundingBalanceCents: 0 },
+  );
+}
+
 async function claimEligibleCandidatePayouts(userId: string, email: string) {
   await prisma.$transaction(async (tx) => {
     const eligibleApplications = await tx.application.findMany({
@@ -139,28 +156,17 @@ export const LedgerService = {
       }),
     ]);
 
-    const reconciledHoldingBalanceCents = ledgerEntries.reduce(
-      (total, entry) =>
-        entry.account === LedgerAccount.HOLDING
-          ? total + entry.amountCents
-          : total,
-      0,
-    );
-    const reconciledFundingBalanceCents = ledgerEntries.reduce(
-      (total, entry) =>
-        entry.account === LedgerAccount.FUNDING
-          ? total + entry.amountCents
-          : total,
-      0,
-    );
+    const reconciledBalances = reconcileLedgerBalances(ledgerEntries);
 
     return {
       balanceCents: updatedUser.fundingBalanceCents,
       holdingBalanceCents: updatedUser.holdingBalanceCents,
       fundingBalanceCents: updatedUser.fundingBalanceCents,
       legacyBalanceCents: updatedUser.walletBalanceCents,
-      reconciledHoldingBalanceCents,
-      reconciledFundingBalanceCents,
+      reconciledHoldingBalanceCents:
+        reconciledBalances.holdingBalanceCents,
+      reconciledFundingBalanceCents:
+        reconciledBalances.fundingBalanceCents,
       formattedBalance: formatCurrency(updatedUser.fundingBalanceCents),
       formattedHoldingBalance: formatCurrency(updatedUser.holdingBalanceCents),
       formattedFundingBalance: formatCurrency(updatedUser.fundingBalanceCents),

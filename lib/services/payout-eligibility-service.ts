@@ -1,8 +1,13 @@
-import { ApplicationStatus } from "@prisma/client";
+import {
+  ApplicationStatus,
+  LedgerAccount,
+  Prisma,
+} from "@prisma/client";
 
 import { prisma } from "@/lib/db/prisma";
+import { EmailNotificationService } from "@/lib/services/email-notification-service";
 
-function isThresholdMet(application: {
+export function isThresholdMet(application: {
   hoursLogged: number;
   tasksCompleted: number;
   job: {
@@ -15,14 +20,22 @@ function isThresholdMet(application: {
   );
 }
 
-function isPastDeadline(deadline: Date | null, now: Date) {
+export function isPastDeadline(deadline: Date | null, now: Date) {
   return deadline ? deadline.getTime() < now.getTime() : false;
+}
+
+function isUniqueConstraintError(error: unknown) {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === "P2002"
+  );
 }
 
 export const PayoutEligibilityService = {
   async runOnce(now = new Date()) {
     const activeApplications = await prisma.application.findMany({
       where: { status: ApplicationStatus.ACTIVE },
+      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
       select: {
         id: true,
         candidateEmail: true,
@@ -35,6 +48,11 @@ export const PayoutEligibilityService = {
             payoutType: true,
           },
         },
+        referral: {
+          select: {
+            referrerId: true,
+          },
+        },
       },
     });
 
@@ -42,10 +60,18 @@ export const PayoutEligibilityService = {
 
     for (const application of activeApplications) {
       if (isPastDeadline(application.payoutDeadline, now)) {
-        await prisma.application.update({
-          where: { id: application.id },
+        const expired = await prisma.application.updateMany({
+          where: { id: application.id, status: ApplicationStatus.ACTIVE },
           data: { status: ApplicationStatus.EXPIRED },
         });
+
+        if (expired.count === 1) {
+          await EmailNotificationService.notifyApplicationStatusChanged(
+            application.id,
+            ApplicationStatus.ACTIVE,
+          );
+        }
+
         results.push({ applicationId: application.id, result: "EXPIRED" });
         continue;
       }
@@ -56,10 +82,127 @@ export const PayoutEligibilityService = {
       }
 
       const result = await prisma.$transaction(async (tx) => {
-        await tx.candidateIdentity.upsert({
+        const identity = await tx.candidateIdentity.upsert({
           where: { email: application.candidateEmail },
           update: {},
           create: { email: application.candidateEmail },
+        });
+
+        const logDuplicateMatch = async () => {
+          if (application.referral) {
+            await tx.ledgerEntry
+              .create({
+                data: {
+                  userId: application.referral.referrerId,
+                  amountCents: 0,
+                  account: LedgerAccount.FUNDING,
+                  reason: "DUPLICATE_MATCH_NO_PAYOUT",
+                  applicationId: application.id,
+                },
+                select: { id: true },
+              })
+              .catch((error: unknown) => {
+                if (!isUniqueConstraintError(error)) {
+                  throw error;
+                }
+              });
+          }
+
+          await tx.application.update({
+            where: { id: application.id },
+            data: { status: ApplicationStatus.PAID },
+          });
+
+          return "ALREADY_MATCHED" as const;
+        };
+
+        if (
+          identity.hasBeenPaidOut ||
+          (identity.firstMatchedApplicationId &&
+            identity.firstMatchedApplicationId !== application.id)
+        ) {
+          return logDuplicateMatch();
+        }
+
+        if (!identity.firstMatchedApplicationId) {
+          const claimedIdentity = await tx.candidateIdentity.updateMany({
+            where: {
+              email: application.candidateEmail,
+              firstMatchedApplicationId: null,
+            },
+            data: { firstMatchedApplicationId: application.id },
+          });
+
+          if (claimedIdentity.count !== 1) {
+            const currentIdentity = await tx.candidateIdentity.findUniqueOrThrow({
+              where: { email: application.candidateEmail },
+              select: {
+                firstMatchedApplicationId: true,
+                hasBeenPaidOut: true,
+              },
+            });
+
+            if (
+              currentIdentity.hasBeenPaidOut ||
+              currentIdentity.firstMatchedApplicationId !== application.id
+            ) {
+              return logDuplicateMatch();
+            }
+          }
+        }
+
+        if (!application.referral || !application.lockedPayoutCents) {
+          await tx.application.update({
+            where: { id: application.id },
+            data: { status: ApplicationStatus.PAID },
+          });
+
+          return application.referral ? "NO_PAYOUT_AMOUNT" : "NO_REFERRAL";
+        }
+
+        const ledgerEntry = await tx.ledgerEntry
+          .create({
+            data: {
+              userId: application.referral.referrerId,
+              amountCents: application.lockedPayoutCents,
+              account: LedgerAccount.FUNDING,
+              reason: "REFERRAL_PAYOUT",
+              applicationId: application.id,
+            },
+            select: { id: true },
+          })
+          .catch((error: unknown) => {
+            if (isUniqueConstraintError(error)) {
+              return null;
+            }
+
+            throw error;
+          });
+
+        if (!ledgerEntry) {
+          await tx.application.update({
+            where: { id: application.id },
+            data: { status: ApplicationStatus.PAYOUT_ELIGIBLE },
+          });
+
+          return "ALREADY_CREDITED";
+        }
+
+        await tx.user.update({
+          where: { id: application.referral.referrerId },
+          data: {
+            fundingBalanceCents: {
+              increment: application.lockedPayoutCents,
+            },
+            walletBalanceCents: {
+              increment: application.lockedPayoutCents,
+            },
+          },
+        });
+
+        await tx.candidateIdentity.update({
+          where: { email: application.candidateEmail },
+          data: { hasBeenPaidOut: true },
         });
 
         await tx.application.update({
@@ -67,9 +210,7 @@ export const PayoutEligibilityService = {
           data: { status: ApplicationStatus.PAYOUT_ELIGIBLE },
         });
 
-        return application.lockedPayoutCents
-          ? "PAYOUT_ELIGIBLE"
-          : "PAYOUT_ELIGIBLE_WITHOUT_AMOUNT";
+        return "PAYOUT_ELIGIBLE";
       });
 
       results.push({ applicationId: application.id, result });

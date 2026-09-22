@@ -4,6 +4,9 @@
 .vercel
 node_modules
 coverage
+playwright-report
+screenshots
+test-results
 tsconfig.tsbuildinfo
 .analysis
 .codex/config.toml

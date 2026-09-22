@@ -1,29 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const REFERRAL_COOKIE_NAME = "ref_code";
-const THIRTY_DAYS_SECONDS = 60 * 60 * 24 * 30;
-
-function getJobIdFromPath(pathname: string) {
-  const match = /^\/jobs\/([^/]+)(?:\/apply)?\/?$/.exec(pathname);
-  return match?.[1] ?? null;
-}
+import {
+  getReferralCookieValue,
+  REFERRAL_COOKIE_MAX_AGE_SECONDS,
+  REFERRAL_COOKIE_NAME,
+} from "@/lib/referral-cookie";
 
 export function proxy(request: NextRequest) {
   const response = NextResponse.next();
   const referralCode =
     request.nextUrl.searchParams.get("ref") ??
     request.nextUrl.searchParams.get("referralCode");
-  const jobId = getJobIdFromPath(request.nextUrl.pathname);
   const existingReferral = request.cookies.get(REFERRAL_COOKIE_NAME);
+  const cookieValue = getReferralCookieValue({
+    pathname: request.nextUrl.pathname,
+    referralCode,
+    existingCookieValue: existingReferral?.value,
+  });
 
-  if (referralCode && jobId && !existingReferral) {
+  if (cookieValue) {
     response.cookies.set({
       name: REFERRAL_COOKIE_NAME,
-      value: `${jobId}:${referralCode}`,
+      value: cookieValue,
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: THIRTY_DAYS_SECONDS,
+      maxAge: REFERRAL_COOKIE_MAX_AGE_SECONDS,
       path: "/",
     });
   }

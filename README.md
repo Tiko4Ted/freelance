@@ -92,6 +92,7 @@ npm run dev
 ## Quality Commands
 
 ```bash
+npm test
 npm run lint
 npm run typecheck
 npm run db:validate
@@ -99,6 +100,12 @@ npm run jobs:payout-eligibility
 npm run jobs:withdrawals
 npm run build
 ```
+
+`npm test` runs the fraud-policy, API-handler, transaction-behavior, worker,
+ledger, withdrawal, and UI smoke suites. The Prisma integration suite runs when
+`TEST_DATABASE_URL` points to a dedicated local test database; CI provisions
+PostgreSQL, applies migrations, and runs that suite on every push and pull
+request.
 
 ## Demo Admin
 
