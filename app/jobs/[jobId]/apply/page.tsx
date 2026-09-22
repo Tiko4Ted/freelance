@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 import { ApplicationForm } from "@/components/application-form";
+import { BrandLogo } from "@/components/brand-logo";
 import { buildJobDetailCopy } from "@/lib/job-detail-copy";
 import { JobService } from "@/lib/services/job-service";
 
@@ -88,9 +89,12 @@ export default async function ApplyPage({
     <main className="min-h-screen bg-white text-[#0f1019]">
       <div className="mx-auto grid max-w-[1050px] gap-10 px-5 pb-16 pt-6 sm:px-8 lg:grid-cols-[minmax(0,1fr)_24.25rem] lg:gap-11 lg:px-0">
         <article className="min-w-0">
-          <p className="text-[30px] font-black leading-none tracking-normal text-black">
-            Trinity-AI
-          </p>
+          <BrandLogo
+            imageClassName="h-12 w-12 shadow-sm"
+            nameClassName="text-[24px] font-black leading-none tracking-normal text-black"
+            showName
+            size={48}
+          />
 
           <header className="mt-7">
             <h1 className="text-[30px] font-semibold leading-tight tracking-normal text-black">

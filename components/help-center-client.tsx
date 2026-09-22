@@ -4,6 +4,8 @@ import { useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { ArrowRight, ChevronRight, Mail, Search, Send } from "lucide-react";
 
+import { BrandLogo } from "@/components/brand-logo";
+
 type Article = {
   category: string;
   title: string;
@@ -544,10 +546,15 @@ export function HelpCenterClient({ categoryId }: HelpCenterClientProps) {
       <header className="bg-[#9af4f4] px-5 py-7 md:px-8">
         <nav className="mx-auto flex max-w-7xl items-center justify-between gap-6">
           <Link
-            className="text-3xl font-black italic text-[#071b24]"
+            aria-label="Trinity-AI home"
             href="/home"
           >
-            Trinity-AI
+            <BrandLogo
+              imageClassName="h-12 w-12 shadow-sm"
+              nameClassName="text-xl font-black italic text-[#071b24] sm:text-2xl"
+              showName
+              size={48}
+            />
           </Link>
           <div className="hidden items-center gap-9 text-sm font-semibold text-[#071b24] md:flex">
             <Link href="/apply">Find work</Link>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { LoginForm } from "@/components/auth/login-form";
+import { BrandLogo } from "@/components/brand-logo";
 
 export const dynamic = "force-dynamic";
 
@@ -26,8 +27,12 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     <main className="min-h-screen bg-slate-50 text-slate-950">
       <section className="mx-auto grid min-h-screen max-w-5xl items-center gap-8 px-6 py-8 md:grid-cols-[1fr_24rem] md:px-8">
         <div>
-          <Link className="text-sm font-medium text-teal-700" href="/">
-            Trinity-AI
+          <Link aria-label="Trinity-AI home" href="/">
+            <BrandLogo
+              imageClassName="h-11 w-11 shadow-sm"
+              nameClassName="text-sm font-semibold text-slate-900"
+              showName
+            />
           </Link>
           <h1 className="mt-5 text-3xl font-semibold text-slate-950 md:text-5xl">
             Sign in

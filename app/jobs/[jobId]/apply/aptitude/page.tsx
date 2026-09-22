@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 import { AptitudeTestForm } from "@/components/aptitude-test-form";
+import { BrandLogo } from "@/components/brand-logo";
 import { buildAptitudeTest } from "@/lib/aptitude-test";
 import { JobService } from "@/lib/services/job-service";
 
@@ -73,9 +74,12 @@ export default async function AptitudePage({
   return (
     <main className="min-h-screen bg-white px-5 py-6 text-[#0f1019] sm:px-8">
       <div className="mx-auto max-w-[960px]">
-        <p className="text-[30px] font-black leading-none tracking-normal text-black">
-          Trinity-AI
-        </p>
+        <BrandLogo
+          imageClassName="h-12 w-12 shadow-sm"
+          nameClassName="text-[24px] font-black leading-none tracking-normal text-black"
+          showName
+          size={48}
+        />
 
         <header className="mt-7 border-b border-[#ececf4] pb-6">
           <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[#60677c]">
