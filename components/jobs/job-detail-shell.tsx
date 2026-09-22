@@ -74,7 +74,7 @@ export function JobDetailShell({
 
   return (
     <main
-      className="fixed inset-0 z-50 overflow-y-auto bg-[#f7f6fb] px-5 py-14 text-[#242536] sm:px-8"
+      className="fixed inset-0 z-50 overflow-y-auto bg-brand-canvas px-5 py-14 text-brand-ink sm:px-8"
       ref={shellRef}
       style={{
         transform: isOpen ? "translate3d(0, 0, 0)" : "translate3d(0, 100dvh, 0)",
@@ -87,10 +87,10 @@ export function JobDetailShell({
         }
       }}
     >
-      <div className="fixed inset-x-0 top-0 z-10 h-10 rounded-t-xl bg-[#334856]/70 backdrop-blur-md" />
+      <div className="fixed inset-x-0 top-0 z-10 h-10 rounded-t-xl bg-brand-ink/90 backdrop-blur-md" />
       <button
         aria-label="Close job details"
-        className="fixed right-0 top-0 z-20 flex h-10 w-10 items-center justify-center text-3xl font-light leading-none text-white"
+        className="fixed right-0 top-0 z-20 flex h-10 w-10 items-center justify-center text-3xl font-light leading-none text-brand-ivory transition hover:text-brand-gold-light focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand-gold"
         onClick={handleClose}
         type="button"
       >

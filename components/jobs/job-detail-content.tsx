@@ -14,15 +14,15 @@ export function JobDetailContent({ job }: JobDetailContentProps) {
 
   return (
     <section className="mx-auto max-w-[852px]">
-      <h1 className="text-[32px] font-semibold leading-tight text-[#262735] sm:text-[34px]">
+      <h1 className="text-[32px] font-semibold leading-tight text-brand-ink sm:text-[34px]">
         {job.title}
       </h1>
-      <p className="mt-4 text-sm font-medium text-[#555b6c]">
+      <p className="mt-4 text-sm font-medium text-brand-muted">
         Posted by Trinity-AI
       </p>
 
       <div className="mt-7 flex flex-wrap items-center gap-3">
-        <span className="rounded-md border border-[#d8dbe7] bg-white px-4 py-3 text-sm text-[#3c4050]">
+        <span className="rounded-md border border-brand-sand bg-brand-ivory px-4 py-3 text-sm text-brand-ink">
           {openingLabel(job.openings)}
         </span>
         {job.formattedHourlyPay ? (
@@ -33,13 +33,13 @@ export function JobDetailContent({ job }: JobDetailContentProps) {
       </div>
 
       <div className="mt-8">
-        <h2 className="text-lg font-semibold text-[#252635]">
+        <h2 className="text-lg font-semibold text-brand-ink">
           Required Skills
         </h2>
         <div className="mt-4 flex flex-wrap gap-2">
           {job.skills.map((skill) => (
             <span
-              className="rounded-full border border-[#d8dbe7] bg-white px-4 py-2 text-sm text-[#3d4352]"
+              className="rounded-full border border-brand-sand bg-brand-ivory px-4 py-2 text-sm text-brand-muted"
               key={skill.id}
             >
               {skill.label}
@@ -48,8 +48,8 @@ export function JobDetailContent({ job }: JobDetailContentProps) {
         </div>
       </div>
 
-      <article className="mt-6 rounded-xl bg-white px-6 py-7 text-[15px] leading-[1.55] text-[#333747] shadow-[0_1px_0_rgba(16,24,40,0.02)] sm:px-7">
-        <h2 className="text-lg font-semibold text-[#252635]">
+      <article className="mt-6 rounded-xl border border-brand-sand bg-brand-ivory px-6 py-7 text-[15px] leading-[1.55] text-brand-ink shadow-brand-card sm:px-7">
+        <h2 className="text-lg font-semibold text-brand-ink">
           Job Description
         </h2>
 
