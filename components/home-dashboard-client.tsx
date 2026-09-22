@@ -89,7 +89,7 @@ const faqs = [
         requests to move the conversation to WhatsApp, Google Forms, or another
         unofficial channel. If anything feels wrong, stop and use our{" "}
         <Link
-          className="font-semibold text-blue-600 hover:text-blue-700 hover:underline"
+          className="font-semibold text-brand-gold-strong hover:text-brand-ink hover:underline"
           href="https://freelance-nu-swart.vercel.app/help-center"
         >
           Help Center fraud and account safety guide
@@ -371,12 +371,12 @@ export function HomeDashboardClient({
 
       {/* Greeting & Refer Button */}
       <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900 md:text-[34px]">
+        <h1 className="text-3xl font-bold tracking-tight text-brand-ink md:text-[34px]">
           Welcome back, {userName}
         </h1>
         <Link
           href="/referral"
-          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-800 shadow-sm transition hover:bg-slate-50 hover:border-slate-300"
+          className="inline-flex items-center gap-2 rounded-xl border border-brand-sand bg-brand-ivory px-4 py-2 text-sm font-medium text-brand-ink shadow-sm transition hover:border-brand-gold/60 hover:bg-[#f2e8d7]"
         >
           <UserPlus className="h-4 w-4 text-slate-700" strokeWidth={2} />
           <span>Refer &amp; Earn</span>
@@ -396,17 +396,17 @@ export function HomeDashboardClient({
 
         <Link
           href="/onboarding"
-          className="group flex items-center justify-between rounded-2xl border border-slate-200/90 bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition hover:border-slate-300 hover:shadow-md"
+          className="group flex items-center justify-between rounded-2xl border border-brand-sand bg-brand-ivory p-5 shadow-[0_1px_3px_rgba(38,41,31,0.04)] transition hover:border-brand-gold/60 hover:shadow-md"
         >
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-[#eff6ff]">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-brand-gold/35 bg-[#f2e8d7]">
               <ClipboardList
-                className="h-6 w-6 text-[#2563eb]"
+                className="h-6 w-6 text-brand-gold-strong"
                 strokeWidth={2}
               />
             </div>
             <div>
-              <h2 className="text-base font-semibold text-slate-900 transition group-hover:text-blue-600">
+              <h2 className="text-base font-semibold text-brand-ink transition group-hover:text-brand-gold-strong">
                 Complete onboarding
               </h2>
               <p className="mt-0.5 text-sm text-slate-500">
@@ -423,14 +423,14 @@ export function HomeDashboardClient({
 
       {/* Tabs: Projects / Applications */}
       <div className="pt-2">
-        <div className="inline-flex rounded-full border border-slate-200/70 bg-slate-100/90 p-1">
+        <div className="inline-flex rounded-full border border-brand-sand bg-[#ece5d8] p-1">
           <button
             type="button"
             onClick={() => setActiveTab("projects")}
             className={`rounded-full px-4 py-1.5 text-xs font-semibold transition ${
               activeTab === "projects"
-                ? "bg-white text-slate-900 shadow-sm"
-                : "text-slate-500 hover:text-slate-800"
+                ? "bg-brand-ivory text-brand-ink shadow-sm"
+                : "text-brand-muted hover:text-brand-ink"
             }`}
           >
             Projects
@@ -440,8 +440,8 @@ export function HomeDashboardClient({
             onClick={() => setActiveTab("applications")}
             className={`rounded-full px-4 py-1.5 text-xs font-medium transition ${
               activeTab === "applications"
-                ? "bg-white text-slate-900 shadow-sm font-semibold"
-                : "text-slate-500 hover:text-slate-800"
+                ? "bg-brand-ivory text-brand-ink shadow-sm font-semibold"
+                : "text-brand-muted hover:text-brand-ink"
             }`}
           >
             Applications
@@ -454,7 +454,7 @@ export function HomeDashboardClient({
           {/* Your projects Header */}
           <section className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold text-slate-900">
+              <h2 className="text-lg font-bold text-brand-ink">
                 Your projects{" "}
                 <span className="font-normal text-slate-400">
                   ({visibleProjects.length})
@@ -476,10 +476,10 @@ export function HomeDashboardClient({
 
                 return (
                   <Link
-                    className={`flex min-h-[160px] flex-col justify-between rounded-2xl border bg-white p-5 text-left shadow-[0_1px_2px_rgba(0,0,0,0.03)] transition hover:shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    className={`flex min-h-[160px] flex-col justify-between rounded-2xl border bg-brand-ivory p-5 text-left shadow-[0_1px_2px_rgba(38,41,31,0.04)] transition hover:shadow-md focus:outline-none focus:ring-2 focus:ring-brand-gold ${
                       isSelected
-                        ? "border-blue-300 ring-1 ring-blue-100"
-                        : "border-slate-200/90 hover:border-slate-300"
+                        ? "border-brand-gold ring-1 ring-brand-gold/25"
+                        : "border-brand-sand hover:border-brand-gold/60"
                     }`}
                     href={project.applyHref ?? "/apply"}
                     key={project.id}
@@ -490,7 +490,7 @@ export function HomeDashboardClient({
                           {project.title}
                         </h3>
                         {isSelected ? (
-                          <CheckCircle2 className="h-4 w-4 shrink-0 text-blue-600" />
+                          <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
                         ) : (
                           <ChevronRight className="h-4 w-4 shrink-0 text-slate-400" />
                         )}
@@ -500,7 +500,7 @@ export function HomeDashboardClient({
                       </p>
                     </div>
                     <div className="mt-5 flex flex-wrap items-center gap-2 text-xs">
-                      <span className="rounded-full bg-blue-50 px-2.5 py-1 font-semibold text-blue-700">
+                      <span className="rounded-full bg-[#f2e8d7] px-2.5 py-1 font-semibold text-brand-gold-strong">
                         {project.statusLabel}
                       </span>
                       <span className="font-medium text-slate-600">
@@ -521,7 +521,7 @@ export function HomeDashboardClient({
                   </p>
                 </div>
                 <div className="mt-4">
-                  <span className="text-xs font-semibold text-[#2563eb]">
+                  <span className="text-xs font-semibold text-brand-gold-strong">
                     New
                   </span>
                 </div>
@@ -538,7 +538,7 @@ export function HomeDashboardClient({
                   </p>
                 </div>
                 <div className="mt-4 flex items-center gap-1.5 text-xs">
-                  <span className="font-semibold text-[#2563eb]">New</span>
+                  <span className="font-semibold text-brand-gold-strong">New</span>
                   <span className="text-slate-300">·</span>
                   <span className="font-medium text-slate-600">
                     $10.00/task
@@ -554,7 +554,7 @@ export function HomeDashboardClient({
                   </h3>
                 </div>
                 <div className="mt-4 flex items-center gap-1.5 text-xs">
-                  <span className="font-semibold text-[#2563eb]">New</span>
+                  <span className="font-semibold text-brand-gold-strong">New</span>
                   <span className="text-slate-300">·</span>
                   <span className="font-medium text-slate-600">
                     $10.00/task
@@ -564,7 +564,7 @@ export function HomeDashboardClient({
             </div>
 
             {selectedProject ? (
-              <section className="rounded-2xl border border-slate-200/90 bg-white shadow-sm">
+              <section className="rounded-2xl border border-brand-sand bg-brand-ivory shadow-brand-card">
                 <div className="flex flex-col gap-4 border-b border-slate-100 p-5 md:flex-row md:items-start md:justify-between">
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
@@ -585,7 +585,7 @@ export function HomeDashboardClient({
                   <div className="flex flex-wrap gap-2">
                     {selectedProject.briefHref ? (
                       <a
-                        className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                        className="inline-flex h-10 items-center gap-2 rounded-xl border border-brand-sand bg-brand-ivory px-3 text-sm font-semibold text-brand-ink transition hover:border-brand-gold/60 hover:bg-[#f2e8d7]"
                         href={selectedProject.briefHref}
                       >
                         <Download className="h-4 w-4" />
@@ -595,8 +595,8 @@ export function HomeDashboardClient({
                     <button
                       className={`inline-flex h-10 items-center gap-2 rounded-xl px-3 text-sm font-semibold transition ${
                         workspaceMode === "work"
-                          ? "bg-blue-600 text-white hover:bg-blue-700"
-                          : "bg-slate-950 text-white hover:bg-slate-800"
+                          ? "bg-brand-gold text-brand-ink hover:bg-[#a57846]"
+                          : "bg-brand-ink text-brand-ivory hover:bg-[#35392c]"
                       }`}
                       onClick={startProjectTask}
                       type="button"
@@ -629,10 +629,10 @@ export function HomeDashboardClient({
                         ],
                       ].map(([title, text], index) => (
                         <div
-                          className="rounded-xl border border-slate-200 bg-slate-50 p-4"
+                          className="rounded-xl border border-brand-sand bg-[#f1ebdf] p-4"
                           key={title}
                         >
-                          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-xs font-bold text-slate-700 shadow-sm">
+                          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-ivory text-xs font-bold text-brand-ink shadow-sm">
                             {index + 1}
                           </div>
                           <h4 className="mt-3 text-sm font-bold text-slate-900">
@@ -645,9 +645,9 @@ export function HomeDashboardClient({
                       ))}
                     </div>
 
-                    <div className="rounded-xl border border-slate-200 bg-white p-4">
+                    <div className="rounded-xl border border-brand-sand bg-brand-ivory p-4">
                       <div className="flex items-start gap-3">
-                        <FileText className="mt-0.5 h-5 w-5 shrink-0 text-blue-700" />
+                        <FileText className="mt-0.5 h-5 w-5 shrink-0 text-brand-gold-strong" />
                         <div>
                           <h4 className="text-sm font-bold text-slate-950">
                             Task details
@@ -662,7 +662,7 @@ export function HomeDashboardClient({
                       <div className="mt-4 grid gap-3">
                         {selectedProject.taskBrief.map((section) => (
                           <section
-                            className="rounded-xl border border-slate-200 bg-slate-50 p-4"
+                            className="rounded-xl border border-brand-sand bg-[#f1ebdf] p-4"
                             key={section.heading}
                           >
                             <h5 className="text-sm font-bold text-slate-900">
@@ -682,14 +682,14 @@ export function HomeDashboardClient({
                     </div>
 
                     {workspaceMode === "brief" ? (
-                      <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
+                      <div className="rounded-xl border border-brand-gold/35 bg-[#f2e8d7] p-4">
                         <div className="flex items-start gap-3">
-                          <PlayCircle className="mt-0.5 h-5 w-5 shrink-0 text-blue-700" />
+                          <PlayCircle className="mt-0.5 h-5 w-5 shrink-0 text-brand-gold-strong" />
                           <div>
-                            <h4 className="text-sm font-bold text-blue-950">
+                            <h4 className="text-sm font-bold text-brand-ink">
                               Ready to work?
                             </h4>
-                            <p className="mt-1 text-sm leading-6 text-blue-900">
+                            <p className="mt-1 text-sm leading-6 text-brand-muted">
                               Use Start task when you have read the details and
                               are ready to enter the completed file or share
                               link for review.
@@ -699,7 +699,7 @@ export function HomeDashboardClient({
                       </div>
                     ) : (
                       <div
-                        className="rounded-xl border border-blue-200 bg-white p-4 shadow-[0_0_0_3px_rgba(37,99,235,0.08)]"
+                        className="rounded-xl border border-brand-gold/45 bg-brand-ivory p-4 shadow-[0_0_0_3px_rgba(182,138,85,0.10)]"
                         ref={taskWorkspaceRef}
                       >
                         <div className="flex items-center gap-2">
@@ -714,7 +714,7 @@ export function HomeDashboardClient({
                               File name or share link
                             </span>
                             <input
-                              className="mt-1 h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                              className="mt-1 h-11 w-full rounded-xl border border-brand-sand bg-brand-ivory px-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
                               onChange={(event) =>
                                 setTaskFileName(event.target.value)
                               }
@@ -728,7 +728,7 @@ export function HomeDashboardClient({
                               Notes for reviewers
                             </span>
                             <textarea
-                              className="mt-1 min-h-24 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                              className="mt-1 min-h-24 w-full rounded-xl border border-brand-sand bg-brand-ivory px-3 py-2 text-sm outline-none transition placeholder:text-slate-400 focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
                               onChange={(event) =>
                                 setTaskNotes(event.target.value)
                               }
@@ -738,7 +738,7 @@ export function HomeDashboardClient({
                           </label>
                           <div className="flex flex-wrap items-center gap-3">
                             <button
-                              className="inline-flex h-11 items-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                              className="inline-flex h-11 items-center gap-2 rounded-xl bg-brand-ink px-4 text-sm font-semibold text-brand-ivory transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold disabled:cursor-not-allowed disabled:opacity-50"
                               disabled={
                                 !selectedProject.canSubmit ||
                                 !taskFileName.trim() ||
@@ -776,7 +776,7 @@ export function HomeDashboardClient({
                     )}
                   </div>
 
-                  <aside className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <aside className="rounded-xl border border-brand-sand bg-[#f1ebdf] p-4">
                     <h4 className="text-sm font-bold text-slate-900">
                       Project details
                     </h4>
@@ -805,7 +805,7 @@ export function HomeDashboardClient({
                           {selectedProject.skills.length ? (
                             selectedProject.skills.slice(0, 5).map((skill) => (
                               <span
-                                className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-slate-600"
+                                className="rounded-full bg-brand-ivory px-2.5 py-1 text-xs font-semibold text-brand-muted"
                                 key={skill}
                               >
                                 {skill}
@@ -838,7 +838,7 @@ export function HomeDashboardClient({
       ) : (
           <section className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2 className="text-lg font-bold text-slate-900">
+              <h2 className="text-lg font-bold text-brand-ink">
                 Your applications{" "}
                 <span className="font-normal text-slate-400">
                   ({projects.length})
@@ -846,7 +846,7 @@ export function HomeDashboardClient({
               </h2>
               <Link
                 href="/apply"
-                className="text-sm font-semibold text-blue-600 transition hover:text-blue-700 hover:underline"
+                className="text-sm font-semibold text-brand-gold-strong transition hover:text-brand-ink hover:underline"
               >
                 Browse roles
               </Link>
@@ -856,13 +856,13 @@ export function HomeDashboardClient({
               <div className="space-y-3">
                 {projects.map((application) => (
                   <article
-                    className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-[0_1px_3px_rgba(15,23,42,0.04)]"
+                    className="rounded-2xl border border-brand-sand bg-brand-ivory p-5 shadow-[0_1px_3px_rgba(38,41,31,0.04)]"
                     key={application.id}
                   >
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
+                          <span className="rounded-full bg-[#f2e8d7] px-2.5 py-1 text-xs font-semibold text-brand-gold-strong">
                             {application.statusLabel}
                           </span>
                           {application.appliedAt ? (
@@ -897,7 +897,7 @@ export function HomeDashboardClient({
                             application.applyHref ??
                             "/apply"
                           }
-                          className="inline-flex items-center gap-1 text-sm font-semibold text-blue-600 transition hover:text-blue-700 hover:underline"
+                          className="inline-flex items-center gap-1 text-sm font-semibold text-brand-gold-strong transition hover:text-brand-ink hover:underline"
                         >
                           View role
                           <ChevronRight className="h-4 w-4" />
@@ -908,7 +908,7 @@ export function HomeDashboardClient({
                 ))}
               </div>
             ) : (
-              <div className="rounded-2xl border border-slate-200/80 bg-white p-8 text-center shadow-xs">
+              <div className="rounded-2xl border border-brand-sand bg-brand-ivory p-8 text-center shadow-xs">
                 <p className="text-sm font-medium text-slate-700">
                   You have not submitted any applications yet.
                 </p>
@@ -917,7 +917,7 @@ export function HomeDashboardClient({
                 </p>
                 <Link
                   href="/apply"
-                  className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-blue-600 hover:underline"
+                  className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand-gold-strong hover:text-brand-ink hover:underline"
                 >
                   Browse roles
                   <ChevronRight className="h-4 w-4" />
@@ -930,7 +930,7 @@ export function HomeDashboardClient({
         <section className="space-y-4 pt-2">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h2 className="text-lg font-bold text-slate-900">
+              <h2 className="text-lg font-bold text-brand-ink">
                 Frequently asked questions
               </h2>
               <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500">
@@ -940,19 +940,19 @@ export function HomeDashboardClient({
             </div>
             <Link
               href="/about-us"
-              className="text-sm font-semibold text-blue-600 transition hover:text-blue-700 hover:underline"
+              className="text-sm font-semibold text-brand-gold-strong transition hover:text-brand-ink hover:underline"
             >
               Learn more
             </Link>
           </div>
 
-          <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-[0_1px_3px_rgba(15,23,42,0.04)]">
+          <div className="overflow-hidden rounded-2xl border border-brand-sand bg-brand-ivory shadow-[0_1px_3px_rgba(38,41,31,0.04)]">
             {faqs.map((faq) => (
               <details
-                className="group border-b border-slate-200/70 last:border-b-0"
+                className="group border-b border-brand-sand/70 last:border-b-0"
                 key={faq.question}
               >
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-left text-sm font-semibold text-slate-900 transition hover:bg-slate-50 [&::-webkit-details-marker]:hidden">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-left text-sm font-semibold text-brand-ink transition hover:bg-[#f2e8d7] [&::-webkit-details-marker]:hidden">
                   <span>{faq.question}</span>
                   <ChevronDown
                     className="h-4 w-4 shrink-0 text-slate-400 transition-transform group-open:rotate-180"
@@ -971,8 +971,8 @@ export function HomeDashboardClient({
       {/* Right Column Sidebar */}
       <aside className="w-full shrink-0 space-y-6 lg:w-[320px]">
         {/* Payments Summary Card */}
-        <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm">
-          <div className="border-b border-slate-100 bg-slate-50/50 p-6">
+        <div className="overflow-hidden rounded-2xl border border-brand-sand bg-brand-ivory shadow-sm">
+          <div className="border-b border-brand-sand bg-[#f1ebdf] p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-sm font-medium text-slate-500">
                 <Wallet className="h-4 w-4 text-slate-400" />
@@ -980,7 +980,7 @@ export function HomeDashboardClient({
               </div>
               <Link
                 href="/wallet"
-                className="text-xs font-semibold text-blue-600 transition hover:text-blue-700 hover:underline"
+                className="text-xs font-semibold text-brand-gold-strong transition hover:text-brand-ink hover:underline"
               >
                 Wallet
               </Link>
@@ -994,7 +994,7 @@ export function HomeDashboardClient({
                   Total hours
                   <Clock className="h-3.5 w-3.5" />
                 </div>
-                <div className="mt-1 text-2xl font-bold text-slate-900">
+                <div className="mt-1 text-2xl font-bold text-brand-ink">
                   {paymentSummary.formattedHoursWorked}
                 </div>
               </div>
@@ -1003,7 +1003,7 @@ export function HomeDashboardClient({
                   Expected earnings
                   <Wallet className="h-3.5 w-3.5" />
                 </div>
-                <div className="mt-1 text-2xl font-bold text-slate-900">
+                <div className="mt-1 text-2xl font-bold text-brand-gold-strong">
                   {paymentSummary.formattedAwaitingPayment}
                 </div>
               </div>
@@ -1012,10 +1012,10 @@ export function HomeDashboardClient({
         </div>
 
         {/* Refer Card */}
-        <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-brand-sand bg-brand-ivory p-5 shadow-sm">
           <div className="flex gap-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-50">
-              <UserPlus className="h-5 w-5 text-teal-600" />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#f2e8d7]">
+              <UserPlus className="h-5 w-5 text-brand-gold-strong" />
             </div>
             <div>
               <h3 className="text-sm font-semibold text-slate-900">
@@ -1030,7 +1030,7 @@ export function HomeDashboardClient({
                   View terms
                 </Link>
               </p>
-              <button className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-slate-900">
+              <button className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-brand-sand bg-brand-ivory py-2 text-xs font-semibold text-brand-ink shadow-sm transition hover:border-brand-gold/60 hover:bg-[#f2e8d7]">
                 <ClipboardList className="h-3.5 w-3.5" />
                 Copy referral link
               </button>
@@ -1039,10 +1039,10 @@ export function HomeDashboardClient({
         </div>
 
         {/* Try Versus Card */}
-        <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-brand-sand bg-brand-ivory p-5 shadow-sm">
           <div className="flex gap-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-900">
-              <span className="text-sm font-bold text-[#a3e635]">VS</span>
+              <span className="text-sm font-bold text-brand-gold-light">VS</span>
             </div>
             <div>
               <h3 className="text-sm font-semibold text-slate-900">
@@ -1051,7 +1051,7 @@ export function HomeDashboardClient({
               <p className="mt-1 text-xs leading-relaxed text-slate-500">
                 Get free access to premium AI models and compare which responses work best for you
               </p>
-              <button className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-slate-900">
+              <button className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-xl border border-brand-sand bg-brand-ivory py-2 text-xs font-semibold text-brand-ink shadow-sm transition hover:border-brand-gold/60 hover:bg-[#f2e8d7]">
                 Try now
                 <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
               </button>
@@ -1062,8 +1062,8 @@ export function HomeDashboardClient({
 
       <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
         {helpOpen ? (
-          <div className="w-[calc(100vw-3rem)] max-w-sm overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
-            <div className="flex items-start justify-between gap-4 border-b border-slate-100 bg-slate-950 px-5 py-4 text-white">
+          <div className="w-[calc(100vw-3rem)] max-w-sm overflow-hidden rounded-2xl border border-brand-sand bg-brand-ivory shadow-2xl">
+            <div className="flex items-start justify-between gap-4 border-b border-brand-gold/25 bg-brand-ink px-5 py-4 text-brand-ivory">
               <div>
                 <h2 className="text-sm font-semibold">Support</h2>
                 <p className="mt-1 text-xs text-slate-300">
@@ -1091,8 +1091,8 @@ export function HomeDashboardClient({
                   <div
                     className={`max-w-[82%] rounded-2xl px-3 py-2 text-sm leading-5 ${
                       message.from === "user"
-                        ? "bg-[#0066cc] text-white"
-                        : "bg-slate-100 text-slate-700"
+                        ? "bg-brand-gold text-brand-ink"
+                        : "bg-[#f1ebdf] text-brand-ink"
                     }`}
                   >
                     {message.text}
@@ -1101,12 +1101,12 @@ export function HomeDashboardClient({
               ))}
             </div>
 
-            <div className="border-t border-slate-100 px-5 py-4">
+            <div className="border-t border-brand-sand px-5 py-4">
               <div className="mb-3 flex flex-wrap gap-2">
                 {["Payment issue", "Onboarding help", "Task question"].map(
                   (topic) => (
                     <button
-                      className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+                      className="rounded-full border border-brand-sand bg-brand-ivory px-3 py-1.5 text-xs font-medium text-brand-muted transition hover:border-brand-gold hover:bg-[#f2e8d7] hover:text-brand-ink"
                       key={topic}
                       onClick={() => setSupportMessage(topic)}
                       type="button"
@@ -1124,14 +1124,14 @@ export function HomeDashboardClient({
                 }}
               >
                 <input
-                  className="h-11 min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="h-11 min-w-0 flex-1 rounded-xl border border-brand-sand bg-brand-ivory px-3 text-sm text-brand-ink outline-none transition placeholder:text-slate-400 focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
                   onChange={(event) => setSupportMessage(event.target.value)}
                   placeholder="Type your question"
                   value={supportMessage}
                 />
                 <button
                   aria-label="Send support message"
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#0066cc] text-white transition hover:bg-[#0052a3] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-ink text-brand-ivory transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold disabled:cursor-not-allowed disabled:opacity-50"
                   disabled={!supportMessage.trim()}
                   type="submit"
                 >
@@ -1143,7 +1143,7 @@ export function HomeDashboardClient({
         ) : null}
 
         <button
-          className="flex h-14 items-center gap-2 rounded-full bg-slate-950 px-5 text-sm font-semibold text-white shadow-xl transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          className="flex h-14 items-center gap-2 rounded-full bg-brand-ink px-5 text-sm font-semibold text-brand-ivory shadow-xl transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold focus:ring-offset-2 focus:ring-offset-brand-canvas"
           onClick={() => setHelpOpen((open) => !open)}
           type="button"
         >
