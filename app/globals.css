@@ -3,14 +3,41 @@
 @tailwind utilities;
 
 :root {
-  --background: #f8fafc;
-  --foreground: #020617;
+  --brand-ink: #26291f;
+  --brand-gold: #b68a55;
+  --brand-gold-light: #ebcc90;
+  --brand-gold-strong: #765027;
+  --brand-ivory: #fffdf8;
+  --brand-canvas: #f7f3ea;
+  --brand-sand: #ded6c8;
+  --brand-muted: #686a61;
+
+  --color-page: var(--brand-canvas);
+  --color-surface: var(--brand-ivory);
+  --color-surface-muted: #f1ebdf;
+  --color-text: var(--brand-ink);
+  --color-text-muted: var(--brand-muted);
+  --color-border: var(--brand-sand);
+  --color-action: var(--brand-ink);
+  --color-action-hover: #35392c;
+  --color-action-text: var(--brand-ivory);
+  --color-accent: var(--brand-gold);
+  --color-accent-soft: #f2e8d7;
+  --color-focus: var(--brand-gold);
+
+  --background: var(--color-page);
+  --foreground: var(--color-text);
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+::selection {
+  background: var(--brand-gold-light);
+  color: var(--brand-ink);
 }
 
 @layer utilities {
