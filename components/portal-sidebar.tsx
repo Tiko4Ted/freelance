@@ -11,6 +11,8 @@ import {
   Wallet,
 } from "lucide-react";
 
+import { BrandLogo } from "@/components/brand-logo";
+
 export type PortalTab =
   | "home"
   | "apply"
@@ -91,36 +93,10 @@ export function PortalSidebar({
       <div className="flex flex-col items-center">
         <Link
           href="/home"
-          aria-label="Go to Home"
+          aria-label="Trinity-AI home"
           className="group flex items-center justify-center transition-transform hover:scale-105"
         >
-          <svg
-            viewBox="0 0 100 100"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-9 w-9"
-          >
-            <defs>
-              <linearGradient
-                id="portalLogoGrad"
-                x1="0%"
-                y1="0%"
-                x2="100%"
-                y2="100%"
-              >
-                <stop offset="0%" stopColor="#38bdf8" />
-                <stop offset="50%" stopColor="#0ea5e9" />
-                <stop offset="100%" stopColor="#0284c7" />
-              </linearGradient>
-            </defs>
-            <path
-              d="M 28 78 C 24 64, 30 38, 48 24 C 62 14, 78 18, 80 32 C 82 48, 62 58, 40 60 C 26 61, 16 70, 20 80 C 25 90, 42 86, 56 78 C 72 68, 84 52, 85 38"
-              stroke="url(#portalLogoGrad)"
-              strokeWidth="10"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          <BrandLogo imageClassName="h-11 w-11 shadow-sm" size={44} />
         </Link>
 
         {/* Navigation Items */}
