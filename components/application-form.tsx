@@ -135,25 +135,25 @@ export function ApplicationForm({
         />
       ) : null}
       <form
-        className="rounded-lg bg-[#f2f1fb] p-6 text-[#151625]"
+        className="rounded-lg border border-brand-sand bg-brand-ivory p-6 text-brand-ink shadow-brand-card"
         onSubmit={handleDetailsNext}
       >
         <h2 className="text-[22px] font-semibold leading-tight">Interested?</h2>
-      <p className="mt-2 text-[12px] leading-[1.45] text-[#4d5060]">
+      <p className="mt-2 text-[12px] leading-[1.45] text-brand-muted">
         Applying with{" "}
-        <span className="font-semibold text-[#151625]">{applicantEmail}</span>
+        <span className="font-semibold text-brand-ink">{applicantEmail}</span>
       </p>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
         <div>
           <label
-            className="text-[11px] font-medium text-[#363747]"
+            className="text-[11px] font-medium text-brand-ink"
             htmlFor="firstName"
           >
             First name
           </label>
           <input
-            className="mt-1.5 h-9 w-full rounded border border-[#d0d0dc] bg-transparent px-3 text-[13px] outline-none transition placeholder:text-[#848594] focus:border-[#3547ff] focus:ring-1 focus:ring-[#3547ff]"
+            className="mt-1.5 h-9 w-full rounded border border-brand-sand bg-brand-canvas/50 px-3 text-[13px] outline-none transition placeholder:text-brand-muted focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
             id="firstName"
             name="firstName"
             placeholder="Enter your first name"
@@ -163,13 +163,13 @@ export function ApplicationForm({
         </div>
         <div>
           <label
-            className="text-[11px] font-medium text-[#363747]"
+            className="text-[11px] font-medium text-brand-ink"
             htmlFor="lastName"
           >
             Last name
           </label>
           <input
-            className="mt-1.5 h-9 w-full rounded border border-[#d0d0dc] bg-transparent px-3 text-[13px] outline-none transition placeholder:text-[#848594] focus:border-[#3547ff] focus:ring-1 focus:ring-[#3547ff]"
+            className="mt-1.5 h-9 w-full rounded border border-brand-sand bg-brand-canvas/50 px-3 text-[13px] outline-none transition placeholder:text-brand-muted focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
             id="lastName"
             name="lastName"
             placeholder="Enter your last name"
@@ -181,23 +181,23 @@ export function ApplicationForm({
 
       <div className="mt-4">
         <label
-          className="text-[11px] font-medium text-[#363747]"
+          className="text-[11px] font-medium text-brand-ink"
           htmlFor="phoneNumber"
         >
           Phone number
         </label>
-        <div className="mt-1.5 flex h-10 overflow-hidden rounded border border-[#d0d0dc] bg-transparent transition focus-within:border-[#3547ff] focus-within:ring-1 focus-within:ring-[#3547ff]">
-          <div className="flex min-w-[86px] items-center gap-2 border-r border-[#d0d0dc] px-3 text-[13px] text-[#222432]">
+        <div className="mt-1.5 flex h-10 overflow-hidden rounded border border-brand-sand bg-brand-canvas/50 transition focus-within:border-brand-gold focus-within:ring-1 focus-within:ring-brand-gold">
+          <div className="flex min-w-[86px] items-center gap-2 border-r border-brand-sand px-3 text-[13px] text-brand-ink">
             <span aria-hidden="true" className="text-base leading-none">
               {phoneCountry.label}
             </span>
-            <ChevronDown aria-hidden="true" className="h-3.5 w-3.5 text-[#636574]" />
+            <ChevronDown aria-hidden="true" className="h-3.5 w-3.5 text-brand-muted" />
             <span className="sr-only">
               Country: {phoneCountry.country} {phoneCountry.code}
             </span>
           </div>
           <input
-            className="min-w-0 flex-1 bg-transparent px-3 text-[13px] outline-none placeholder:text-[#848594]"
+            className="min-w-0 flex-1 bg-transparent px-3 text-[13px] outline-none placeholder:text-brand-muted"
             id="phoneNumber"
             name="phoneNumber"
             onChange={(event) => {
@@ -214,13 +214,13 @@ export function ApplicationForm({
 
       <div className="mt-4">
         <label
-          className="text-[11px] font-medium text-[#363747]"
+          className="text-[11px] font-medium text-brand-ink"
           htmlFor="linkedinUrl"
         >
           Linkedin profile URL
         </label>
         <input
-          className="mt-1.5 h-9 w-full rounded border border-[#d0d0dc] bg-transparent px-3 text-[13px] outline-none transition placeholder:text-[#848594] focus:border-[#3547ff] focus:ring-1 focus:ring-[#3547ff]"
+          className="mt-1.5 h-9 w-full rounded border border-brand-sand bg-brand-canvas/50 px-3 text-[13px] outline-none transition placeholder:text-brand-muted focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
           id="linkedinUrl"
           name="linkedinUrl"
           placeholder="Enter your LinkedIn URL"
@@ -230,7 +230,7 @@ export function ApplicationForm({
 
       <div className="mt-4">
         <label
-          className="text-[11px] font-medium text-[#363747]"
+          className="text-[11px] font-medium text-brand-ink"
           htmlFor="resume"
         >
           Upload your resume (in English)
@@ -246,7 +246,7 @@ export function ApplicationForm({
           type="file"
         />
         <label
-          className="mt-1.5 flex h-9 cursor-pointer items-center justify-center gap-2 rounded border border-dashed border-[#646679] bg-transparent px-3 text-center text-[13px] text-[#333542] transition hover:border-[#3547ff] hover:text-[#2636d9]"
+          className="mt-1.5 flex h-9 cursor-pointer items-center justify-center gap-2 rounded border border-dashed border-brand-muted bg-brand-canvas/50 px-3 text-center text-[13px] text-brand-muted transition hover:border-brand-gold hover:text-brand-gold-strong focus-within:ring-2 focus-within:ring-brand-gold/30"
           htmlFor="resume"
         >
           <Upload aria-hidden="true" className="h-4 w-4" />
@@ -257,20 +257,20 @@ export function ApplicationForm({
       </div>
 
       <button
-        className="mt-4 inline-flex h-11 w-full items-center justify-center rounded-md bg-gradient-to-r from-[#3e52ff] to-[#1723a7] px-5 text-[15px] font-semibold text-white shadow-sm transition hover:from-[#3345f0] hover:to-[#101a91] disabled:cursor-not-allowed disabled:opacity-65"
+        className="mt-4 inline-flex h-11 w-full items-center justify-center rounded-md bg-brand-ink px-5 text-[15px] font-semibold text-brand-ivory shadow-sm transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold/40 disabled:cursor-not-allowed disabled:opacity-65"
         type="submit"
       >
         Next
       </button>
 
-      <p className="mt-5 text-[11px] leading-[1.45] text-[#3e4050]">
+      <p className="mt-5 text-[11px] leading-[1.45] text-brand-muted">
         Please note that after completing the interview process, you will be
         considered for this and other roles that match your skills.
       </p>
 
-      <p className="mt-4 text-[12px] text-[#3e4050]">
+      <p className="mt-4 text-[12px] text-brand-muted">
         Have any questions? See{" "}
-        <a className="text-[#2738d9] underline-offset-2 hover:underline" href="#">
+        <a className="font-medium text-brand-gold-strong underline-offset-2 hover:underline" href="#">
           FAQs
         </a>
       </p>
