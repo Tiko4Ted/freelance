@@ -16,11 +16,10 @@ export default async function OnboardingPage() {
     : emptyOnboardingStatus();
 
   return (
-    <div className="flex min-h-screen bg-[#fafafc] text-slate-900">
+    <div className="flex min-h-screen bg-brand-canvas text-brand-ink">
       <PortalSidebar
         activeTab="onboarding"
         userName={userName}
-        avatarColor="#c2410c"
       />
       <main className="flex-1 overflow-y-auto px-6 py-10 md:px-12">
         <div className="mx-auto max-w-[800px]">
