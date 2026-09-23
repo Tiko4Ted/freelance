@@ -7,8 +7,23 @@ import {
   buildEmailDeliveryTestEmail,
   buildApplicationStatusEmail,
   buildNewJobEmail,
+  buildWelcomeVerificationEmail,
   EmailNotificationService,
 } from "../lib/services/email-notification-service";
+
+test("builds a combined welcome and verification email", () => {
+  const email = buildWelcomeVerificationEmail({
+    name: "Ada",
+    to: "ada@example.test",
+    verificationUrl: "https://example.test/verify-email?token=secure-token",
+  });
+
+  assert.equal(email.to, "ada@example.test");
+  assert.match(email.subject, /Welcome.*verify your email/);
+  assert.match(email.text, /expires in 24 hours/);
+  assert.match(email.html, /Verify email/);
+  assert.match(email.html, /secure-token/);
+});
 
 test("builds a fixed delivery test email for the requested recipient", () => {
   const email = buildEmailDeliveryTestEmail("admin@example.test");

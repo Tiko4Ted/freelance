@@ -26,6 +26,15 @@ function getErrorMessage(payload: unknown) {
   return "Unable to create account";
 }
 
+function verificationEmailWasSent(payload: unknown) {
+  return Boolean(
+    payload &&
+      typeof payload === "object" &&
+      "verificationEmailSent" in payload &&
+      payload.verificationEmailSent === true,
+  );
+}
+
 export function RegisterForm({ callbackUrl = "/home" }: RegisterFormProps) {
   const [state, setState] = useState<RegisterState>({
     status: "idle",
@@ -49,6 +58,15 @@ export function RegisterForm({ callbackUrl = "/home" }: RegisterFormProps) {
 
     if (!response.ok) {
       setState({ status: "error", message: getErrorMessage(payload) });
+      return;
+    }
+
+    if (!verificationEmailWasSent(payload)) {
+      setState({
+        status: "error",
+        message:
+          "Your account was created, but the verification email could not be sent. Contact support before creating another account.",
+      });
       return;
     }
 

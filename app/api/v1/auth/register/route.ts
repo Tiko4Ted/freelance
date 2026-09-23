@@ -1,34 +1,9 @@
-import { NextResponse } from "next/server";
-import { ZodError } from "zod";
-
+import { createRegisterPostHandler } from "@/lib/http/register-route-handler";
 import { AuthService } from "@/lib/services/auth-service";
-import { registerSchema } from "@/lib/validation/auth";
+import { EmailVerificationService } from "@/lib/services/email-verification-service";
 
-export async function POST(request: Request) {
-  try {
-    const body: unknown = await request.json();
-    const input = registerSchema.parse(body);
-    const user = await AuthService.register(input);
-
-    return NextResponse.json({ user }, { status: 201 });
-  } catch (error) {
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: "Invalid registration input", issues: error.flatten() },
-        { status: 400 },
-      );
-    }
-
-    if (error instanceof Error && error.message === "EMAIL_ALREADY_EXISTS") {
-      return NextResponse.json(
-        { error: "Email is already registered" },
-        { status: 409 },
-      );
-    }
-
-    return NextResponse.json(
-      { error: "Unable to register user" },
-      { status: 500 },
-    );
-  }
-}
+export const POST = createRegisterPostHandler({
+  register: (input) => AuthService.register(input),
+  sendWelcomeVerification: (user) =>
+    EmailVerificationService.sendWelcomeVerification(user),
+});
