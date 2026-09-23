@@ -68,7 +68,7 @@ export function ApplicationActions({
     <div className="space-y-3">
       <form className="flex gap-2" onSubmit={updateStatus}>
         <select
-          className="h-10 min-w-40 border border-slate-300 px-2 text-sm outline-none focus:border-teal-700"
+          className="h-10 min-w-40 rounded-lg border border-brand-sand bg-brand-canvas/50 px-2 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
           defaultValue={currentStatus}
           name="status"
         >
@@ -79,7 +79,7 @@ export function ApplicationActions({
           ))}
         </select>
         <button
-          className="h-10 border border-slate-950 bg-slate-950 px-3 text-sm font-semibold text-white hover:bg-teal-700"
+          className="h-10 rounded-lg bg-brand-ink px-3 text-sm font-semibold text-brand-ivory transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold/40"
           type="submit"
         >
           Save
@@ -87,7 +87,7 @@ export function ApplicationActions({
       </form>
       <form className="grid gap-2 md:grid-cols-[1fr_1fr_auto]" onSubmit={updateProgress}>
         <input
-          className="h-10 border border-slate-300 px-2 text-sm outline-none focus:border-teal-700"
+          className="h-10 rounded-lg border border-brand-sand bg-brand-canvas/50 px-2 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
           defaultValue={hoursLogged}
           min={0}
           name="hoursLogged"
@@ -95,7 +95,7 @@ export function ApplicationActions({
           type="number"
         />
         <input
-          className="h-10 border border-slate-300 px-2 text-sm outline-none focus:border-teal-700"
+          className="h-10 rounded-lg border border-brand-sand bg-brand-canvas/50 px-2 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
           defaultValue={tasksCompleted}
           min={0}
           name="tasksCompleted"
@@ -103,13 +103,13 @@ export function ApplicationActions({
           type="number"
         />
         <button
-          className="h-10 border border-slate-950 px-3 text-sm font-semibold text-slate-950 hover:border-teal-700 hover:text-teal-700"
+          className="h-10 rounded-lg border border-brand-sand bg-brand-ivory px-3 text-sm font-semibold text-brand-ink transition hover:border-brand-gold hover:bg-[#f2e8d7] hover:text-brand-gold-strong"
           type="submit"
         >
           Log
         </button>
       </form>
-      {message ? <p className="text-sm text-teal-700">{message}</p> : null}
+      {message ? <p className="text-sm text-brand-gold-strong">{message}</p> : null}
     </div>
   );
 }

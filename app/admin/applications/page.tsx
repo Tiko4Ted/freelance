@@ -19,20 +19,20 @@ export default async function AdminApplicationsPage() {
   const applications = await AdminApplicationService.listApplications();
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-950">
-      <section className="border-b border-slate-200 bg-white">
+    <main className="min-h-screen bg-brand-canvas text-brand-ink">
+      <section className="border-b border-brand-sand bg-brand-ivory">
         <div className="mx-auto max-w-6xl px-6 py-8 md:px-8">
-          <Link className="text-sm font-medium text-teal-700" href="/admin">
+          <Link className="text-sm font-medium text-brand-gold-strong hover:underline" href="/admin">
             Admin
           </Link>
-          <h1 className="mt-5 text-3xl font-semibold text-slate-950 md:text-5xl">
+          <h1 className="mt-5 text-3xl font-semibold text-brand-ink md:text-5xl">
             Applications
           </h1>
         </div>
       </section>
 
       <section className="mx-auto max-w-6xl px-6 py-8 md:px-8">
-        <div className="divide-y divide-slate-200 border border-slate-200 bg-white">
+        <div className="divide-y divide-brand-sand overflow-hidden rounded-2xl border border-brand-sand bg-brand-ivory shadow-brand-card">
           {applications.length ? (
             applications.map((application) => (
               <article
@@ -41,16 +41,16 @@ export default async function AdminApplicationsPage() {
               >
                 <div>
                   <div className="flex flex-wrap items-center gap-3">
-                    <h2 className="font-semibold text-slate-950">
+                    <h2 className="font-semibold text-brand-ink">
                       {application.candidateName}
                     </h2>
                     <StatusBadge status={application.status} />
                   </div>
-                  <p className="mt-2 text-sm text-slate-600">
+                  <p className="mt-2 text-sm text-brand-muted">
                     {application.candidateEmail}
                   </p>
                   {application.candidatePhoneNumber ? (
-                    <p className="mt-2 text-sm text-slate-600">
+                    <p className="mt-2 text-sm text-brand-muted">
                       Phone:{" "}
                       {[
                         application.candidatePhoneCountry,
@@ -62,38 +62,38 @@ export default async function AdminApplicationsPage() {
                     </p>
                   ) : null}
                   {application.candidateLinkedinUrl ? (
-                    <p className="mt-2 break-all text-sm text-slate-600">
+                    <p className="mt-2 break-all text-sm text-brand-muted">
                       LinkedIn: {application.candidateLinkedinUrl}
                     </p>
                   ) : null}
                   {application.resumeFileName ? (
-                    <p className="mt-2 break-all text-sm text-slate-600">
+                    <p className="mt-2 break-all text-sm text-brand-muted">
                       Resume: {application.resumeFileName}
                     </p>
                   ) : null}
                   {application.startAvailabilityDays !== null ? (
-                    <p className="mt-2 text-sm text-slate-600">
+                    <p className="mt-2 text-sm text-brand-muted">
                       Starts in: {application.startAvailabilityDays} days
                     </p>
                   ) : null}
                   {application.expectedHourlyRateUsd !== null ? (
-                    <p className="mt-2 text-sm text-slate-600">
+                    <p className="mt-2 text-sm text-brand-muted">
                       Expected rate: ${application.expectedHourlyRateUsd}/hour
                     </p>
                   ) : null}
                   {application.weeklyAvailabilityHours !== null ? (
-                    <p className="mt-2 text-sm text-slate-600">
+                    <p className="mt-2 text-sm text-brand-muted">
                       Availability: {application.weeklyAvailabilityHours} hours/week
                     </p>
                   ) : null}
                   {application.strongestTools.length ? (
-                    <p className="mt-2 text-sm text-slate-600">
+                    <p className="mt-2 text-sm text-brand-muted">
                       Tools: {application.strongestTools.join(", ")}
                     </p>
                   ) : null}
                   {application.aptitudeScorePercent !== null ? (
-                    <div className="mt-4 border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
-                      <p className="font-semibold text-slate-950">
+                    <div className="mt-4 rounded-xl border border-brand-sand bg-brand-canvas/60 p-3 text-sm text-brand-muted">
+                      <p className="font-semibold text-brand-ink">
                         Aptitude test
                       </p>
                       <p className="mt-2">
@@ -109,15 +109,15 @@ export default async function AdminApplicationsPage() {
                       </p>
                     </div>
                   ) : null}
-                  <p className="mt-2 text-sm text-slate-600">
+                  <p className="mt-2 text-sm text-brand-muted">
                     {application.job.title}
                   </p>
-                  <p className="mt-2 text-sm text-slate-500">
+                  <p className="mt-2 text-sm text-brand-muted">
                     Referrer: {application.referrer?.email ?? "none"}
                   </p>
                   {application.taskSubmittedAt ? (
-                    <div className="mt-4 border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
-                      <p className="font-semibold text-slate-950">
+                    <div className="mt-4 rounded-xl border border-brand-sand bg-brand-canvas/60 p-3 text-sm text-brand-muted">
+                      <p className="font-semibold text-brand-ink">
                         Submitted task
                       </p>
                       <p className="mt-2 break-all">
@@ -150,7 +150,7 @@ export default async function AdminApplicationsPage() {
               </article>
             ))
           ) : (
-            <p className="p-5 text-sm text-slate-600">No applications yet.</p>
+            <p className="p-5 text-sm text-brand-muted">No applications yet.</p>
           )}
         </div>
       </section>
