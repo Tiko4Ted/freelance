@@ -75,27 +75,27 @@ export function JobCreateForm() {
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
       <input
-        className="h-10 w-full border border-slate-300 px-3 text-sm outline-none focus:border-teal-700"
+        className="h-10 w-full rounded-lg border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
         name="title"
         placeholder="Title"
         required
       />
       <input
-        className="h-10 w-full border border-slate-300 px-3 text-sm outline-none focus:border-teal-700"
+        className="h-10 w-full rounded-lg border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
         defaultValue="Trinity-AI"
         name="companyName"
         placeholder="Company"
         required
       />
       <textarea
-        className="min-h-28 w-full border border-slate-300 px-3 py-2 text-sm outline-none focus:border-teal-700"
+        className="min-h-28 w-full rounded-lg border border-brand-sand bg-brand-canvas/50 px-3 py-2 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
         name="description"
         placeholder="Description"
         required
       />
       <div className="grid gap-3 md:grid-cols-3">
         <input
-          className="h-10 border border-slate-300 px-3 text-sm outline-none focus:border-teal-700"
+          className="h-10 rounded-lg border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
           min={1}
           name="payoutDollars"
           placeholder="Payout"
@@ -104,7 +104,7 @@ export function JobCreateForm() {
           type="number"
         />
         <input
-          className="h-10 border border-slate-300 px-3 text-sm outline-none focus:border-teal-700"
+          className="h-10 rounded-lg border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
           min={1}
           name="hourlyMinDollars"
           placeholder="Hourly min"
@@ -112,7 +112,7 @@ export function JobCreateForm() {
           type="number"
         />
         <input
-          className="h-10 border border-slate-300 px-3 text-sm outline-none focus:border-teal-700"
+          className="h-10 rounded-lg border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
           min={1}
           name="hourlyMaxDollars"
           placeholder="Hourly max"
@@ -122,7 +122,7 @@ export function JobCreateForm() {
       </div>
       <div className="grid gap-3 md:grid-cols-3">
         <input
-          className="h-10 border border-slate-300 px-3 text-sm outline-none focus:border-teal-700"
+          className="h-10 rounded-lg border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
           defaultValue={1}
           min={1}
           name="openings"
@@ -132,7 +132,7 @@ export function JobCreateForm() {
           type="number"
         />
         <input
-          className="h-10 border border-slate-300 px-3 text-sm uppercase outline-none focus:border-teal-700"
+          className="h-10 rounded-lg border border-brand-sand bg-brand-canvas/50 px-3 text-sm uppercase outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
           defaultValue="USD"
           maxLength={3}
           minLength={3}
@@ -140,7 +140,7 @@ export function JobCreateForm() {
           required
         />
         <select
-          className="h-10 border border-slate-300 px-3 text-sm outline-none focus:border-teal-700"
+          className="h-10 rounded-lg border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
           name="payoutType"
         >
           <option value="HOURS_10">10 hours</option>
@@ -148,16 +148,16 @@ export function JobCreateForm() {
         </select>
       </div>
       <input
-        className="h-10 w-full border border-slate-300 px-3 text-sm outline-none focus:border-teal-700"
+        className="h-10 w-full rounded-lg border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
         name="skills"
         placeholder="Skills, comma separated"
       />
-      <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
-        <input className="h-4 w-4" name="isHighDemand" type="checkbox" />
+      <label className="flex items-center gap-2 text-sm font-medium text-brand-ink">
+        <input className="h-4 w-4 accent-brand-gold" name="isHighDemand" type="checkbox" />
         High demand
       </label>
       <button
-        className="inline-flex h-10 w-full items-center justify-center border border-slate-950 bg-slate-950 px-4 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:bg-slate-400"
+        className="inline-flex h-10 w-full items-center justify-center rounded-lg bg-brand-ink px-4 text-sm font-semibold text-brand-ivory transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold/40 disabled:opacity-50"
         disabled={state.status === "submitting"}
         type="submit"
       >
@@ -168,7 +168,7 @@ export function JobCreateForm() {
           className={
             state.status === "error"
               ? "text-sm font-medium text-red-700"
-              : "text-sm font-medium text-teal-700"
+              : "text-sm font-medium text-brand-gold-strong"
           }
         >
           {state.message}
