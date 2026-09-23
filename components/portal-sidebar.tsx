@@ -31,7 +31,7 @@ interface PortalSidebarProps {
 export function PortalSidebar({
   activeTab,
   userName = "Teddy",
-  avatarColor = "#c2410c",
+  avatarColor = "#765027",
 }: PortalSidebarProps) {
   const initial = (userName.trim()[0] || "T").toUpperCase();
 
@@ -88,15 +88,18 @@ export function PortalSidebar({
   ];
 
   return (
-    <aside className="sticky top-0 z-40 flex h-screen w-[88px] flex-col items-center justify-between border-r border-slate-200/90 bg-white py-6 select-none shrink-0">
+    <aside className="sticky top-0 z-40 flex h-screen w-[88px] shrink-0 select-none flex-col items-center justify-between border-r border-brand-gold/25 bg-brand-ink py-6">
       {/* Top Logo */}
       <div className="flex flex-col items-center">
         <Link
           href="/home"
           aria-label="Trinity-AI home"
-          className="group flex items-center justify-center transition-transform hover:scale-105"
+          className="group flex items-center justify-center rounded-xl outline-none transition focus-visible:shadow-brand-focus"
         >
-          <BrandLogo imageClassName="h-11 w-11 shadow-sm" size={44} />
+          <BrandLogo
+            imageClassName="h-11 w-11 ring-1 ring-brand-gold/35"
+            size={44}
+          />
         </Link>
 
         {/* Navigation Items */}
@@ -109,34 +112,34 @@ export function PortalSidebar({
               <div key={item.id} className="relative flex items-center">
                 <Link
                   href={item.href}
-                  className={`group relative flex h-[62px] w-[62px] flex-col items-center justify-center rounded-2xl transition-all ${
+                  className={`group relative flex h-[62px] w-[62px] flex-col items-center justify-center rounded-2xl outline-none transition-all focus-visible:ring-2 focus-visible:ring-brand-gold-light focus-visible:ring-offset-2 focus-visible:ring-offset-brand-ink ${
                     isActive
-                      ? "bg-[#eef2ff] text-[#2563eb]"
-                      : "text-[#64748b] hover:bg-slate-50 hover:text-slate-900"
+                      ? "bg-brand-gold text-brand-ink shadow-[0_7px_18px_rgba(0,0,0,0.16)]"
+                      : "text-brand-gold-light/70 hover:bg-white/5 hover:text-brand-gold-light"
                   }`}
                 >
                   <Icon
                     className={`h-[22px] w-[22px] transition-transform group-hover:scale-105 ${
-                      isActive ? "text-[#2563eb]" : "text-[#64748b]"
+                      isActive ? "text-brand-ink" : "text-current"
                     }`}
                     strokeWidth={isActive ? 2.25 : 1.75}
                   />
                   <span
                     className={`mt-1 text-[11px] leading-tight ${
                       isActive
-                        ? "font-semibold text-[#2563eb]"
-                        : "font-medium text-[#64748b]"
+                        ? "font-semibold text-brand-ink"
+                        : "font-medium text-current"
                     }`}
                   >
                     {item.label}
                   </span>
                 </Link>
 
-                {/* Blue notification dot on the right side of the item */}
+                {/* Informational notification dot */}
                 {item.hasDot ? (
                   <span
                     aria-hidden="true"
-                    className="absolute -right-2 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-[#2563eb] ring-2 ring-white"
+                    className="absolute -right-2 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-brand-gold-light ring-2 ring-brand-ink"
                   />
                 ) : null}
               </div>
@@ -149,11 +152,11 @@ export function PortalSidebar({
       <div className="flex flex-col items-center">
         <div
           style={{ backgroundColor: avatarColor }}
-          className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold text-white shadow-sm"
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-brand-gold-light/40 text-sm font-bold text-brand-ivory shadow-sm"
         >
           {initial}
         </div>
-        <span className="mt-1.5 max-w-[76px] truncate text-center text-xs font-medium text-slate-700">
+        <span className="mt-1.5 max-w-[76px] truncate text-center text-xs font-medium text-brand-gold-light/80">
           {userName}
         </span>
       </div>

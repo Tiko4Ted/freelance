@@ -13,23 +13,23 @@ const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   },
   CERTIFIED: {
     label: "Approved",
-    className: "bg-blue-100 text-blue-800",
+    className: "bg-[#f2e8d7] text-brand-gold-strong",
   },
   MATCHED: {
     label: "Matched",
-    className: "bg-blue-100 text-blue-800",
+    className: "bg-[#f2e8d7] text-brand-gold-strong",
   },
   ACTIVE: {
     label: "Active",
-    className: "bg-blue-100 text-blue-800",
+    className: "bg-[#f2e8d7] text-brand-gold-strong",
   },
   PAYOUT_ELIGIBLE: {
     label: "Payout eligible",
-    className: "bg-teal-100 text-teal-800",
+    className: "bg-emerald-100 text-emerald-800",
   },
   PAID: {
     label: "Paid",
-    className: "bg-teal-100 text-teal-800",
+    className: "bg-emerald-100 text-emerald-800",
   },
   EXPIRED: {
     label: "Expired",
@@ -45,7 +45,7 @@ const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   },
   PROCESSING: {
     label: "Processing",
-    className: "bg-blue-100 text-blue-800",
+    className: "bg-[#f2e8d7] text-brand-gold-strong",
   },
   FAILED: {
     label: "Failed",

@@ -27,36 +27,35 @@ export default async function WalletPage() {
   ]);
 
   return (
-    <div className="flex min-h-screen bg-[#fafafc] text-slate-900">
+    <div className="flex min-h-screen bg-brand-canvas text-brand-ink">
       <PortalSidebar
         activeTab="payments"
         userName={userName}
-        avatarColor="#c2410c"
       />
       <main className="flex-1 overflow-y-auto px-6 py-8 md:px-12 md:py-10">
         <div className="mx-auto max-w-[1040px] space-y-8">
           <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900 md:text-[34px]">
+            <h1 className="text-3xl font-bold tracking-tight text-brand-ink md:text-[34px]">
               Wallet
             </h1>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm">
-              <p className="text-sm font-medium text-slate-500">Holding</p>
-              <p className="mt-2 text-[32px] font-bold tracking-tight text-slate-900">
+            <div className="rounded-2xl border border-brand-sand bg-brand-ivory p-6 shadow-brand-card">
+              <p className="text-sm font-medium text-brand-muted">Holding</p>
+              <p className="mt-2 text-[32px] font-bold tracking-tight text-brand-ink">
                 {wallet.formattedHoldingBalance}
               </p>
-              <p className="mt-2 text-xs leading-relaxed text-slate-500">
+              <p className="mt-2 text-xs leading-relaxed text-brand-muted">
                 Completed job money waits here until freelance ID verification.
               </p>
             </div>
-            <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm">
-              <p className="text-sm font-medium text-slate-500">Funding</p>
-              <p className="mt-2 text-[32px] font-bold tracking-tight text-blue-600">
+            <div className="rounded-2xl border border-brand-gold/50 bg-[#f2e8d7] p-6 shadow-brand-card">
+              <p className="text-sm font-medium text-brand-muted">Funding</p>
+              <p className="mt-2 text-[32px] font-bold tracking-tight text-brand-gold-strong">
                 {wallet.formattedFundingBalance}
               </p>
-              <p className="mt-2 text-xs leading-relaxed text-slate-500">
+              <p className="mt-2 text-xs leading-relaxed text-brand-muted">
                 Funds here can be withdrawn to your selected payout method.
               </p>
             </div>
@@ -64,29 +63,29 @@ export default async function WalletPage() {
 
           <section className="grid gap-8 md:grid-cols-[1fr_22rem]">
             <div className="flex flex-col gap-4">
-              <h2 className="text-xl font-bold text-slate-900">
+              <h2 className="text-xl font-bold text-brand-ink">
                 Ledger History
               </h2>
-              <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm divide-y divide-slate-200/60">
+              <div className="divide-y divide-brand-sand overflow-hidden rounded-2xl border border-brand-sand bg-brand-ivory shadow-brand-card">
                 {wallet.ledgerEntries.length ? (
                   wallet.ledgerEntries.map((entry) => (
                     <article
-                      className="grid gap-3 p-5 transition hover:bg-slate-50 md:grid-cols-[1fr_auto]"
+                      className="grid gap-3 p-5 transition hover:bg-brand-canvas/60 md:grid-cols-[1fr_auto]"
                       key={entry.id}
                     >
                       <div>
-                        <h2 className="font-semibold text-slate-900">
+                        <h2 className="font-semibold text-brand-ink">
                           {entry.reason}
                         </h2>
-                        <p className="mt-1 text-sm text-slate-500">
+                        <p className="mt-1 text-sm text-brand-muted">
                           {entry.account} - {entry.createdAt}
                         </p>
                       </div>
                       <p
                         className={`font-semibold ${
                           entry.amountCents >= 0
-                            ? "text-blue-600"
-                            : "text-slate-900"
+                            ? "text-brand-gold-strong"
+                            : "text-brand-ink"
                         }`}
                       >
                         {entry.formattedAmount}
@@ -94,25 +93,25 @@ export default async function WalletPage() {
                     </article>
                   ))
                 ) : (
-                  <p className="p-8 text-center text-sm text-slate-500">
+                  <p className="p-8 text-center text-sm text-brand-muted">
                     No ledger entries yet.
                   </p>
                 )}
               </div>
             </div>
 
-            <aside className="h-fit rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-bold text-slate-900">
+            <aside className="h-fit rounded-2xl border border-brand-sand bg-brand-ivory p-6 shadow-brand-card">
+              <h2 className="text-lg font-bold text-brand-ink">
                 Move and withdraw
               </h2>
-              <p className="mt-2 text-sm leading-relaxed text-slate-500">
+              <p className="mt-2 text-sm leading-relaxed text-brand-muted">
                 Funding available:{" "}
-                <span className="font-medium text-slate-700">
+                <span className="font-medium text-brand-ink">
                   {wallet.formattedFundingBalance}
                 </span>
                 <br />
                 Minimum withdrawal:{" "}
-                <span className="font-medium text-slate-700">$10</span>
+                <span className="font-medium text-brand-ink">$10</span>
               </p>
               <div className="mt-6">
                 <WithdrawalForm
@@ -125,32 +124,32 @@ export default async function WalletPage() {
           </section>
 
           <section className="flex flex-col gap-4">
-            <h2 className="text-xl font-bold text-slate-900">Withdrawals</h2>
-            <div className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-sm divide-y divide-slate-200/60">
+            <h2 className="text-xl font-bold text-brand-ink">Withdrawals</h2>
+            <div className="divide-y divide-brand-sand overflow-hidden rounded-2xl border border-brand-sand bg-brand-ivory shadow-brand-card">
               {withdrawals.length ? (
                 withdrawals.map((withdrawal) => (
                   <article
-                    className="grid gap-3 p-5 transition hover:bg-slate-50 md:grid-cols-[1fr_auto]"
+                    className="grid gap-3 p-5 transition hover:bg-brand-canvas/60 md:grid-cols-[1fr_auto]"
                     key={withdrawal.id}
                   >
                     <div>
                       <StatusBadge status={withdrawal.status} />
-                      <p className="mt-2 text-sm text-slate-500">
+                      <p className="mt-2 text-sm text-brand-muted">
                         {withdrawal.requestedAt}
                       </p>
                       {withdrawal.payoutMethod ? (
-                        <p className="mt-1 text-xs font-medium text-slate-600">
+                        <p className="mt-1 text-xs font-medium text-brand-muted">
                           {withdrawal.payoutMethod}
                         </p>
                       ) : null}
                     </div>
-                    <p className="font-bold text-slate-900">
+                    <p className="font-bold text-brand-ink">
                       ${(withdrawal.amountCents / 100).toFixed(2)}
                     </p>
                   </article>
                 ))
               ) : (
-                <p className="p-8 text-center text-sm text-slate-500">
+                <p className="p-8 text-center text-sm text-brand-muted">
                   No withdrawals yet.
                 </p>
               )}

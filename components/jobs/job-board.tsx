@@ -45,12 +45,12 @@ function JobCard({
   const skills = visibleSkills(job);
 
   return (
-    <article className="relative flex min-h-[15.9rem] flex-col gap-1 rounded-md border border-[#d7d8f5] bg-[#eef0ff] p-1 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
-      <div className="flex flex-1 flex-col rounded bg-white p-3.5">
+    <article className="relative flex min-h-[15.9rem] flex-col gap-1 rounded-md border border-brand-sand bg-[#f1ebdf] p-1 shadow-brand-card">
+      <div className="flex flex-1 flex-col rounded bg-brand-ivory p-3.5">
         <div className="flex flex-wrap items-center gap-2 text-xs font-semibold">
-          <span className="text-[#65708a]">{job.postedAtLabel}</span>
+          <span className="text-brand-muted">{job.postedAtLabel}</span>
           {job.isNew ? (
-            <span className="rounded bg-[#f2ddff] px-2 py-0.5 text-[#8b3cc2]">
+            <span className="rounded bg-[#f2e8d7] px-2 py-0.5 text-brand-gold-strong">
               New
             </span>
           ) : null}
@@ -61,31 +61,31 @@ function JobCard({
           ) : null}
         </div>
 
-        <h2 className="mt-3 text-[17px] font-medium leading-snug text-[#202235]">
+        <h2 className="mt-3 text-[17px] font-medium leading-snug text-brand-ink">
           {job.title}
         </h2>
-        <p className="mt-2 text-xs font-medium text-[#4f5667]">
-          Trinity-AI <span className="px-2 text-[#a8adba]">|</span>
+        <p className="mt-2 text-xs font-medium text-brand-muted">
+          Trinity-AI <span className="px-2 text-brand-sand">|</span>
           {openingLabel(job.openings)}
         </p>
 
         <div className="mt-3">
-          <p className="text-[11px] font-medium text-[#4f5667]">
+          <p className="text-[11px] font-medium text-brand-muted">
             Required skills
           </p>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {skills.visible.map((skill) => (
               <span
-                className="rounded border border-[#d7dbe6] bg-white px-2.5 py-1 text-xs font-normal text-[#4c5261]"
+                className="rounded border border-brand-sand bg-brand-ivory px-2.5 py-1 text-xs font-normal text-brand-muted"
                 key={skill.id}
               >
                 {skill.label}
               </span>
             ))}
             {skills.hiddenCount ? (
-              <span className="group relative rounded border border-[#d7dbe6] bg-white px-2.5 py-1 text-xs font-normal text-[#4c5261]">
+              <span className="group relative rounded border border-brand-sand bg-brand-ivory px-2.5 py-1 text-xs font-normal text-brand-muted">
                 +{skills.hiddenCount}
-                <span className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 hidden min-w-40 -translate-x-1/2 rounded-md border border-[#d7dbe6] bg-white px-3 py-2 text-left text-xs font-medium leading-5 text-[#3c4250] shadow-[0_8px_24px_rgba(39,44,68,0.14)] group-hover:block">
+                <span className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 hidden min-w-40 -translate-x-1/2 rounded-md border border-brand-sand bg-brand-ivory px-3 py-2 text-left text-xs font-medium leading-5 text-brand-ink shadow-brand-card group-hover:block">
                   {job.skills.slice(3).map((skill) => skill.label).join(", ")}
                 </span>
               </span>
@@ -95,9 +95,9 @@ function JobCard({
 
         <div className="mt-auto pt-3 text-sm">
           {job.formattedHourlyPay ? (
-            <p className="text-[#586279]">
+            <p className="text-brand-muted">
               Pay:{" "}
-              <span className="font-semibold text-[#202235]">
+              <span className="font-semibold text-brand-ink">
                 {job.formattedHourlyPay}
               </span>
             </p>
@@ -108,7 +108,7 @@ function JobCard({
       <div className="grid grid-cols-[2.75rem_1fr] gap-1">
         <button
           aria-label={`View details for ${job.title}`}
-          className="flex h-9 items-center justify-center rounded border border-[#d7d8f5] bg-[#f7f8ff] text-[#6470ff] transition hover:bg-white"
+          className="flex h-9 items-center justify-center rounded border border-brand-sand bg-brand-ivory text-brand-gold-strong transition hover:border-brand-gold hover:bg-[#f2e8d7] focus:outline-none focus:ring-2 focus:ring-brand-gold/30"
           onClick={() => onView(job)}
           title="View details"
           type="button"
@@ -117,7 +117,7 @@ function JobCard({
           <span className="sr-only">View details</span>
         </button>
         <Link
-          className="flex h-9 items-center justify-center rounded border border-[#d7d8f5] bg-[#f7f8ff] text-sm font-semibold text-[#2d3150] transition hover:bg-white"
+          className="flex h-9 items-center justify-center rounded border border-brand-ink bg-brand-ink text-sm font-semibold text-brand-ivory transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold/40"
           href={withReferral(`/jobs/${job.id}/apply`, referralCode)}
         >
           Apply now
@@ -174,10 +174,10 @@ export function JobBoard({ headerCopy, jobs, referralCode }: JobBoardProps) {
   return (
     <>
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.18)_0%,rgba(248,248,255,0.92)_76%,#f8f8ff_100%),radial-gradient(ellipse_at_47%_10%,rgba(93,117,142,0.34)_0%,rgba(93,117,142,0.15)_23%,transparent_45%),radial-gradient(ellipse_at_53%_14%,rgba(255,255,255,0.95)_0%,rgba(255,255,255,0.28)_16%,transparent_32%),linear-gradient(135deg,#e7f0f8_0%,#d8e3ed_34%,#f3f5fb_68%,#eef0fb_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,253,248,0.18)_0%,rgba(247,243,234,0.9)_76%,#f7f3ea_100%),radial-gradient(ellipse_at_47%_10%,rgba(182,138,85,0.3)_0%,rgba(182,138,85,0.12)_24%,transparent_46%),radial-gradient(ellipse_at_53%_14%,rgba(255,253,248,0.95)_0%,rgba(255,253,248,0.3)_18%,transparent_34%),linear-gradient(135deg,#f2e8d7_0%,#ded6c8_36%,#fffdf8_70%,#f7f3ea_100%)]" />
         <div className="relative mx-auto max-w-[1128px] px-4 py-[35px] lg:px-0">
           <div className="flex min-h-10 flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
-            <h1 className="max-w-[760px] text-[28px] font-semibold leading-[1.18] tracking-[-0.015em] text-[#090b12]">
+            <h1 className="max-w-[760px] text-[28px] font-semibold leading-[1.18] tracking-[-0.015em] text-brand-ink">
               {headerCopy}
             </h1>
 
@@ -191,11 +191,11 @@ export function JobBoard({ headerCopy, jobs, referralCode }: JobBoardProps) {
                   <span className="relative block">
                     <Search
                       aria-hidden="true"
-                      className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#3f4654]"
+                      className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-brand-muted"
                       strokeWidth={2}
                     />
                     <input
-                      className="h-10 w-full rounded-full border border-[#d8dbe7] bg-white px-11 text-sm text-[#202235] outline-none placeholder:text-[#707684] focus:border-[#b9bee7] focus:ring-2 focus:ring-[#e5e7fb]"
+                      className="h-10 w-full rounded-full border border-brand-sand bg-brand-ivory px-11 text-sm text-brand-ink outline-none placeholder:text-brand-muted focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/20"
                       onChange={(event) => setQuery(event.target.value)}
                       onKeyDown={(event) => {
                         if (event.key === "Escape") {
@@ -211,7 +211,7 @@ export function JobBoard({ headerCopy, jobs, referralCode }: JobBoardProps) {
                     {query ? (
                       <button
                         aria-label="Clear job search"
-                        className="absolute right-3 top-1/2 inline-flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full text-[#707684] transition hover:bg-[#eef0ff] hover:text-[#202235]"
+                        className="absolute right-3 top-1/2 inline-flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full text-brand-muted transition hover:bg-[#f2e8d7] hover:text-brand-ink"
                         onClick={() => {
                           setQuery("");
                           searchInputRef.current?.focus();
@@ -226,7 +226,7 @@ export function JobBoard({ headerCopy, jobs, referralCode }: JobBoardProps) {
               ) : (
                 <button
                   aria-label="Open job search"
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#d8dbe7] bg-white text-[#3f4654] shadow-[0_1px_2px_rgba(16,24,40,0.08)] transition hover:border-[#b9bee7] hover:bg-[#fbfbff] focus:outline-none focus:ring-2 focus:ring-[#e5e7fb]"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-brand-sand bg-brand-ivory text-brand-muted shadow-brand-card transition hover:border-brand-gold hover:text-brand-ink focus:outline-none focus:ring-2 focus:ring-brand-gold/20"
                   onClick={() => {
                     setSearchOpen(true);
                     requestAnimationFrame(() => searchInputRef.current?.focus());
@@ -243,11 +243,11 @@ export function JobBoard({ headerCopy, jobs, referralCode }: JobBoardProps) {
               <span className="relative block">
                 <Search
                   aria-hidden="true"
-                  className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#3f4654]"
+                  className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-brand-muted"
                   strokeWidth={2}
                 />
                 <input
-                  className="h-10 w-full rounded-full border border-[#d8dbe7] bg-white px-11 text-sm text-[#202235] outline-none placeholder:text-[#707684] focus:border-[#b9bee7] focus:ring-2 focus:ring-[#e5e7fb]"
+                  className="h-10 w-full rounded-full border border-brand-sand bg-brand-ivory px-11 text-sm text-brand-ink outline-none placeholder:text-brand-muted focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/20"
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder="Search by job title..."
                   type="search"
@@ -256,7 +256,7 @@ export function JobBoard({ headerCopy, jobs, referralCode }: JobBoardProps) {
                 {query ? (
                   <button
                     aria-label="Clear job search"
-                    className="absolute right-3 top-1/2 inline-flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full text-[#707684] transition hover:bg-[#eef0ff] hover:text-[#202235]"
+                    className="absolute right-3 top-1/2 inline-flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-full text-brand-muted transition hover:bg-[#f2e8d7] hover:text-brand-ink"
                     onClick={() => setQuery("")}
                     type="button"
                   >
@@ -282,7 +282,7 @@ export function JobBoard({ headerCopy, jobs, referralCode }: JobBoardProps) {
         </div>
 
         {filteredJobs.length === 0 ? (
-          <div className="mt-8 rounded-md border border-[#cfd7ff] bg-white p-6 text-sm font-medium text-[#586279]">
+          <div className="mt-8 rounded-md border border-brand-sand bg-brand-ivory p-6 text-sm font-medium text-brand-muted shadow-brand-card">
             No roles match that search.
           </div>
         ) : null}

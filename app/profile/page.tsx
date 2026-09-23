@@ -186,23 +186,22 @@ export default async function ProfilePage() {
   ];
 
   return (
-    <div className="flex min-h-screen bg-[#fafafc] text-slate-900">
+    <div className="flex min-h-screen bg-brand-canvas text-brand-ink">
       <PortalSidebar
         activeTab="profile"
-        avatarColor="#c2410c"
         userName={user.name}
       />
       <main className="flex-1 overflow-y-auto px-6 py-8 md:px-12 md:py-10">
         <div className="mx-auto max-w-[1040px] space-y-8">
-          <section className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm">
+          <section className="rounded-2xl border border-brand-sand bg-brand-ivory p-6 shadow-brand-card">
             <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
               <div className="flex items-center gap-4">
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-slate-950 text-2xl font-bold text-white">
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-brand-ink text-2xl font-bold text-brand-gold-light shadow-brand-focus">
                   {(user.name.trim()[0] || "T").toUpperCase()}
                 </div>
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <h1 className="text-3xl font-bold tracking-tight text-slate-900 md:text-[34px]">
+                    <h1 className="text-3xl font-bold tracking-tight text-brand-ink md:text-[34px]">
                       {user.name}
                     </h1>
                     {onboarding.complete ? (
@@ -212,7 +211,7 @@ export default async function ProfilePage() {
                       </span>
                     ) : null}
                   </div>
-                  <p className="mt-1 text-sm text-slate-500">
+                  <p className="mt-1 text-sm text-brand-muted">
                     {user.role.toLowerCase()} account for Trinity-AI work,
                     payouts, and applications.
                   </p>
@@ -220,14 +219,14 @@ export default async function ProfilePage() {
               </div>
               <div className="flex flex-wrap gap-2">
                 <Link
-                  className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                  className="inline-flex h-10 items-center gap-2 rounded-xl border border-brand-sand bg-brand-ivory px-3 text-sm font-semibold text-brand-ink transition hover:border-brand-gold hover:bg-[#f2e8d7]"
                   href={isAuthenticated ? "/onboarding" : "/login"}
                 >
                   <FileCheck2 className="h-4 w-4" />
                   Onboarding
                 </Link>
                 <Link
-                  className="inline-flex h-10 items-center gap-2 rounded-xl bg-slate-950 px-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+                  className="inline-flex h-10 items-center gap-2 rounded-xl bg-brand-ink px-3 text-sm font-semibold text-brand-ivory transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold/40"
                   href={isAuthenticated ? "/wallet" : "/login"}
                 >
                   <Wallet className="h-4 w-4" />
@@ -236,7 +235,7 @@ export default async function ProfilePage() {
               </div>
             </div>
             {!isAuthenticated ? (
-              <div className="mt-6 rounded-xl border border-blue-100 bg-blue-50 p-4 text-sm leading-6 text-blue-900">
+              <div className="mt-6 rounded-xl border border-brand-sand bg-[#f2e8d7] p-4 text-sm leading-6 text-brand-gold-strong">
                 This is a profile preview. Sign in to load your saved
                 verification, applications, and wallet details.
               </div>
@@ -244,44 +243,44 @@ export default async function ProfilePage() {
           </section>
 
           <section className="grid gap-4 md:grid-cols-4">
-            <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm">
-              <p className="text-sm font-medium text-slate-500">Readiness</p>
-              <p className="mt-2 text-2xl font-bold text-slate-900">
+            <div className="rounded-2xl border border-brand-sand bg-brand-ivory p-5 shadow-brand-card">
+              <p className="text-sm font-medium text-brand-muted">Readiness</p>
+              <p className="mt-2 text-2xl font-bold text-brand-ink">
                 {completedSteps}/4
               </p>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-brand-muted">
                 Onboarding steps complete
               </p>
             </div>
-            <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm">
-              <p className="text-sm font-medium text-slate-500">Applications</p>
-              <p className="mt-2 text-2xl font-bold text-slate-900">
+            <div className="rounded-2xl border border-brand-sand bg-brand-ivory p-5 shadow-brand-card">
+              <p className="text-sm font-medium text-brand-muted">Applications</p>
+              <p className="mt-2 text-2xl font-bold text-brand-ink">
                 {user.applications.length}
               </p>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-brand-muted">
                 {activeApplications} active or in review
               </p>
             </div>
-            <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm">
-              <p className="text-sm font-medium text-slate-500">Holding</p>
-              <p className="mt-2 text-2xl font-bold text-slate-900">
+            <div className="rounded-2xl border border-brand-sand bg-brand-ivory p-5 shadow-brand-card">
+              <p className="text-sm font-medium text-brand-muted">Holding</p>
+              <p className="mt-2 text-2xl font-bold text-brand-ink">
                 {wallet.formattedHoldingBalance}
               </p>
-              <p className="mt-1 text-xs text-slate-500">Awaiting release</p>
+              <p className="mt-1 text-xs text-brand-muted">Awaiting release</p>
             </div>
-            <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm">
-              <p className="text-sm font-medium text-slate-500">Funding</p>
-              <p className="mt-2 text-2xl font-bold text-blue-600">
+            <div className="rounded-2xl border border-brand-gold/50 bg-[#f2e8d7] p-5 shadow-brand-card">
+              <p className="text-sm font-medium text-brand-muted">Funding</p>
+              <p className="mt-2 text-2xl font-bold text-brand-gold-strong">
                 {wallet.formattedFundingBalance}
               </p>
-              <p className="mt-1 text-xs text-slate-500">Available balance</p>
+              <p className="mt-1 text-xs text-brand-muted">Available balance</p>
             </div>
           </section>
 
           <section className="grid gap-8 lg:grid-cols-[1fr_22rem]">
             <div className="space-y-8">
-              <section className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm">
-                <h2 className="text-xl font-bold text-slate-900">
+              <section className="rounded-2xl border border-brand-sand bg-brand-ivory p-6 shadow-brand-card">
+                <h2 className="text-xl font-bold text-brand-ink">
                   Account details
                 </h2>
                 <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -290,14 +289,14 @@ export default async function ProfilePage() {
 
                     return (
                       <div
-                        className="rounded-xl border border-slate-200 bg-slate-50 p-4"
+                        className="rounded-xl border border-brand-sand bg-brand-canvas/60 p-4"
                         key={item.label}
                       >
-                        <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
+                        <div className="flex items-center gap-2 text-xs font-semibold text-brand-muted">
                           <Icon className="h-4 w-4" />
                           {item.label}
                         </div>
-                        <p className="mt-2 break-words text-sm font-semibold text-slate-900">
+                        <p className="mt-2 break-words text-sm font-semibold text-brand-ink">
                           {item.value}
                         </p>
                       </div>
@@ -306,35 +305,35 @@ export default async function ProfilePage() {
                 </div>
               </section>
 
-              <section className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm">
+              <section className="rounded-2xl border border-brand-sand bg-brand-ivory p-6 shadow-brand-card">
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <h2 className="text-xl font-bold text-slate-900">
+                  <h2 className="text-xl font-bold text-brand-ink">
                     Recent applications
                   </h2>
                   <Link
-                    className="text-sm font-semibold text-blue-600 hover:text-blue-700 hover:underline"
+                    className="text-sm font-semibold text-brand-gold-strong hover:text-brand-ink hover:underline"
                     href="/apply"
                   >
                     View roles
                   </Link>
                 </div>
-                <div className="mt-5 divide-y divide-slate-200/70 overflow-hidden rounded-xl border border-slate-200">
+                <div className="mt-5 divide-y divide-brand-sand overflow-hidden rounded-xl border border-brand-sand">
                   {user.applications.length ? (
                     user.applications.map((application) => (
                       <article
-                        className="grid gap-3 bg-white p-4 md:grid-cols-[1fr_auto]"
+                        className="grid gap-3 bg-brand-canvas/40 p-4 md:grid-cols-[1fr_auto]"
                         key={application.id}
                       >
                         <div>
-                          <h3 className="font-semibold text-slate-900">
+                          <h3 className="font-semibold text-brand-ink">
                             {application.job.title}
                           </h3>
-                          <p className="mt-1 text-sm text-slate-500">
+                          <p className="mt-1 text-sm text-brand-muted">
                             {application.job.companyName} - Updated{" "}
                             {formatDate(application.updatedAt)}
                           </p>
                           {application.taskSubmittedAt ? (
-                            <p className="mt-1 text-xs font-medium text-slate-600">
+                            <p className="mt-1 text-xs font-medium text-brand-muted">
                               Task submitted {formatDate(application.taskSubmittedAt)}
                             </p>
                           ) : null}
@@ -343,7 +342,7 @@ export default async function ProfilePage() {
                       </article>
                     ))
                   ) : (
-                    <div className="p-6 text-sm text-slate-500">
+                    <div className="p-6 text-sm text-brand-muted">
                       No applications yet. Browse roles to start building your
                       profile history.
                     </div>
@@ -353,18 +352,18 @@ export default async function ProfilePage() {
             </div>
 
             <aside className="space-y-6">
-              <section className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm">
-                <h2 className="text-lg font-bold text-slate-900">
+              <section className="rounded-2xl border border-brand-sand bg-brand-ivory p-6 shadow-brand-card">
+                <h2 className="text-lg font-bold text-brand-ink">
                   Work readiness
                 </h2>
                 <div className="mt-5 space-y-3">
                   {readinessItems.map((item) => (
                     <div
-                      className="rounded-xl border border-slate-200 bg-slate-50 p-4"
+                      className="rounded-xl border border-brand-sand bg-brand-canvas/60 p-4"
                       key={item.label}
                     >
                       <div className="flex items-center justify-between gap-3">
-                        <p className="text-sm font-semibold text-slate-900">
+                        <p className="text-sm font-semibold text-brand-ink">
                           {item.label}
                         </p>
                         <span
@@ -375,7 +374,7 @@ export default async function ProfilePage() {
                           {statusLabel(item.complete)}
                         </span>
                       </div>
-                      <p className="mt-2 text-sm leading-6 text-slate-600">
+                      <p className="mt-2 text-sm leading-6 text-brand-muted">
                         {item.value}
                       </p>
                     </div>
@@ -383,13 +382,13 @@ export default async function ProfilePage() {
                 </div>
               </section>
 
-              <section className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm">
-                <h2 className="text-lg font-bold text-slate-900">
+              <section className="rounded-2xl border border-brand-sand bg-brand-ivory p-6 shadow-brand-card">
+                <h2 className="text-lg font-bold text-brand-ink">
                   Account controls
                 </h2>
                 <div className="mt-5 space-y-3">
                   <Link
-                    className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                    className="flex items-center justify-between rounded-xl border border-brand-sand bg-brand-canvas/40 px-4 py-3 text-sm font-semibold text-brand-ink transition hover:border-brand-gold hover:bg-[#f2e8d7]"
                     href={isAuthenticated ? "/onboarding" : "/login"}
                   >
                     <span className="flex items-center gap-2">
@@ -399,21 +398,21 @@ export default async function ProfilePage() {
                     <Clock3 className="h-4 w-4 text-slate-400" />
                   </Link>
                   <Link
-                    className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                    className="flex items-center justify-between rounded-xl border border-brand-sand bg-brand-canvas/40 px-4 py-3 text-sm font-semibold text-brand-ink transition hover:border-brand-gold hover:bg-[#f2e8d7]"
                     href={isAuthenticated ? "/wallet" : "/login"}
                   >
                     <span className="flex items-center gap-2">
-                      <CreditCard className="h-4 w-4 text-blue-600" />
+                      <CreditCard className="h-4 w-4 text-brand-gold-strong" />
                       Manage payouts
                     </span>
                     <Wallet className="h-4 w-4 text-slate-400" />
                   </Link>
                   <Link
-                    className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                    className="flex items-center justify-between rounded-xl border border-brand-sand bg-brand-canvas/40 px-4 py-3 text-sm font-semibold text-brand-ink transition hover:border-brand-gold hover:bg-[#f2e8d7]"
                     href="/home"
                   >
                     <span className="flex items-center gap-2">
-                      <BriefcaseBusiness className="h-4 w-4 text-slate-700" />
+                      <BriefcaseBusiness className="h-4 w-4 text-brand-gold-strong" />
                       Open projects
                     </span>
                     <UserRound className="h-4 w-4 text-slate-400" />

@@ -86,25 +86,25 @@ export default async function ApplyPage({
   const payLabel = formatApplyPay(job.formattedHourlyPay);
 
   return (
-    <main className="min-h-screen bg-white text-[#0f1019]">
+    <main className="min-h-screen bg-brand-canvas text-brand-ink">
       <div className="mx-auto grid max-w-[1050px] gap-10 px-5 pb-16 pt-6 sm:px-8 lg:grid-cols-[minmax(0,1fr)_24.25rem] lg:gap-11 lg:px-0">
         <article className="min-w-0">
           <BrandLogo
             imageClassName="h-12 w-12 shadow-sm"
-            nameClassName="text-[24px] font-black leading-none tracking-normal text-black"
+            nameClassName="text-[24px] font-black leading-none tracking-normal text-brand-ink"
             showName
             size={48}
           />
 
           <header className="mt-7">
-            <h1 className="text-[30px] font-semibold leading-tight tracking-normal text-black">
+            <h1 className="text-[30px] font-semibold leading-tight tracking-normal text-brand-ink">
               {job.title}
             </h1>
 
-            <div className="mt-4 inline-flex items-center rounded bg-[#f3f2fb] px-3 py-2 text-[14px] font-semibold text-[#202233]">
+            <div className="mt-4 inline-flex items-center rounded border border-brand-sand bg-[#f2e8d7] px-3 py-2 text-[14px] font-semibold text-brand-gold-strong">
               <span>{payLabel}</span>
               {job.formattedHourlyPay ? (
-                <span className="ml-1 text-[12px] font-normal text-[#555869]">
+                <span className="ml-1 text-[12px] font-normal text-brand-muted">
                   pay
                 </span>
               ) : null}
@@ -112,13 +112,13 @@ export default async function ApplyPage({
           </header>
 
           <section className="mt-7">
-            <h2 className="text-[16px] font-semibold text-black">
+            <h2 className="text-[16px] font-semibold text-brand-ink">
               Required Skills
             </h2>
             <div className="mt-3 flex flex-wrap gap-1.5">
               {job.skills.map((skill) => (
                 <span
-                  className="rounded bg-[#eeeef6] px-3 py-2 text-[14px] leading-none text-[#272936]"
+                  className="rounded border border-brand-sand bg-brand-ivory px-3 py-2 text-[14px] leading-none text-brand-muted"
                   key={skill.id}
                 >
                   {formatSkillLabel(skill.label)}
@@ -127,18 +127,18 @@ export default async function ApplyPage({
             </div>
           </section>
 
-          <section className="mt-6 rounded-md bg-[#f2f1fb] px-4 py-4 text-[12px] leading-[1.45] text-[#303241] sm:px-5">
-            <h2 className="text-[14px] font-semibold text-black">
+          <section className="mt-6 rounded-md border border-brand-sand bg-brand-ivory px-4 py-4 text-[12px] leading-[1.45] text-brand-muted shadow-brand-card sm:px-5">
+            <h2 className="text-[14px] font-semibold text-brand-ink">
               About Trinity-AI
             </h2>
             <div className="mt-2 space-y-3">
-                {ABOUT_TRINITY_AI.map((paragraph) => (
+              {ABOUT_TRINITY_AI.map((paragraph) => (
                 <p key={paragraph}>{paragraph}</p>
               ))}
             </div>
           </section>
 
-          <section className="mt-9 max-w-[650px] text-[15px] leading-[1.55] text-black">
+          <section className="mt-9 max-w-[650px] text-[15px] leading-[1.55] text-brand-ink">
             <div className="space-y-7">
               <p>
                 <span className="font-medium">Role Title:</span> {job.title}

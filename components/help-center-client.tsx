@@ -542,8 +542,8 @@ export function HelpCenterClient({ categoryId }: HelpCenterClientProps) {
   )}&body=${encodeURIComponent(preparedMessage)}`;
 
   return (
-    <main className="min-h-screen bg-white text-[#111827]">
-      <header className="bg-[#9af4f4] px-5 py-7 md:px-8">
+    <main className="min-h-screen bg-brand-canvas text-brand-ink">
+      <header className="border-b border-brand-gold/40 bg-brand-gold-light px-5 py-7 md:px-8">
         <nav className="mx-auto flex max-w-7xl items-center justify-between gap-6">
           <Link
             aria-label="Trinity-AI home"
@@ -551,12 +551,12 @@ export function HelpCenterClient({ categoryId }: HelpCenterClientProps) {
           >
             <BrandLogo
               imageClassName="h-12 w-12 shadow-sm"
-              nameClassName="text-xl font-black italic text-[#071b24] sm:text-2xl"
+              nameClassName="text-xl font-black italic text-brand-ink sm:text-2xl"
               showName
               size={48}
             />
           </Link>
-          <div className="hidden items-center gap-9 text-sm font-semibold text-[#071b24] md:flex">
+          <div className="hidden items-center gap-9 text-sm font-semibold text-brand-ink md:flex">
             <Link href="/apply">Find work</Link>
             <Link href="/about-us">About</Link>
             <Link href="/help-center">Trinity-AI</Link>
@@ -564,13 +564,13 @@ export function HelpCenterClient({ categoryId }: HelpCenterClientProps) {
           </div>
           <div className="flex items-center gap-2">
             <Link
-              className="rounded-xl border border-[#071b24] px-4 py-2 text-sm font-bold text-[#071b24]"
+              className="rounded-xl border border-brand-ink px-4 py-2 text-sm font-bold text-brand-ink transition hover:bg-brand-ivory/50"
               href="/login"
             >
               Log in
             </Link>
             <Link
-              className="rounded-xl bg-[#071b24] px-4 py-2 text-sm font-bold text-white"
+              className="rounded-xl bg-brand-ink px-4 py-2 text-sm font-bold text-brand-ivory transition hover:bg-[#35392c]"
               href="/register"
             >
               Sign up
@@ -580,19 +580,19 @@ export function HelpCenterClient({ categoryId }: HelpCenterClientProps) {
 
         <section className="mx-auto grid max-w-7xl gap-8 py-20 md:grid-cols-[1.1fr_0.9fr] md:items-end">
           <div>
-            <h1 className="max-w-3xl text-[64px] font-black uppercase leading-[0.9] text-[#111827] md:text-[96px]">
+            <h1 className="max-w-3xl text-[64px] font-black uppercase leading-[0.9] text-brand-ink md:text-[96px]">
               Help Center
             </h1>
-            <p className="mt-6 max-w-2xl text-xl font-medium leading-7 text-[#111827]">
+            <p className="mt-6 max-w-2xl text-xl font-medium leading-7 text-brand-ink/80">
               Whether you are starting onboarding, applying for projects, or
               sorting out payments, this is your support home for Trinity-AI.
             </p>
           </div>
-          <label className="flex h-14 items-center gap-3 rounded border border-[#b6bdd6] bg-white px-4 shadow-sm">
-            <Search className="h-5 w-5 shrink-0 text-[#6b7280]" />
+          <label className="flex h-14 items-center gap-3 rounded-xl border border-brand-gold bg-brand-ivory px-4 shadow-brand-card focus-within:ring-2 focus-within:ring-brand-ink/20">
+            <Search className="h-5 w-5 shrink-0 text-brand-gold-strong" />
             <input
               aria-label="Search help articles"
-              className="h-full min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-[#6b7280]"
+              className="h-full min-w-0 flex-1 bg-transparent text-sm text-brand-ink outline-none placeholder:text-brand-muted"
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search"
               type="search"
@@ -607,7 +607,7 @@ export function HelpCenterClient({ categoryId }: HelpCenterClientProps) {
           {sidebarGroups.map((group) => (
             <section key={group.title}>
               <Link
-                className="text-lg font-bold text-[#111827] hover:underline"
+                className="text-lg font-bold text-brand-ink hover:text-brand-gold-strong hover:underline"
                 href={categoryHref(group.title)}
               >
                 {group.title}
@@ -621,8 +621,8 @@ export function HelpCenterClient({ categoryId }: HelpCenterClientProps) {
                   return (
                     <Link
                       className={`block text-left text-sm font-medium leading-5 transition ${
-                        isActive ? "text-[#071b24]" : "text-[#4b5563]"
-                      } hover:text-[#111827]`}
+                        isActive ? "text-brand-gold-strong" : "text-brand-muted"
+                      } hover:text-brand-ink`}
                       href={`${categoryHref(article.category)}#${toId(
                         article.title,
                       )}`}
@@ -642,15 +642,15 @@ export function HelpCenterClient({ categoryId }: HelpCenterClientProps) {
           {isCategoryPage ? (
             <div className="max-w-3xl">
               <Link
-                className="text-sm font-bold text-[#071b24] underline"
+                className="text-sm font-bold text-brand-gold-strong underline"
                 href="/help-center"
               >
                 Back to help center
               </Link>
-              <h2 className="mt-6 text-4xl font-semibold text-[#111827]">
+              <h2 className="mt-6 text-4xl font-semibold text-brand-ink">
                 {activeCategory}
               </h2>
-              <p className="mt-6 text-base font-medium leading-7 text-[#111827]">
+              <p className="mt-6 text-base font-medium leading-7 text-brand-muted">
                 Browse all {activeCategory.toLowerCase()} articles for
                 Trinity-AI. Each article opens on this category page with a
                 stable id in the URL.
@@ -659,10 +659,10 @@ export function HelpCenterClient({ categoryId }: HelpCenterClientProps) {
           ) : (
           <>
           <div className="max-w-3xl">
-            <h2 className="text-4xl font-semibold text-[#111827]">
+            <h2 className="text-4xl font-semibold text-brand-ink">
               Welcome to Trinity-AI
             </h2>
-            <p className="mt-8 text-base font-medium leading-7 text-[#111827]">
+            <p className="mt-8 text-base font-medium leading-7 text-brand-muted">
               Trinity-AI connects skilled contributors with flexible project
               work that helps evaluate, improve, and operate AI systems.
             </p>
@@ -680,7 +680,7 @@ export function HelpCenterClient({ categoryId }: HelpCenterClientProps) {
 
                 return (
                   <Link
-                    className="flex min-h-32 items-center justify-between rounded-2xl border border-[#e5e7eb] bg-white px-8 py-6 text-left text-xl font-semibold leading-6 transition hover:border-[#071b24] focus:outline-none focus:ring-2 focus:ring-[#071b24]"
+                    className="flex min-h-32 items-center justify-between rounded-2xl border border-brand-sand bg-brand-ivory px-8 py-6 text-left text-xl font-semibold leading-6 shadow-brand-card transition hover:border-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold/40"
                     href={`${categoryHref(article.category)}#${toId(
                       article.title,
                     )}`}
@@ -702,10 +702,10 @@ export function HelpCenterClient({ categoryId }: HelpCenterClientProps) {
             <div className="mt-8 max-w-2xl space-y-3">
               {categories.map((category) => (
                 <Link
-                  className={`flex h-20 w-full items-center justify-between rounded-2xl border px-8 text-left text-xl font-semibold transition focus:outline-none focus:ring-2 focus:ring-[#071b24] ${
+                  className={`flex h-20 w-full items-center justify-between rounded-2xl border px-8 text-left text-xl font-semibold transition focus:outline-none focus:ring-2 focus:ring-brand-gold/40 ${
                     activeCategory === category
-                      ? "border-[#071b24] bg-[#f8ffff]"
-                      : "border-[#e5e7eb] bg-white hover:border-[#071b24]"
+                      ? "border-brand-gold bg-[#f2e8d7]"
+                      : "border-brand-sand bg-brand-ivory hover:border-brand-gold"
                   }`}
                   href={categoryHref(category)}
                   key={category}
@@ -728,10 +728,10 @@ export function HelpCenterClient({ categoryId }: HelpCenterClientProps) {
                 {displayedArticles.length ? (
                   displayedArticles.map((article) => (
                     <Link
-                      className={`flex min-h-12 w-full items-center rounded-xl px-4 py-3 text-left text-sm font-semibold leading-5 transition focus:outline-none focus:ring-2 focus:ring-[#071b24] ${
+                      className={`flex min-h-12 w-full items-center rounded-xl px-4 py-3 text-left text-sm font-semibold leading-5 transition focus:outline-none focus:ring-2 focus:ring-brand-gold/40 ${
                         activeArticle.title === article.title
-                          ? "bg-[#071b24] text-white"
-                          : "bg-[#f4f7fb] text-[#111827] hover:bg-[#e8eef6]"
+                          ? "bg-brand-ink text-brand-ivory"
+                          : "bg-brand-ivory text-brand-ink hover:bg-[#f2e8d7]"
                       }`}
                       href={`${categoryHref(article.category)}#${toId(
                         article.title,
@@ -743,7 +743,7 @@ export function HelpCenterClient({ categoryId }: HelpCenterClientProps) {
                     </Link>
                   ))
                 ) : (
-                  <p className="rounded-xl bg-[#f4f7fb] p-4 text-sm text-[#4b5563]">
+                  <p className="rounded-xl border border-brand-sand bg-brand-ivory p-4 text-sm text-brand-muted">
                     No articles match this search. Try a shorter phrase or
                     choose a category.
                   </p>
@@ -752,22 +752,22 @@ export function HelpCenterClient({ categoryId }: HelpCenterClientProps) {
             </div>
 
             <article
-              className="scroll-mt-8 rounded-2xl border border-[#e5e7eb] bg-white p-6"
+              className="scroll-mt-8 rounded-2xl border border-brand-sand bg-brand-ivory p-6 shadow-brand-card"
               id={toId(activeArticle.title)}
             >
-              <p className="text-sm font-bold text-[#4b5563]">
+              <p className="text-sm font-bold text-brand-gold-strong">
                 {activeArticle.category}
               </p>
               <h2 className="mt-3 text-3xl font-semibold">
                 {activeArticle.title}
               </h2>
-              <p className="mt-3 text-base font-medium leading-7 text-[#4b5563]">
+              <p className="mt-3 text-base font-medium leading-7 text-brand-muted">
                 {activeArticle.summary}
               </p>
               <div className="mt-6 space-y-4">
                 {activeArticle.body.map((paragraph) => (
                   <p
-                    className="text-sm font-medium leading-7 text-[#111827]"
+                    className="text-sm font-medium leading-7 text-brand-ink"
                     key={paragraph}
                   >
                     {paragraph}
@@ -778,23 +778,23 @@ export function HelpCenterClient({ categoryId }: HelpCenterClientProps) {
           </section>
 
           <section
-            className="mt-20 rounded-2xl border border-[#e5e7eb] bg-[#f8ffff] p-6"
+            className="mt-20 rounded-2xl border border-brand-gold/50 bg-[#f2e8d7] p-6"
             id="contact-support"
           >
             <div className="flex items-center gap-3">
-              <Mail className="h-7 w-7 text-[#071b24]" />
+              <Mail className="h-7 w-7 text-brand-gold-strong" />
               <h2 className="text-3xl font-semibold">
                 Contact support
               </h2>
             </div>
-            <p className="mt-3 max-w-2xl text-sm font-medium leading-7 text-[#4b5563]">
+            <p className="mt-3 max-w-2xl text-sm font-medium leading-7 text-brand-muted">
               Send a clear note with your project name, account email, and the
               issue you need help with. This form prepares your message and
               opens your email app so support can follow up.
             </p>
             <div className="mt-5 grid gap-3 md:grid-cols-[1fr_auto]">
               <input
-                className="h-12 rounded-xl border border-[#d1d5db] bg-white px-4 text-sm outline-none focus:border-[#071b24]"
+                className="h-12 rounded-xl border border-brand-sand bg-brand-ivory px-4 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
                 onChange={(event) => {
                   setSupportMessage(event.target.value);
                   setPreparedMessage("");
@@ -803,7 +803,7 @@ export function HelpCenterClient({ categoryId }: HelpCenterClientProps) {
                 value={supportMessage}
               />
               <button
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#071b24] px-5 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-brand-ink px-5 text-sm font-bold text-brand-ivory transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold/40 disabled:cursor-not-allowed disabled:opacity-50"
                 disabled={!supportMessage.trim()}
                 onClick={prepareSupportMessage}
                 type="button"
@@ -813,12 +813,12 @@ export function HelpCenterClient({ categoryId }: HelpCenterClientProps) {
               </button>
             </div>
             {preparedMessage ? (
-              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#c7f9e7] bg-white p-4">
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-brand-ivory p-4">
                 <p className="text-sm font-semibold text-[#064e3b]">
                   Message prepared. Send it to support so the team can follow up.
                 </p>
                 <a
-                  className="inline-flex items-center gap-2 text-sm font-bold text-[#071b24] underline"
+                  className="inline-flex items-center gap-2 text-sm font-bold text-brand-gold-strong underline"
                   href={mailtoHref}
                 >
                   Email support
@@ -830,7 +830,7 @@ export function HelpCenterClient({ categoryId }: HelpCenterClientProps) {
         </section>
       </div>
 
-      <footer className="overflow-hidden rounded-t-3xl bg-[#022b2b] px-5 py-10 text-white md:px-8">
+      <footer className="overflow-hidden rounded-t-3xl bg-brand-ink px-5 py-10 text-brand-ivory md:px-8">
         <div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-[1fr_1.2fr]">
           <div>
             <p className="max-w-sm text-4xl font-semibold leading-tight">
@@ -853,11 +853,11 @@ export function HelpCenterClient({ categoryId }: HelpCenterClientProps) {
               ["Company", "About", "Support", "Contact"],
             ].map(([heading, ...items]) => (
               <div key={heading}>
-                <h3 className="font-bold text-[#9cb8b8]">{heading}</h3>
+                <h3 className="font-bold text-brand-gold-light">{heading}</h3>
                 <div className="mt-4 space-y-3">
                   {items.map((item) => (
                     <Link
-                      className="block font-semibold text-white hover:underline"
+                      className="block font-semibold text-brand-ivory hover:text-brand-gold-light hover:underline"
                       href={
                         item === "Help center" || item === "Support"
                           ? "/help-center"
@@ -873,10 +873,10 @@ export function HelpCenterClient({ categoryId }: HelpCenterClientProps) {
             ))}
           </div>
         </div>
-        <p className="mt-12 text-[92px] font-black italic leading-none text-[#ccff33] sm:text-[140px] md:text-[220px]">
+        <p className="mt-12 text-[92px] font-black italic leading-none text-brand-gold-light sm:text-[140px] md:text-[220px]">
           Trinity-AI
         </p>
-        <div className="mx-auto flex max-w-7xl flex-wrap gap-6 text-xs font-semibold text-[#9cb8b8]">
+        <div className="mx-auto flex max-w-7xl flex-wrap gap-6 text-xs font-semibold text-brand-gold-light/70">
           <span>&copy;2026 Trinity-AI. All rights reserved</span>
           <Link href="/home">Privacy policy</Link>
           <Link href="/home">Accessibility</Link>

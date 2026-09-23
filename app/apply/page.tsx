@@ -49,12 +49,11 @@ export default async function ApplyPage({ searchParams }: ApplyPageProps) {
   const userName = session?.user?.name || "Tiko";
 
   return (
-    <div className="flex min-h-screen bg-[#f8f8ff] text-[#202235]">
+    <div className="flex min-h-screen bg-brand-canvas text-brand-ink">
       {/* Side Menu */}
       <PortalSidebar
         activeTab="apply"
         userName={userName}
-        avatarColor="#596b82"
       />
 
       {/* Main Content Area */}
