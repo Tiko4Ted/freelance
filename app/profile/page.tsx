@@ -189,6 +189,7 @@ export default async function ProfilePage() {
     <div className="flex min-h-screen bg-brand-canvas text-brand-ink">
       <PortalSidebar
         activeTab="profile"
+        isAuthenticated={isAuthenticated}
         userName={user.name}
       />
       <main className="flex-1 overflow-y-auto px-6 py-8 md:px-12 md:py-10">

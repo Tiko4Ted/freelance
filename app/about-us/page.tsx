@@ -51,6 +51,7 @@ export default async function AboutUsPage() {
     <div className="flex min-h-screen bg-brand-canvas text-brand-ink">
       <PortalSidebar
         activeTab="home"
+        isAuthenticated={Boolean(session?.user?.id)}
         userName={userName}
       />
       <main className="flex-1 overflow-y-auto">

@@ -30,6 +30,7 @@ export default async function WalletPage() {
     <div className="flex min-h-screen bg-brand-canvas text-brand-ink">
       <PortalSidebar
         activeTab="payments"
+        isAuthenticated
         userName={userName}
       />
       <main className="flex-1 overflow-y-auto px-6 py-8 md:px-12 md:py-10">

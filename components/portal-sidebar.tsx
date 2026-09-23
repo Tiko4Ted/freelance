@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { signOut } from "next-auth/react";
 import {
   Home,
   ShoppingBag,
@@ -9,6 +10,7 @@ import {
   LifeBuoy,
   User,
   Wallet,
+  LogOut,
 } from "lucide-react";
 
 import { BrandLogo } from "@/components/brand-logo";
@@ -26,12 +28,14 @@ interface PortalSidebarProps {
   activeTab: PortalTab;
   userName?: string;
   avatarColor?: string;
+  isAuthenticated?: boolean;
 }
 
 export function PortalSidebar({
   activeTab,
   userName = "Teddy",
   avatarColor = "#765027",
+  isAuthenticated = false,
 }: PortalSidebarProps) {
   const initial = (userName.trim()[0] || "T").toUpperCase();
 
@@ -149,16 +153,36 @@ export function PortalSidebar({
       </div>
 
       {/* Bottom User Profile */}
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col items-center gap-3">
         <div
           style={{ backgroundColor: avatarColor }}
           className="flex h-9 w-9 items-center justify-center rounded-full border border-brand-gold-light/40 text-sm font-bold text-brand-ivory shadow-sm"
         >
           {initial}
         </div>
-        <span className="mt-1.5 max-w-[76px] truncate text-center text-xs font-medium text-brand-gold-light/80">
+        <span className="max-w-[76px] truncate text-center text-xs font-medium text-brand-gold-light/80">
           {userName}
         </span>
+        {isAuthenticated ? (
+          <div className="border-t border-brand-gold/20 pt-3">
+            <button
+              aria-label="Log out"
+              className="group flex h-[52px] w-[62px] flex-col items-center justify-center rounded-2xl text-brand-gold-light/70 outline-none transition-colors hover:bg-white/5 hover:text-brand-gold-light focus-visible:ring-2 focus-visible:ring-brand-gold-light focus-visible:ring-offset-2 focus-visible:ring-offset-brand-ink"
+              onClick={() => signOut({ redirectTo: "/login" })}
+              title="Log out"
+              type="button"
+            >
+              <LogOut
+                aria-hidden="true"
+                className="h-5 w-5 transition-transform group-hover:translate-x-0.5"
+                strokeWidth={1.75}
+              />
+              <span className="mt-1 text-[11px] font-medium leading-tight">
+                Log out
+              </span>
+            </button>
+          </div>
+        ) : null}
       </div>
     </aside>
   );
