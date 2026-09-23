@@ -69,11 +69,11 @@ export function RegisterForm({ callbackUrl = "/home" }: RegisterFormProps) {
   return (
     <form className="space-y-5" onSubmit={handleSubmit}>
       <div>
-        <label className="text-sm font-medium text-slate-700" htmlFor="name">
+        <label className="text-sm font-medium text-brand-ink" htmlFor="name">
           Name
         </label>
         <input
-          className="mt-2 h-11 w-full border border-slate-300 px-3 text-sm outline-none focus:border-teal-700"
+          className="mt-2 h-11 w-full rounded-lg border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
           id="name"
           minLength={2}
           name="name"
@@ -81,11 +81,11 @@ export function RegisterForm({ callbackUrl = "/home" }: RegisterFormProps) {
         />
       </div>
       <div>
-        <label className="text-sm font-medium text-slate-700" htmlFor="email">
+        <label className="text-sm font-medium text-brand-ink" htmlFor="email">
           Email
         </label>
         <input
-          className="mt-2 h-11 w-full border border-slate-300 px-3 text-sm outline-none focus:border-teal-700"
+          className="mt-2 h-11 w-full rounded-lg border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
           id="email"
           name="email"
           required
@@ -94,13 +94,13 @@ export function RegisterForm({ callbackUrl = "/home" }: RegisterFormProps) {
       </div>
       <div>
         <label
-          className="text-sm font-medium text-slate-700"
+          className="text-sm font-medium text-brand-ink"
           htmlFor="password"
         >
           Password
         </label>
         <input
-          className="mt-2 h-11 w-full border border-slate-300 px-3 text-sm outline-none focus:border-teal-700"
+          className="mt-2 h-11 w-full rounded-lg border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
           id="password"
           minLength={8}
           name="password"
@@ -109,7 +109,7 @@ export function RegisterForm({ callbackUrl = "/home" }: RegisterFormProps) {
         />
       </div>
       <button
-        className="inline-flex h-11 w-full items-center justify-center border border-slate-950 bg-slate-950 px-5 text-sm font-semibold text-white transition hover:bg-teal-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+        className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-brand-ink px-5 text-sm font-semibold text-brand-ivory transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold/40 disabled:cursor-not-allowed disabled:opacity-50"
         disabled={state.status === "submitting"}
         type="submit"
       >
@@ -120,16 +120,16 @@ export function RegisterForm({ callbackUrl = "/home" }: RegisterFormProps) {
           className={
             state.status === "error"
               ? "text-sm font-medium text-red-700"
-              : "text-sm font-medium text-teal-700"
+              : "text-sm font-medium text-brand-gold-strong"
           }
         >
           {state.message}
         </p>
       ) : null}
-      <p className="text-sm text-slate-600">
+      <p className="text-sm text-brand-muted">
         Have an account?{" "}
         <Link
-          className="font-medium text-teal-700"
+          className="font-medium text-brand-gold-strong hover:text-brand-ink hover:underline"
           href={`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`}
         >
           Sign in
