@@ -14,6 +14,10 @@ type EmailMessage = {
   text: string;
 };
 
+type EmailSendResult =
+  | { status: "sent"; id: string | null }
+  | { status: "skipped" };
+
 type NotificationJob = {
   id: string;
   title: string;
@@ -135,6 +139,27 @@ function layoutHtml({
     </div>
   </body>
 </html>`;
+}
+
+export function buildEmailDeliveryTestEmail(to: string): EmailMessage {
+  return {
+    to,
+    subject: "Trinity-AI email delivery test",
+    text: [
+      "Trinity-AI email delivery test",
+      "",
+      "This message was sent by a Trinity-AI administrator to verify production email delivery.",
+      "If you received it, the Resend integration is accepting and delivering email.",
+    ].join("\n"),
+    html: layoutHtml({
+      heading: "Email delivery is working",
+      preview: "Trinity-AI production email delivery test.",
+      body: `
+        <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#334155">This message was sent by a Trinity-AI administrator to verify production email delivery.</p>
+        <p style="margin:0;font-size:15px;line-height:1.7;color:#334155">If you received it, the Resend integration is accepting and delivering email.</p>
+      `,
+    }),
+  };
 }
 
 export function buildNewJobEmail(job: NotificationJob, recipient: EmailRecipient) {
@@ -289,12 +314,12 @@ export function buildApplicationStatusEmail(
   };
 }
 
-async function sendEmail(message: EmailMessage) {
+async function sendEmail(message: EmailMessage): Promise<EmailSendResult> {
   const apiKey = process.env.RESEND_API_KEY;
 
   if (!apiKey) {
     console.warn("RESEND_API_KEY is not configured; email notification skipped.");
-    return;
+    return { status: "skipped" };
   }
 
   const response = await fetch("https://api.resend.com/emails", {
@@ -312,12 +337,30 @@ async function sendEmail(message: EmailMessage) {
     method: "POST",
   });
 
+  const body = await response.text();
+
   if (!response.ok) {
-    const body = await response.text();
     throw new Error(
       `Resend email failed with ${response.status}: ${body.slice(0, 500)}`,
     );
   }
+
+  let id: string | null = null;
+  try {
+    const result: unknown = JSON.parse(body);
+    if (
+      result &&
+      typeof result === "object" &&
+      "id" in result &&
+      typeof result.id === "string"
+    ) {
+      id = result.id;
+    }
+  } catch {
+    // A successful provider response without JSON is still a successful send.
+  }
+
+  return { status: "sent", id };
 }
 
 async function sendSafely(message: EmailMessage) {
@@ -348,6 +391,16 @@ async function getApplication(applicationId: string) {
 }
 
 export const EmailNotificationService = {
+  async sendTestEmail(to: string) {
+    const result = await sendEmail(buildEmailDeliveryTestEmail(to));
+
+    if (result.status === "skipped") {
+      throw new Error("EMAIL_PROVIDER_NOT_CONFIGURED");
+    }
+
+    return result;
+  },
+
   async notifyApplicationStatusChanged(
     applicationId: string,
     previousStatus?: ApplicationStatus,
