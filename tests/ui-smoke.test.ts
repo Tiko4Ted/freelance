@@ -112,7 +112,7 @@ test("dashboard UI renders application and payment state", () => {
   assert.match(markup, /\$25\.00/);
 });
 
-test("empty dashboard does not render the removed Project Artifacts demo", () => {
+test("empty dashboard does not render demo projects or task workspace", () => {
   const markup = renderToStaticMarkup(
     createElement(HomeDashboardClient, {
       userName: "Ada",
@@ -125,7 +125,13 @@ test("empty dashboard does not render the removed Project Artifacts demo", () =>
   );
 
   assert.doesNotMatch(markup, /Project Artifacts/);
-  assert.match(markup, /Project Rewrite/);
+  assert.doesNotMatch(markup, /Project Rewrite/);
+  assert.doesNotMatch(markup, /Project Aid/);
+  assert.doesNotMatch(markup, /Ready to preview/);
+  assert.doesNotMatch(markup, /Demo flow/);
+  assert.doesNotMatch(markup, /Start task/);
+  assert.doesNotMatch(markup, /Task details/);
+  assert.doesNotMatch(markup, /Project details/);
 });
 
 test("admin application controls render status and progress actions", () => {

@@ -100,107 +100,12 @@ const faqs = [
   },
 ];
 
-const demoProjectBriefs: Record<string, DashboardProject["taskBrief"]> = {
-  "demo-rewrite": [
-    {
-      heading: "Before you start",
-      lines: [
-        "Choose a short AI-written sample that needs clearer structure, tone, or factual caution.",
-        "Estimated time: 45 to 60 minutes including editing and notes.",
-      ],
-    },
-    {
-      heading: "Task to complete",
-      lines: [
-        "Rewrite the sample so it sounds natural, accurate, and useful to the intended reader.",
-        "Keep a short note showing the main edits you made and why.",
-      ],
-    },
-    {
-      heading: "What to submit",
-      lines: [
-        "A document or link containing the original text, rewritten version, and edit notes.",
-        "A reviewer note covering tone, clarity, accuracy checks, and any unresolved assumptions.",
-      ],
-    },
-    {
-      heading: "Review checklist",
-      lines: [
-        "The rewrite is clearer than the source text.",
-        "Changes are explained with practical editing judgment.",
-        "Any uncertain claims are flagged instead of silently rewritten.",
-      ],
-    },
-  ],
-  "demo-aid": [
-    {
-      heading: "Before you start",
-      lines: [
-        "Read the support scenario and identify the user's goal, missing facts, and safest next step.",
-        "Estimated time: 45 to 75 minutes for answers and reviewer notes.",
-      ],
-    },
-    {
-      heading: "Task to complete",
-      lines: [
-        "Answer three structured support prompts with clear reasoning and concise user-facing language.",
-        "Flag any case where you would need more information before giving a final answer.",
-      ],
-    },
-    {
-      heading: "What to submit",
-      lines: [
-        "A completed answer sheet or share link.",
-        "Notes describing your reasoning, assumptions, and escalation decisions.",
-      ],
-    },
-    {
-      heading: "Review checklist",
-      lines: [
-        "Answers are helpful, direct, and safe.",
-        "Reasoning separates facts from assumptions.",
-        "Escalation decisions are clear where the scenario is incomplete.",
-      ],
-    },
-  ],
-};
-
 export function HomeDashboardClient({
   paymentSummary,
   projects = [],
   userName = "Teddy",
 }: HomeDashboardClientProps) {
-  const fallbackProjects: DashboardProject[] = [
-    {
-      id: "demo-rewrite",
-      title: "Project Rewrite",
-      description: "Improve AI-written text.",
-      status: "DEMO",
-      statusLabel: "Ready to preview",
-      payoutLabel: "$10.00/task",
-      payoutType: "Demo flow",
-      applyHref: "/apply",
-      skills: ["Writing", "AI review", "Editing"],
-      canSubmit: true,
-      isSubmitted: false,
-      taskBrief: demoProjectBriefs["demo-rewrite"],
-    },
-    {
-      id: "demo-aid",
-      title: "Project Aid",
-      description: "Answer structured support and reasoning tasks.",
-      status: "DEMO",
-      statusLabel: "Ready to preview",
-      payoutLabel: "$10.00/task",
-      payoutType: "Demo flow",
-      applyHref: "/apply",
-      skills: ["Research", "Reasoning", "Quality"],
-      canSubmit: true,
-      isSubmitted: false,
-      taskBrief: demoProjectBriefs["demo-aid"],
-    },
-  ];
-  const visibleProjects = projects.length ? projects : fallbackProjects;
+  const visibleProjects = projects;
   const [activeTab, setActiveTab] = useState<"projects" | "applications">(
     "projects",
   );
@@ -465,40 +370,6 @@ export function HomeDashboardClient({
                   </Link>
                 );
               })}
-              {/* Card 2: Project Rewrite */}
-              <div className="hidden min-h-[136px] flex-col justify-between rounded-2xl border border-slate-200/90 bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.03)] transition hover:shadow-md">
-                <div>
-                  <h3 className="text-base font-semibold text-slate-900">
-                    Project Rewrite
-                  </h3>
-                  <p className="mt-1 text-sm text-slate-500">
-                    Improve AI-written text.
-                  </p>
-                </div>
-                <div className="mt-4 flex items-center gap-1.5 text-xs">
-                  <span className="font-semibold text-brand-gold-strong">New</span>
-                  <span className="text-slate-300">·</span>
-                  <span className="font-medium text-slate-600">
-                    $10.00/task
-                  </span>
-                </div>
-              </div>
-
-              {/* Card 3: Project Aid */}
-              <div className="hidden min-h-[136px] flex-col justify-between rounded-2xl border border-slate-200/90 bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.03)] transition hover:shadow-md">
-                <div>
-                  <h3 className="text-base font-semibold text-slate-900">
-                    Project Aid
-                  </h3>
-                </div>
-                <div className="mt-4 flex items-center gap-1.5 text-xs">
-                  <span className="font-semibold text-brand-gold-strong">New</span>
-                  <span className="text-slate-300">·</span>
-                  <span className="font-medium text-slate-600">
-                    $10.00/task
-                  </span>
-                </div>
-              </div>
             </div>
 
             {selectedProject ? (
