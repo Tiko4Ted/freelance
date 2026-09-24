@@ -140,7 +140,11 @@ export default async function HomePage() {
 
   return (
     <div className="flex min-h-screen bg-brand-canvas text-brand-ink">
-      <PortalSidebar activeTab="home" userName={userName} />
+      <PortalSidebar
+        activeTab="home"
+        isAuthenticated={Boolean(userId)}
+        userName={userName}
+      />
       <main className="flex-1 overflow-y-auto px-6 py-8 md:px-12 md:py-10">
         <div className="mx-auto max-w-[1040px]">
           <HomeDashboardClient

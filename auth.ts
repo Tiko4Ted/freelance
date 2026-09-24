@@ -2,6 +2,8 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { Role } from "@prisma/client";
 
+import { validatePersistedSessionToken } from "@/lib/auth/session-token";
+import { UserRepository } from "@/lib/repositories/user-repository";
 import { AuthService } from "@/lib/services/auth-service";
 import { loginSchema } from "@/lib/validation/auth";
 
@@ -39,7 +41,7 @@ export const {
     }),
   ],
   callbacks: {
-    jwt({ token, user }) {
+    async jwt({ token, user }) {
       if (user) {
         if (typeof user.id === "string") {
           token.id = user.id;
@@ -48,9 +50,13 @@ export const {
         if (isRole(user.role)) {
           token.role = user.role;
         }
+
+        return token;
       }
 
-      return token;
+      return validatePersistedSessionToken(token, (userId) =>
+        UserRepository.findSafeById(userId),
+      );
     },
     session({ session, token }) {
       if (session.user && typeof token.id === "string" && isRole(token.role)) {

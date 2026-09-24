@@ -10,6 +10,20 @@ import { ApplicationActions } from "../components/admin/application-actions";
 import { ApplicationSubmissionPage } from "../components/application-feedback";
 import { HomeDashboardClient } from "../components/home-dashboard-client";
 import { JobBoard } from "../components/jobs/job-board";
+import { PortalSidebar } from "../components/portal-sidebar";
+
+test("authenticated portal sidebar renders a logout control", () => {
+  const markup = renderToStaticMarkup(
+    createElement(PortalSidebar, {
+      activeTab: "home",
+      isAuthenticated: true,
+      userName: "Ada",
+    }),
+  );
+
+  assert.match(markup, /aria-label="Log out"/);
+  assert.match(markup, />Log out</);
+});
 
 test("public jobs UI renders a referral-preserving application link", () => {
   const markup = renderToStaticMarkup(

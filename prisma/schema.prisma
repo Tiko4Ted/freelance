@@ -53,20 +53,21 @@ enum WalletTransferStatus {
 }
 
 model User {
-  id                  String   @id @default(uuid())
-  email               String   @unique
+  id                  String    @id @default(uuid())
+  email               String    @unique
   passwordHash        String
   name                String
-  role                Role     @default(REFERRER)
-  referralCode        String   @unique @default(uuid())
-  walletBalanceCents  Int      @default(0)
-  holdingBalanceCents Int      @default(0)
-  fundingBalanceCents Int      @default(0)
+  role                Role      @default(REFERRER)
+  referralCode        String    @unique @default(uuid())
+  walletBalanceCents  Int       @default(0)
+  holdingBalanceCents Int       @default(0)
+  fundingBalanceCents Int       @default(0)
   payoutProvider      String?
   payoutAccountId     String?
-  payoutAccountReady  Boolean  @default(false)
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  payoutAccountReady  Boolean   @default(false)
+  emailVerifiedAt     DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
   referrals                   Referral[]
   ledgerEntries               LedgerEntry[]
@@ -76,8 +77,19 @@ model User {
   onboarding                  UserOnboarding?
   freelanceVerificationAudits FreelanceIdentityVerificationAudit[]
   applications                Application[]
+  emailVerificationToken      EmailVerificationToken?
 
   @@index([role])
+}
+
+model EmailVerificationToken {
+  userId    String   @id
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([expiresAt])
 }
 
 model UserOnboarding {

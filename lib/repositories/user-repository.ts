@@ -28,6 +28,13 @@ const userWithPasswordSelect = {
 } satisfies Prisma.UserSelect;
 
 export const UserRepository = {
+  findSafeById(id: string) {
+    return prisma.user.findUnique({
+      where: { id },
+      select: safeUserSelect,
+    });
+  },
+
   findSafeByEmail(email: string) {
     return prisma.user.findUnique({
       where: { email },

@@ -4,9 +4,72 @@ import test from "node:test";
 import { ApplicationStatus } from "@prisma/client";
 
 import {
+  buildEmailDeliveryTestEmail,
   buildApplicationStatusEmail,
   buildNewJobEmail,
+  buildWelcomeVerificationEmail,
+  EmailNotificationService,
 } from "../lib/services/email-notification-service";
+
+test("builds a combined welcome and verification email", () => {
+  const email = buildWelcomeVerificationEmail({
+    name: "Ada",
+    to: "ada@example.test",
+    verificationUrl: "https://example.test/verify-email?token=secure-token",
+  });
+
+  assert.equal(email.to, "ada@example.test");
+  assert.match(email.subject, /Welcome.*verify your email/);
+  assert.match(email.text, /expires in 24 hours/);
+  assert.match(email.html, /Verify email/);
+  assert.match(email.html, /secure-token/);
+});
+
+test("builds a fixed delivery test email for the requested recipient", () => {
+  const email = buildEmailDeliveryTestEmail("admin@example.test");
+
+  assert.equal(email.to, "admin@example.test");
+  assert.equal(email.subject, "Trinity-AI email delivery test");
+  assert.match(email.text, /production email delivery/);
+  assert.match(email.html, /Email delivery is working/);
+});
+
+test("submits the delivery test email to Resend and returns its id", async () => {
+  const originalFetch = globalThis.fetch;
+  const originalApiKey = process.env.RESEND_API_KEY;
+  const originalFrom = process.env.EMAIL_FROM;
+  let requestBody: Record<string, unknown> | undefined;
+
+  process.env.RESEND_API_KEY = "test-key";
+  process.env.EMAIL_FROM = "Trinity-AI <mail@example.test>";
+  globalThis.fetch = async (_input, init) => {
+    requestBody = JSON.parse(String(init?.body));
+    return Response.json({ id: "email-123" });
+  };
+
+  try {
+    const result = await EmailNotificationService.sendTestEmail(
+      "admin@example.test",
+    );
+
+    assert.deepEqual(result, { id: "email-123", status: "sent" });
+    assert.deepEqual(requestBody?.to, "admin@example.test");
+    assert.equal(requestBody?.from, "Trinity-AI <mail@example.test>");
+    assert.equal(requestBody?.subject, "Trinity-AI email delivery test");
+  } finally {
+    globalThis.fetch = originalFetch;
+    if (originalApiKey === undefined) {
+      delete process.env.RESEND_API_KEY;
+    } else {
+      process.env.RESEND_API_KEY = originalApiKey;
+    }
+    if (originalFrom === undefined) {
+      delete process.env.EMAIL_FROM;
+    } else {
+      process.env.EMAIL_FROM = originalFrom;
+    }
+  }
+});
 
 test("builds a new project email with the job apply link", () => {
   process.env.APP_URL = "https://example.test";

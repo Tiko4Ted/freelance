@@ -19,6 +19,7 @@ export default async function OnboardingPage() {
     <div className="flex min-h-screen bg-brand-canvas text-brand-ink">
       <PortalSidebar
         activeTab="onboarding"
+        isAuthenticated={Boolean(session?.user?.id)}
         userName={userName}
       />
       <main className="flex-1 overflow-y-auto px-6 py-10 md:px-12">

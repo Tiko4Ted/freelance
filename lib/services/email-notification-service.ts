@@ -14,6 +14,10 @@ type EmailMessage = {
   text: string;
 };
 
+type EmailSendResult =
+  | { status: "sent"; id: string | null }
+  | { status: "skipped" };
+
 type NotificationJob = {
   id: string;
   title: string;
@@ -103,7 +107,7 @@ function escapeHtml(value: string) {
 function buttonHtml(href: string, label: string) {
   return `<a href="${escapeHtml(
     href,
-  )}" style="display:inline-block;border-radius:10px;background:#2563eb;color:#ffffff;font-weight:700;text-decoration:none;padding:12px 18px">${escapeHtml(
+  )}" style="display:inline-block;border-radius:10px;background:#22251d;color:#fffdf8;font-weight:700;text-decoration:none;padding:12px 18px">${escapeHtml(
     label,
   )}</a>`;
 }
@@ -119,22 +123,77 @@ function layoutHtml({
 }) {
   return `<!doctype html>
 <html>
-  <body style="margin:0;background:#f8fafc;color:#0f172a;font-family:Arial,sans-serif">
+  <body style="margin:0;background:#f7f3ea;color:#22251d;font-family:Arial,sans-serif">
     <span style="display:none!important;opacity:0;color:transparent;height:0;width:0;overflow:hidden">${escapeHtml(
       preview,
     )}</span>
     <div style="max-width:620px;margin:0 auto;padding:32px 20px">
-      <div style="border:1px solid #e2e8f0;border-radius:16px;background:#ffffff;padding:28px">
-        <p style="margin:0 0 18px;font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#2563eb">Trinity-AI</p>
-        <h1 style="margin:0 0 16px;font-size:24px;line-height:1.25;color:#0f172a">${escapeHtml(
+      <div style="border:1px solid #dfcfad;border-radius:16px;background:#fffdf8;padding:28px">
+        <p style="margin:0 0 18px;font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#b18430">Trinity-AI</p>
+        <h1 style="margin:0 0 16px;font-size:24px;line-height:1.25;color:#22251d">${escapeHtml(
           heading,
         )}</h1>
         ${body}
-        <p style="margin:28px 0 0;font-size:12px;line-height:1.6;color:#64748b">You are receiving this because you have a Trinity-AI account or application.</p>
+        <p style="margin:28px 0 0;font-size:12px;line-height:1.6;color:#6f7168">You are receiving this because you have a Trinity-AI account or application.</p>
       </div>
     </div>
   </body>
 </html>`;
+}
+
+export function buildEmailDeliveryTestEmail(to: string): EmailMessage {
+  return {
+    to,
+    subject: "Trinity-AI email delivery test",
+    text: [
+      "Trinity-AI email delivery test",
+      "",
+      "This message was sent by a Trinity-AI administrator to verify production email delivery.",
+      "If you received it, the Resend integration is accepting and delivering email.",
+    ].join("\n"),
+    html: layoutHtml({
+      heading: "Email delivery is working",
+      preview: "Trinity-AI production email delivery test.",
+      body: `
+        <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#334155">This message was sent by a Trinity-AI administrator to verify production email delivery.</p>
+        <p style="margin:0;font-size:15px;line-height:1.7;color:#334155">If you received it, the Resend integration is accepting and delivering email.</p>
+      `,
+    }),
+  };
+}
+
+export function buildWelcomeVerificationEmail(input: {
+  name: string;
+  to: string;
+  verificationUrl: string;
+}): EmailMessage {
+  const greeting = input.name.trim() ? `Hi ${input.name.trim()},` : "Hi,";
+
+  return {
+    to: input.to,
+    subject: "Welcome to Trinity-AI — verify your email",
+    text: [
+      greeting,
+      "",
+      "Welcome to Trinity-AI. Your account has been created.",
+      "Verify your email address using the secure link below. The link expires in 24 hours.",
+      "",
+      input.verificationUrl,
+      "",
+      "If you did not create this account, you can ignore this email.",
+    ].join("\n"),
+    html: layoutHtml({
+      heading: "Welcome to Trinity-AI",
+      preview: "Verify your email address to finish setting up your account.",
+      body: `
+        <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#334155">${escapeHtml(greeting)}</p>
+        <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#334155">Your account has been created. Verify your email address to confirm that it belongs to you.</p>
+        <p style="margin:0 0 22px">${buttonHtml(input.verificationUrl, "Verify email")}</p>
+        <p style="margin:0 0 8px;font-size:13px;line-height:1.6;color:#64748b">This secure link expires in 24 hours.</p>
+        <p style="margin:0;font-size:13px;line-height:1.6;color:#64748b">If you did not create this account, you can ignore this email.</p>
+      `,
+    }),
+  };
 }
 
 export function buildNewJobEmail(job: NotificationJob, recipient: EmailRecipient) {
@@ -289,12 +348,12 @@ export function buildApplicationStatusEmail(
   };
 }
 
-async function sendEmail(message: EmailMessage) {
+async function sendEmail(message: EmailMessage): Promise<EmailSendResult> {
   const apiKey = process.env.RESEND_API_KEY;
 
   if (!apiKey) {
     console.warn("RESEND_API_KEY is not configured; email notification skipped.");
-    return;
+    return { status: "skipped" };
   }
 
   const response = await fetch("https://api.resend.com/emails", {
@@ -312,12 +371,30 @@ async function sendEmail(message: EmailMessage) {
     method: "POST",
   });
 
+  const body = await response.text();
+
   if (!response.ok) {
-    const body = await response.text();
     throw new Error(
       `Resend email failed with ${response.status}: ${body.slice(0, 500)}`,
     );
   }
+
+  let id: string | null = null;
+  try {
+    const result: unknown = JSON.parse(body);
+    if (
+      result &&
+      typeof result === "object" &&
+      "id" in result &&
+      typeof result.id === "string"
+    ) {
+      id = result.id;
+    }
+  } catch {
+    // A successful provider response without JSON is still a successful send.
+  }
+
+  return { status: "sent", id };
 }
 
 async function sendSafely(message: EmailMessage) {
@@ -348,6 +425,30 @@ async function getApplication(applicationId: string) {
 }
 
 export const EmailNotificationService = {
+  async sendWelcomeVerificationEmail(input: {
+    name: string;
+    to: string;
+    verificationUrl: string;
+  }) {
+    const result = await sendEmail(buildWelcomeVerificationEmail(input));
+
+    if (result.status === "skipped") {
+      throw new Error("EMAIL_PROVIDER_NOT_CONFIGURED");
+    }
+
+    return result;
+  },
+
+  async sendTestEmail(to: string) {
+    const result = await sendEmail(buildEmailDeliveryTestEmail(to));
+
+    if (result.status === "skipped") {
+      throw new Error("EMAIL_PROVIDER_NOT_CONFIGURED");
+    }
+
+    return result;
+  },
+
   async notifyApplicationStatusChanged(
     applicationId: string,
     previousStatus?: ApplicationStatus,

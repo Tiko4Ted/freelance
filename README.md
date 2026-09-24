@@ -24,6 +24,7 @@ Completed:
 - Candidate application form and `/api/v1/applications` submission route.
 - Referrer link and referred-application API routes.
 - Login and registration pages.
+- Welcome emails with hashed, expiring, single-use email verification links.
 - Home page UI for links and referred applications.
 - Admin job and application management APIs.
 - Admin screens for jobs, applications, status changes, and progress logging.
@@ -63,7 +64,9 @@ npm install
 cp .env.example .env
 ```
 
-3. Set `DATABASE_URL` in `.env`.
+3. Set `DATABASE_URL`, `RESEND_API_KEY`, and `EMAIL_FROM` in `.env`. Production
+   senders must use a domain verified in Resend; the Resend test sender can only
+   deliver to the Resend account owner.
 
 4. Generate Prisma client:
 
@@ -119,8 +122,10 @@ Authentication is implemented through Auth.js credentials. The v1 authentication
 - `POST /api/v1/auth/register`
 - `POST /api/v1/auth/login`
 - `POST /api/v1/auth/refresh`
+- `POST /api/v1/auth/verify-email`
 - `/login`
 - `/register`
+- `/verify-email`
 - `/home`
 
 ## Admin

@@ -40,7 +40,12 @@ export const adminProgressSchema = z.object({
   tasksCompleted: z.coerce.number().int().min(0).optional(),
 });
 
+export const adminEmailTestSchema = z.object({
+  to: z.string().trim().email().max(320).transform((value) => value.toLowerCase()),
+});
+
 export type AdminCreateJobInput = z.infer<typeof adminCreateJobSchema>;
 export type AdminUpdateJobInput = z.infer<typeof adminUpdateJobSchema>;
 export type AdminStatusInput = z.infer<typeof adminStatusSchema>;
 export type AdminProgressInput = z.infer<typeof adminProgressSchema>;
+export type AdminEmailTestInput = z.infer<typeof adminEmailTestSchema>;

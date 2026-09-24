@@ -53,6 +53,7 @@ export default async function ApplyPage({ searchParams }: ApplyPageProps) {
       {/* Side Menu */}
       <PortalSidebar
         activeTab="apply"
+        isAuthenticated={Boolean(session?.user?.id)}
         userName={userName}
       />
 
