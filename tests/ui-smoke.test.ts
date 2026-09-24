@@ -112,6 +112,22 @@ test("dashboard UI renders application and payment state", () => {
   assert.match(markup, /\$25\.00/);
 });
 
+test("empty dashboard does not render the removed Project Artifacts demo", () => {
+  const markup = renderToStaticMarkup(
+    createElement(HomeDashboardClient, {
+      userName: "Ada",
+      paymentSummary: {
+        formattedAwaitingPayment: "$0.00",
+        formattedHoursWorked: "0",
+      },
+      projects: [],
+    }),
+  );
+
+  assert.doesNotMatch(markup, /Project Artifacts/);
+  assert.match(markup, /Project Rewrite/);
+});
+
 test("admin application controls render status and progress actions", () => {
   const markup = renderToStaticMarkup(
     createElement(ApplicationActions, {

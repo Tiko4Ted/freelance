@@ -101,37 +101,6 @@ const faqs = [
 ];
 
 const demoProjectBriefs: Record<string, DashboardProject["taskBrief"]> = {
-  "demo-artifacts": [
-    {
-      heading: "Before you start",
-      lines: [
-        "Review the artifact request and decide which file best proves the completed work.",
-        "Estimated time: 30 to 45 minutes for a complete, reviewable submission.",
-      ],
-    },
-    {
-      heading: "Task to complete",
-      lines: [
-        "Prepare one completed project artifact that matches the selected role or task.",
-        "Make sure the file is named clearly and includes enough context for a reviewer to understand it without asking follow-up questions.",
-      ],
-    },
-    {
-      heading: "What to submit",
-      lines: [
-        "A file name or share link for the completed artifact.",
-        "Notes explaining what you completed, any assumptions, and anything reviewers should check first.",
-      ],
-    },
-    {
-      heading: "Review checklist",
-      lines: [
-        "The artifact is accessible and clearly named.",
-        "The notes explain the outcome and review context.",
-        "The submission is complete enough for approval review.",
-      ],
-    },
-  ],
   "demo-rewrite": [
     {
       heading: "Before you start",
@@ -202,20 +171,6 @@ export function HomeDashboardClient({
   userName = "Teddy",
 }: HomeDashboardClientProps) {
   const fallbackProjects: DashboardProject[] = [
-    {
-      id: "demo-artifacts",
-      title: "Project Artifacts",
-      description: "Submit files for review.",
-      status: "DEMO",
-      statusLabel: "Ready to preview",
-      payoutLabel: "Task review",
-      payoutType: "Demo flow",
-      applyHref: "/jobs/09babb4e-6899-4784-b9dd-dbea81c5566a/apply",
-      skills: ["Files", "Review", "Documentation"],
-      canSubmit: true,
-      isSubmitted: false,
-      taskBrief: demoProjectBriefs["demo-artifacts"],
-    },
     {
       id: "demo-rewrite",
       title: "Project Rewrite",
@@ -510,23 +465,6 @@ export function HomeDashboardClient({
                   </Link>
                 );
               })}
-              {/* Card 1: Project Artifacts */}
-              <div className="hidden min-h-[136px] flex-col justify-between rounded-2xl border border-slate-200/90 bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.03)] transition hover:shadow-md">
-                <div>
-                  <h3 className="text-base font-semibold text-slate-900">
-                    Project Artifacts
-                  </h3>
-                  <p className="mt-1 text-sm text-slate-500">
-                    Submit files for review.
-                  </p>
-                </div>
-                <div className="mt-4">
-                  <span className="text-xs font-semibold text-brand-gold-strong">
-                    New
-                  </span>
-                </div>
-              </div>
-
               {/* Card 2: Project Rewrite */}
               <div className="hidden min-h-[136px] flex-col justify-between rounded-2xl border border-slate-200/90 bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.03)] transition hover:shadow-md">
                 <div>
