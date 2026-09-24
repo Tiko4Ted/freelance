@@ -92,44 +92,48 @@ export function PortalSidebar({
   ];
 
   return (
-    <aside className="sticky top-0 z-40 flex h-screen w-[88px] shrink-0 select-none flex-col items-center justify-between border-r border-brand-gold/25 bg-brand-ink py-6">
+    <aside className="sticky top-0 z-40 flex h-dvh w-[88px] shrink-0 select-none flex-col items-center overflow-hidden border-r border-brand-gold/25 bg-brand-ink py-0">
       {/* Top Logo */}
-      <div className="flex flex-col items-center">
+      <div className="flex min-h-0 w-full flex-1 flex-col items-center">
         <Link
           href="/home"
           aria-label="Trinity-AI home"
-          className="group flex items-center justify-center rounded-xl outline-none transition focus-visible:shadow-brand-focus"
+          className="group my-0 flex shrink-0 items-center justify-center rounded-xl py-0 outline-none transition focus-visible:shadow-brand-focus"
         >
           <BrandLogo
-            imageClassName="h-11 w-11 ring-1 ring-brand-gold/35"
+            className="m-0 p-0"
+            imageClassName="m-0 h-11 w-11 p-0 ring-1 ring-brand-gold/35"
             size={44}
           />
         </Link>
 
         {/* Navigation Items */}
-        <nav className="mt-8 flex flex-col items-center gap-3">
+        <nav className="my-0 flex min-h-0 w-full flex-1 flex-col items-center gap-0 overflow-y-auto overscroll-contain py-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {navItems.map((item) => {
             const isActive = activeTab === item.id;
             const Icon = item.icon;
 
             return (
-              <div key={item.id} className="relative flex items-center">
+              <div
+                key={item.id}
+                className="relative my-0 flex shrink-0 items-center"
+              >
                 <Link
                   href={item.href}
-                  className={`group relative flex h-[62px] w-[62px] flex-col items-center justify-center rounded-2xl outline-none transition-all focus-visible:ring-2 focus-visible:ring-brand-gold-light focus-visible:ring-offset-2 focus-visible:ring-offset-brand-ink ${
+                  className={`group relative my-0 flex w-[58px] flex-col items-center justify-center rounded-xl py-2 outline-none transition-all focus-visible:ring-2 focus-visible:ring-brand-gold-light focus-visible:ring-offset-2 focus-visible:ring-offset-brand-ink ${
                     isActive
                       ? "bg-brand-gold text-brand-ink shadow-[0_7px_18px_rgba(0,0,0,0.16)]"
                       : "text-brand-gold-light/70 hover:bg-white/5 hover:text-brand-gold-light"
                   }`}
                 >
                   <Icon
-                    className={`h-[22px] w-[22px] transition-transform group-hover:scale-105 ${
+                    className={`h-5 w-5 transition-transform group-hover:scale-105 ${
                       isActive ? "text-brand-ink" : "text-current"
                     }`}
                     strokeWidth={isActive ? 2.25 : 1.75}
                   />
                   <span
-                    className={`mt-1 text-[11px] leading-tight ${
+                    className={`mt-0.5 text-[11px] leading-tight ${
                       isActive
                         ? "font-semibold text-brand-ink"
                         : "font-medium text-current"
@@ -153,7 +157,7 @@ export function PortalSidebar({
       </div>
 
       {/* Bottom User Profile */}
-      <div className="flex flex-col items-center gap-3">
+      <div className="mt-3 flex shrink-0 flex-col items-center gap-2">
         <div
           style={{ backgroundColor: avatarColor }}
           className="flex h-9 w-9 items-center justify-center rounded-full border border-brand-gold-light/40 text-sm font-bold text-brand-ivory shadow-sm"
@@ -164,10 +168,10 @@ export function PortalSidebar({
           {userName}
         </span>
         {isAuthenticated ? (
-          <div className="border-t border-brand-gold/20 pt-3">
+          <div className="border-t border-brand-gold/20 pt-2">
             <button
               aria-label="Log out"
-              className="group flex h-[52px] w-[62px] flex-col items-center justify-center rounded-2xl text-brand-gold-light/70 outline-none transition-colors hover:bg-white/5 hover:text-brand-gold-light focus-visible:ring-2 focus-visible:ring-brand-gold-light focus-visible:ring-offset-2 focus-visible:ring-offset-brand-ink"
+              className="group flex h-12 w-[58px] flex-col items-center justify-center rounded-xl text-brand-gold-light/70 outline-none transition-colors hover:bg-white/5 hover:text-brand-gold-light focus-visible:ring-2 focus-visible:ring-brand-gold-light focus-visible:ring-offset-2 focus-visible:ring-offset-brand-ink"
               onClick={() => signOut({ redirectTo: "/login" })}
               title="Log out"
               type="button"
