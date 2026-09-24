@@ -133,6 +133,7 @@ model Job {
   hourlyMaxCents    Int?
   postedAt          DateTime      @default(now())
   isHighDemand      Boolean       @default(false)
+  showOnHome        Boolean       @default(false)
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
@@ -141,6 +142,7 @@ model Job {
   skills       JobSkill[]
 
   @@index([isActive])
+  @@index([showOnHome, isActive, postedAt])
   @@index([postedAt])
 }
 

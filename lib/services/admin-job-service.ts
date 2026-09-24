@@ -23,6 +23,7 @@ function toJobResponse(job: {
   hourlyMaxCents: number | null;
   postedAt: Date;
   isHighDemand: boolean;
+  showOnHome: boolean;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;

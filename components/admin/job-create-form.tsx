@@ -57,6 +57,7 @@ export function JobCreateForm() {
         hourlyMaxCents:
           hourlyMaxDollars === null ? null : Math.round(hourlyMaxDollars * 100),
         isHighDemand: formData.get("isHighDemand") === "on",
+        showOnHome: formData.get("showOnHome") === "on",
         skills,
       }),
     });
@@ -152,10 +153,27 @@ export function JobCreateForm() {
         name="skills"
         placeholder="Skills, comma separated"
       />
-      <label className="flex items-center gap-2 text-sm font-medium text-brand-ink">
-        <input className="h-4 w-4 accent-brand-gold" name="isHighDemand" type="checkbox" />
-        High demand
-      </label>
+      <div className="space-y-2">
+        <label className="flex items-center gap-2 text-sm font-medium text-brand-ink">
+          <input
+            className="h-4 w-4 accent-brand-gold"
+            name="isHighDemand"
+            type="checkbox"
+          />
+          High demand
+        </label>
+        <label className="flex items-center gap-2 text-sm font-medium text-brand-ink">
+          <input
+            className="h-4 w-4 accent-brand-gold"
+            name="showOnHome"
+            type="checkbox"
+          />
+          Show on home
+        </label>
+        <p className="text-xs leading-5 text-brand-muted">
+          Home displays at most three flagged active jobs with openings left.
+        </p>
+      </div>
       <button
         className="inline-flex h-10 w-full items-center justify-center rounded-lg bg-brand-ink px-4 text-sm font-semibold text-brand-ivory transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold/40 disabled:opacity-50"
         disabled={state.status === "submitting"}

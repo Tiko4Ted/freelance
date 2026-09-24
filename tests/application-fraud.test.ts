@@ -20,6 +20,7 @@ const job = {
   description: "Review TypeScript changes and document test evidence.",
   payoutAmountCents: 2500,
   payoutType: PayoutTrigger.TASK_1,
+  openings: 1,
   skills: [{ label: "TypeScript" }, { label: "Testing" }],
 };
 
@@ -62,6 +63,7 @@ async function withApplicationDatabase(
   options: {
     referrer?: { id: string; email: string; role: Role } | null;
     jobs?: typeof job[];
+    remainingOpenings?: number;
   },
   run: (captured: CapturedApplication[]) => Promise<void>,
 ) {
@@ -70,11 +72,20 @@ async function withApplicationDatabase(
     EmailNotificationService.notifyApplicationSubmitted;
   const captured: CapturedApplication[] = [];
   const jobs = options.jobs ?? [job];
+  let remainingOpenings = options.remainingOpenings ?? 10;
 
   const transactionClient = {
     job: {
       findFirst: async ({ where }: { where: { id: string } }) =>
         jobs.find((candidateJob) => candidateJob.id === where.id) ?? null,
+      updateMany: async () => {
+        if (remainingOpenings <= 0) {
+          return { count: 0 };
+        }
+
+        remainingOpenings -= 1;
+        return { count: 1 };
+      },
     },
     application: {
       findFirst: async () => null,
@@ -178,6 +189,19 @@ test("application without a referral cookie creates no referral", async () => {
     assert.equal(application.referralId, null);
     assert.equal(captured[0]?.referralId, undefined);
   });
+});
+
+test("participant capacity is reserved before a certified application is created", async () => {
+  await withApplicationDatabase(
+    { remainingOpenings: 0 },
+    async (captured) => {
+      await assert.rejects(
+        ApplicationService.submitApplication(applicationInput(), applicant),
+        /PROJECT_FULL/,
+      );
+      assert.equal(captured.length, 0);
+    },
+  );
 });
 
 test("job-specific attribution remains isolated and payout amounts are snapshotted", async () => {

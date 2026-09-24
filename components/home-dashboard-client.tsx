@@ -44,11 +44,26 @@ type DashboardProject = {
   }>;
 };
 
+type FeaturedProject = {
+  id: string;
+  title: string;
+  description: string;
+  companyName: string;
+  openings: number;
+  formattedPayout: string;
+  formattedHourlyPay: string | null;
+  skills: Array<{
+    id: string;
+    label: string;
+  }>;
+};
+
 interface HomeDashboardClientProps {
   paymentSummary: {
     formattedAwaitingPayment: string;
     formattedHoursWorked: string;
   };
+  featuredProjects?: FeaturedProject[];
   projects?: DashboardProject[];
   userName?: string;
 }
@@ -102,6 +117,7 @@ const faqs = [
 
 export function HomeDashboardClient({
   paymentSummary,
+  featuredProjects = [],
   projects = [],
   userName = "Teddy",
 }: HomeDashboardClientProps) {
@@ -280,6 +296,74 @@ export function HomeDashboardClient({
           />
         </Link>
       </section>
+
+      {featuredProjects.length ? (
+        <section className="space-y-4">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-brand-gold-strong">
+                Available now
+              </p>
+              <h2 className="mt-1 text-lg font-bold text-brand-ink">
+                Featured projects
+              </h2>
+            </div>
+            <Link
+              className="text-sm font-semibold text-brand-gold-strong hover:text-brand-ink hover:underline"
+              href="/jobs"
+            >
+              View all roles
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            {featuredProjects.map((project) => (
+              <Link
+                className="group flex min-h-[190px] flex-col justify-between rounded-2xl border border-brand-sand bg-brand-ivory p-5 shadow-brand-card transition hover:-translate-y-0.5 hover:border-brand-gold/60 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-brand-gold"
+                href={`/jobs/${project.id}`}
+                key={project.id}
+              >
+                <div>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-brand-gold-strong">
+                        {project.companyName}
+                      </p>
+                      <h3 className="mt-1 text-base font-bold text-brand-ink transition group-hover:text-brand-gold-strong">
+                        {project.title}
+                      </h3>
+                    </div>
+                    <ChevronRight className="h-5 w-5 shrink-0 text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-brand-gold-strong" />
+                  </div>
+                  <p className="mt-2 line-clamp-3 text-sm leading-6 text-brand-muted">
+                    {project.description}
+                  </p>
+                </div>
+                <div className="mt-5 space-y-3">
+                  <div className="flex flex-wrap gap-1.5">
+                    {project.skills.slice(0, 2).map((skill) => (
+                      <span
+                        className="rounded-full bg-[#f2e8d7] px-2.5 py-1 text-[11px] font-semibold text-brand-gold-strong"
+                        key={skill.id}
+                      >
+                        {skill.label}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex items-center justify-between gap-3 border-t border-brand-sand pt-3 text-xs">
+                    <span className="font-semibold text-emerald-700">
+                      {project.openings}{" "}
+                      {project.openings === 1 ? "spot" : "spots"} left
+                    </span>
+                    <span className="font-bold text-brand-ink">
+                      {project.formattedHourlyPay ?? project.formattedPayout}
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       {/* Tabs: Projects / Applications */}
       <div className="pt-2">

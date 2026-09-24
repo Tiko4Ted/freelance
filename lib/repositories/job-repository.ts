@@ -42,6 +42,19 @@ export const JobRepository = {
     });
   },
 
+  listHomeProjects() {
+    return prisma.job.findMany({
+      where: {
+        isActive: true,
+        showOnHome: true,
+        openings: { gt: 0 },
+      },
+      orderBy: [{ postedAt: "desc" }, { createdAt: "desc" }],
+      take: 3,
+      select: publicJobSelect,
+    });
+  },
+
   findActiveById(id: string) {
     return prisma.job.findFirst({
       where: { id, isActive: true },

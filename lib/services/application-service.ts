@@ -159,6 +159,27 @@ export const ApplicationService = {
           );
         }
 
+        const applicationStatus = aptitudeResult.passed
+          ? ApplicationStatus.CERTIFIED
+          : ApplicationStatus.APPLIED;
+
+        if (applicationStatus === ApplicationStatus.CERTIFIED) {
+          const reservation = await tx.job.updateMany({
+            where: {
+              id: job.id,
+              isActive: true,
+              openings: { gt: 0 },
+            },
+            data: {
+              openings: { decrement: 1 },
+            },
+          });
+
+          if (reservation.count !== 1) {
+            throw new Error("PROJECT_FULL");
+          }
+        }
+
         await tx.candidateIdentity.upsert({
           where: { email: normalizedEmail },
           update: {},
@@ -213,9 +234,7 @@ export const ApplicationService = {
             aptitudeQuestionCount: aptitudeResult.totalQuestions,
             aptitudePassed: aptitudeResult.passed,
             aptitudeSubmittedAt: new Date(),
-            status: aptitudeResult.passed
-              ? ApplicationStatus.CERTIFIED
-              : ApplicationStatus.APPLIED,
+            status: applicationStatus,
             lockedPayoutCents: job.payoutAmountCents,
             referralId,
           },
