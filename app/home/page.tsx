@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { PortalSidebar } from "@/components/portal-sidebar";
 import { HomeDashboardClient } from "@/components/home-dashboard-client";
 import { prisma } from "@/lib/db/prisma";
+import { JobService } from "@/lib/services/job-service";
 import { LedgerService } from "@/lib/services/ledger-service";
 import { buildTaskAssignment } from "@/lib/task-assignment";
 
@@ -45,8 +46,8 @@ export default async function HomePage() {
   const userName = session?.user?.name || "Teddy";
   const userId = session?.user?.id;
 
-  const paymentSummary = userId
-    ? await Promise.all([
+  const paymentSummaryPromise = userId
+    ? Promise.all([
         LedgerService.getWallet(userId),
         prisma.application.aggregate({
           where: { applicantUserId: userId },
@@ -56,13 +57,13 @@ export default async function HomePage() {
         formattedAwaitingPayment: wallet.formattedHoldingBalance,
         formattedHoursWorked: formatHoursWorked(hours._sum.hoursLogged ?? 0),
       }))
-    : {
+    : Promise.resolve({
         formattedAwaitingPayment: "$0.00",
         formattedHoursWorked: "0",
-      };
+      });
 
-  const projects = userId
-    ? await prisma.application
+  const projectsPromise = userId
+    ? prisma.application
         .findMany({
           where: { applicantUserId: userId },
           orderBy: { updatedAt: "desc" },
@@ -136,7 +137,23 @@ export default async function HomePage() {
             };
           }),
         )
-    : [];
+    : Promise.resolve([]);
+
+  const [paymentSummary, projects, featuredProjects] = await Promise.all([
+    paymentSummaryPromise,
+    projectsPromise,
+    JobService.listHomeProjects(),
+  ]);
+  const featuredProjectCards = featuredProjects.map((project) => ({
+    id: project.id,
+    title: project.title,
+    description: project.description,
+    companyName: project.companyName,
+    openings: project.openings,
+    formattedPayout: project.formattedPayout,
+    formattedHourlyPay: project.formattedHourlyPay,
+    skills: project.skills,
+  }));
 
   return (
     <div className="flex min-h-screen bg-brand-canvas text-brand-ink">
@@ -148,6 +165,7 @@ export default async function HomePage() {
       <main className="flex-1 overflow-y-auto px-6 py-8 md:px-12 md:py-10">
         <div className="mx-auto max-w-[1040px]">
           <HomeDashboardClient
+            featuredProjects={featuredProjectCards}
             paymentSummary={paymentSummary}
             projects={projects}
             userName={userName}

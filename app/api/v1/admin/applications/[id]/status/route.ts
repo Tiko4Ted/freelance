@@ -29,6 +29,13 @@ export async function PATCH(request: Request, context: RouteContext) {
       );
     }
 
+    if (error instanceof Error && error.message === "PROJECT_FULL") {
+      return NextResponse.json(
+        { error: "This project has reached its participant limit" },
+        { status: 409 },
+      );
+    }
+
     return NextResponse.json(
       { error: "Unable to update application status" },
       { status: 500 },

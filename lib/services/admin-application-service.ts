@@ -13,6 +13,15 @@ function addThreeMonths(date: Date) {
   return deadline;
 }
 
+const capacityStatuses = new Set<ApplicationStatus>([
+  ApplicationStatus.CERTIFIED,
+  ApplicationStatus.MATCHED,
+  ApplicationStatus.ACTIVE,
+  ApplicationStatus.CERTIFYING,
+  ApplicationStatus.PAYOUT_ELIGIBLE,
+  ApplicationStatus.PAID,
+]);
+
 function toApplicationResponse(application: {
   id: string;
   candidateName: string;
@@ -147,10 +156,6 @@ export const AdminApplicationService = {
 
   async updateStatus(id: string, input: AdminStatusInput) {
     const now = new Date();
-    const existingApplication = await prisma.application.findUnique({
-      where: { id },
-      select: { status: true },
-    });
     const activationData =
       input.status === ApplicationStatus.ACTIVE
         ? {
@@ -159,18 +164,52 @@ export const AdminApplicationService = {
           }
         : {};
 
-    const application = await prisma.application.update({
-      where: { id },
-      data: {
-        status: input.status,
-        ...activationData,
-      },
-      select: applicationSelect,
+    const { application, previousStatus } = await prisma.$transaction(async (tx) => {
+      const existingApplication = await tx.application.findUniqueOrThrow({
+        where: { id },
+        select: { jobId: true, status: true },
+      });
+      const occupiedBefore = capacityStatuses.has(existingApplication.status);
+      const occupiedAfter = capacityStatuses.has(input.status);
+
+      if (!occupiedBefore && occupiedAfter) {
+        const reservation = await tx.job.updateMany({
+          where: {
+            id: existingApplication.jobId,
+            isActive: true,
+            openings: { gt: 0 },
+          },
+          data: { openings: { decrement: 1 } },
+        });
+
+        if (reservation.count !== 1) {
+          throw new Error("PROJECT_FULL");
+        }
+      } else if (occupiedBefore && !occupiedAfter) {
+        await tx.job.update({
+          where: { id: existingApplication.jobId },
+          data: { openings: { increment: 1 } },
+        });
+      }
+
+      const updatedApplication = await tx.application.update({
+        where: { id },
+        data: {
+          status: input.status,
+          ...activationData,
+        },
+        select: applicationSelect,
+      });
+
+      return {
+        application: updatedApplication,
+        previousStatus: existingApplication.status,
+      };
     });
 
     await EmailNotificationService.notifyApplicationStatusChanged(
       application.id,
-      existingApplication?.status,
+      previousStatus,
     );
 
     return toApplicationResponse(application);

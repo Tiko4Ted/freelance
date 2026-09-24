@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { JobCreateForm } from "@/components/admin/job-create-form";
+import { HomeProjectToggle } from "@/components/admin/home-project-toggle";
 import { requireRole } from "@/lib/auth/session";
 import { AdminJobService } from "@/lib/services/admin-job-service";
 
@@ -21,7 +22,10 @@ export default async function AdminJobsPage() {
     <main className="min-h-screen bg-brand-canvas text-brand-ink">
       <section className="border-b border-brand-sand bg-brand-ivory">
         <div className="mx-auto max-w-6xl px-6 py-8 md:px-8">
-          <Link className="text-sm font-medium text-brand-gold-strong hover:underline" href="/admin">
+          <Link
+            className="text-sm font-medium text-brand-gold-strong hover:underline"
+            href="/admin"
+          >
             Admin
           </Link>
           <h1 className="mt-5 text-3xl font-semibold text-brand-ink md:text-5xl">
@@ -40,6 +44,15 @@ export default async function AdminJobsPage() {
                   <p className="mt-2 text-sm leading-6 text-brand-muted">
                     {job.description}
                   </p>
+                  <p className="mt-2 text-xs font-medium text-brand-muted">
+                    {job.openings} participant{" "}
+                    {job.openings === 1 ? "spot" : "spots"} remaining
+                  </p>
+                  <HomeProjectToggle
+                    jobId={job.id}
+                    openings={job.openings}
+                    showOnHome={job.showOnHome}
+                  />
                 </div>
                 <p className="text-sm font-semibold text-brand-gold-strong">
                   {job.isActive ? "ACTIVE" : "INACTIVE"}

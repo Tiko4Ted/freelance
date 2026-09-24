@@ -45,6 +45,7 @@ export const PayoutEligibilityService = {
         payoutDeadline: true,
         job: {
           select: {
+            id: true,
             payoutType: true,
           },
         },
@@ -60,9 +61,20 @@ export const PayoutEligibilityService = {
 
     for (const application of activeApplications) {
       if (isPastDeadline(application.payoutDeadline, now)) {
-        const expired = await prisma.application.updateMany({
-          where: { id: application.id, status: ApplicationStatus.ACTIVE },
-          data: { status: ApplicationStatus.EXPIRED },
+        const expired = await prisma.$transaction(async (tx) => {
+          const update = await tx.application.updateMany({
+            where: { id: application.id, status: ApplicationStatus.ACTIVE },
+            data: { status: ApplicationStatus.EXPIRED },
+          });
+
+          if (update.count === 1) {
+            await tx.job.update({
+              where: { id: application.job.id },
+              data: { openings: { increment: 1 } },
+            });
+          }
+
+          return update;
         });
 
         if (expired.count === 1) {

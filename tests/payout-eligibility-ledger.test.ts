@@ -20,7 +20,7 @@ type EligibilityApplication = {
   tasksCompleted: number;
   payoutDeadline: Date | null;
   status: ApplicationStatus;
-  job: { payoutType: PayoutTrigger };
+  job: { id: string; payoutType: PayoutTrigger };
   referral: { referrerId: string } | null;
 };
 
@@ -42,10 +42,10 @@ async function withEligibilityDatabase(
     }>;
     balances: Map<string, number>;
     notifications: string[];
+    releasedOpenings: string[];
   }) => Promise<void>,
 ) {
   const originalFindMany = prisma.application.findMany;
-  const originalUpdateMany = prisma.application.updateMany;
   const originalTransaction = prisma.$transaction;
   const originalNotification =
     EmailNotificationService.notifyApplicationStatusChanged;
@@ -59,6 +59,7 @@ async function withEligibilityDatabase(
   }> = [];
   const balances = new Map<string, number>();
   const notifications: string[] = [];
+  const releasedOpenings: string[] = [];
 
   const applicationUpdate = async ({
     where,
@@ -123,6 +124,28 @@ async function withEligibilityDatabase(
     },
     application: {
       update: applicationUpdate,
+      updateMany: async ({
+        where,
+        data,
+      }: {
+        where: { id: string; status: ApplicationStatus };
+        data: { status: ApplicationStatus };
+      }) => {
+        const application = applications.find(
+          (item) => item.id === where.id && item.status === where.status,
+        );
+        if (!application) {
+          return { count: 0 };
+        }
+        application.status = data.status;
+        return { count: 1 };
+      },
+    },
+    job: {
+      update: async ({ where }: { where: { id: string } }) => {
+        releasedOpenings.push(where.id);
+        return { id: where.id };
+      },
     },
     ledgerEntry: {
       create: async ({
@@ -172,25 +195,6 @@ async function withEligibilityDatabase(
     value: async () =>
       applications.filter((item) => item.status === ApplicationStatus.ACTIVE),
   });
-  Object.defineProperty(prisma.application, "updateMany", {
-    configurable: true,
-    value: async ({
-      where,
-      data,
-    }: {
-      where: { id: string; status: ApplicationStatus };
-      data: { status: ApplicationStatus };
-    }) => {
-      const application = applications.find(
-        (item) => item.id === where.id && item.status === where.status,
-      );
-      if (!application) {
-        return { count: 0 };
-      }
-      application.status = data.status;
-      return { count: 1 };
-    },
-  });
   Object.defineProperty(prisma, "$transaction", {
     configurable: true,
     value: async (callback: (tx: unknown) => Promise<unknown>) =>
@@ -203,15 +207,17 @@ async function withEligibilityDatabase(
   };
 
   try {
-    await run({ identities, ledger, balances, notifications });
+    await run({
+      identities,
+      ledger,
+      balances,
+      notifications,
+      releasedOpenings,
+    });
   } finally {
     Object.defineProperty(prisma.application, "findMany", {
       configurable: true,
       value: originalFindMany,
-    });
-    Object.defineProperty(prisma.application, "updateMany", {
-      configurable: true,
-      value: originalUpdateMany,
     });
     Object.defineProperty(prisma, "$transaction", {
       configurable: true,
@@ -234,7 +240,7 @@ function activeApplication(
     tasksCompleted: 0,
     payoutDeadline: new Date("2026-12-31T00:00:00.000Z"),
     status: ApplicationStatus.ACTIVE,
-    job: { payoutType: PayoutTrigger.HOURS_10 },
+    job: { id: "job-1", payoutType: PayoutTrigger.HOURS_10 },
     referral: { referrerId: "referrer-user" },
     ...overrides,
   };
@@ -287,6 +293,7 @@ test("expired applications produce no ledger entry and notify the candidate", as
     assert.equal(expired.status, ApplicationStatus.EXPIRED);
     assert.equal(state.ledger.length, 0);
     assert.deepEqual(state.notifications, ["application-expired"]);
+    assert.deepEqual(state.releasedOpenings, ["job-1"]);
   });
 });
 

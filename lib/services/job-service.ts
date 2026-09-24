@@ -91,6 +91,11 @@ export const JobService = {
     return jobs.map(toPublicJob);
   },
 
+  async listHomeProjects() {
+    const jobs = await JobRepository.listHomeProjects();
+    return jobs.map(toPublicJob);
+  },
+
   async getActiveJob(id: string) {
     const job = await JobRepository.findActiveById(id);
     return job ? toPublicJob(job) : null;

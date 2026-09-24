@@ -7,6 +7,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { ApplicationStatus } from "@prisma/client";
 
 import { ApplicationActions } from "../components/admin/application-actions";
+import { JobCreateForm } from "../components/admin/job-create-form";
+import { HomeProjectToggle } from "../components/admin/home-project-toggle";
 import { ApplicationSubmissionPage } from "../components/application-feedback";
 import { HomeDashboardClient } from "../components/home-dashboard-client";
 import { JobBoard } from "../components/jobs/job-board";
@@ -132,6 +134,60 @@ test("empty dashboard does not render demo projects or task workspace", () => {
   assert.doesNotMatch(markup, /Start task/);
   assert.doesNotMatch(markup, /Task details/);
   assert.doesNotMatch(markup, /Project details/);
+});
+
+test("admin job form exposes home placement and participant capacity", () => {
+  const markup = renderToStaticMarkup(createElement(JobCreateForm));
+
+  assert.match(markup, /name="showOnHome"/);
+  assert.match(markup, /name="openings"/);
+  assert.match(markup, /Show on home/);
+});
+
+test("admin can flag existing jobs and edit their remaining spots", () => {
+  const markup = renderToStaticMarkup(
+    createElement(HomeProjectToggle, {
+      jobId: "job-1",
+      openings: 3,
+      showOnHome: false,
+    }),
+  );
+
+  assert.match(markup, /Show on home/);
+  assert.match(markup, /Remaining participant spots/);
+  assert.match(markup, /Save spots/);
+  assert.match(markup, /value="3"/);
+});
+
+test("dashboard renders flagged database projects as summary cards", () => {
+  const markup = renderToStaticMarkup(
+    createElement(HomeDashboardClient, {
+      userName: "Ada",
+      paymentSummary: {
+        formattedAwaitingPayment: "$0.00",
+        formattedHoursWorked: "0",
+      },
+      projects: [],
+      featuredProjects: [
+        {
+          id: "job-featured",
+          title: "AI Quality Review",
+          description: "Review model output for accuracy and clarity.",
+          companyName: "Trinity-AI",
+          openings: 2,
+          formattedPayout: "$300",
+          formattedHourlyPay: null,
+          skills: [{ id: "skill-review", label: "Review" }],
+        },
+      ],
+    }),
+  );
+
+  assert.match(markup, /Featured projects/);
+  assert.match(markup, /AI Quality Review/);
+  assert.match(markup, /2 spots left/);
+  assert.match(markup, /\/jobs\/job-featured/);
+  assert.doesNotMatch(markup, /Start task/);
 });
 
 test("admin application controls render status and progress actions", () => {

@@ -95,6 +95,27 @@ test("applications API maps authentication and fraud failures", async () => {
   });
 });
 
+test("applications API reports a full project as a conflict", async () => {
+  const handler = createApplicationPostHandler({
+    requireSession: async () => ({
+      user: { id: "candidate-user", email: "candidate@example.test" },
+    }),
+    readReferralCookie: async () => undefined,
+    submitApplication: async () => {
+      throw new Error("PROJECT_FULL");
+    },
+  });
+
+  const response = await handler(
+    jsonRequest("https://example.test/api/v1/applications", validApplication),
+  );
+
+  assert.equal(response.status, 409);
+  assert.deepEqual(await response.json(), {
+    error: "This project has reached its participant limit",
+  });
+});
+
 test("withdrawals API covers authentication, validation, readiness, and success", async () => {
   const unauthorizedHandlers = createWithdrawalHandlers({
     requireSession: async () => {

@@ -64,6 +64,13 @@ export function createApplicationPostHandler(
         return NextResponse.json({ error: "Job not found" }, { status: 404 });
       }
 
+      if (error instanceof Error && error.message === "PROJECT_FULL") {
+        return NextResponse.json(
+          { error: "This project has reached its participant limit" },
+          { status: 409 },
+        );
+      }
+
       if (error instanceof Error && error.message === "SELF_REFERRAL") {
         return NextResponse.json(
           { error: "Self-referrals are not eligible" },
