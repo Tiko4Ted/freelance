@@ -29,6 +29,7 @@ test("refreshes persisted session claims from the active user", async () => {
 
   const validated = await validatePersistedSessionToken(token, async (userId) => ({
     email: "current@example.test",
+    emailVerifiedAt: new Date("2026-09-26T00:00:00.000Z"),
     id: userId,
     name: "Current Name",
     role: Role.CANDIDATE,
@@ -40,6 +41,25 @@ test("refreshes persisted session claims from the active user", async () => {
     name: "Current Name",
     role: Role.CANDIDATE,
   });
+});
+
+test("invalidates a persisted session when the email is unverified", async () => {
+  const token: JWT = {
+    email: "pending@example.test",
+    id: "pending-user",
+    name: "Pending User",
+    role: Role.REFERRER,
+  };
+
+  const validated = await validatePersistedSessionToken(token, async (userId) => ({
+    email: "pending@example.test",
+    emailVerifiedAt: null,
+    id: userId,
+    name: "Pending User",
+    role: Role.REFERRER,
+  }));
+
+  assert.equal(validated, null);
 });
 
 test("leaves tokens without a persisted user id unchanged", async () => {

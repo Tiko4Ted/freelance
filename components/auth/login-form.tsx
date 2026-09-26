@@ -33,7 +33,10 @@ export function LoginForm({ callbackUrl = "/home" }: LoginFormProps) {
     });
 
     if (result?.error) {
-      setState({ status: "error", message: "Invalid email or password" });
+      setState({
+        status: "error",
+        message: "Invalid credentials or email address not verified",
+      });
       return;
     }
 

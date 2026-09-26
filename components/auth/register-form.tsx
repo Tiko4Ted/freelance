@@ -1,12 +1,12 @@
 "use client";
 
-import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 
 type RegisterState =
   | { status: "idle"; message: string }
   | { status: "submitting"; message: string }
+  | { status: "success"; message: string }
   | { status: "error"; message: string };
 
 type RegisterFormProps = {
@@ -70,18 +70,36 @@ export function RegisterForm({ callbackUrl = "/home" }: RegisterFormProps) {
       return;
     }
 
-    const result = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
+    setState({
+      status: "success",
+      message:
+        "We sent a verification link to your email. Verify your address before signing in.",
     });
+  }
 
-    if (result?.error) {
-      window.location.href = `/login?callbackUrl=${encodeURIComponent(callbackUrl)}`;
-      return;
-    }
-
-    window.location.href = callbackUrl;
+  if (state.status === "success") {
+    return (
+      <div aria-live="polite" className="space-y-5" role="status">
+        <div className="rounded-xl border border-brand-gold bg-[#f2e8d7] p-5">
+          <h2 className="text-lg font-semibold text-brand-ink">
+            Check your email
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-brand-gold-strong">
+            {state.message}
+          </p>
+        </div>
+        <p className="text-sm text-brand-muted">
+          After verification, return to{" "}
+          <Link
+            className="font-medium text-brand-gold-strong hover:text-brand-ink hover:underline"
+            href={`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`}
+          >
+            sign in
+          </Link>
+          .
+        </p>
+      </div>
+    );
   }
 
   return (
