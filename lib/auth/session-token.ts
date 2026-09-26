@@ -4,6 +4,7 @@ import type { JWT } from "next-auth/jwt";
 type SessionUser = {
   id: string;
   email: string;
+  emailVerifiedAt: Date | null;
   name: string;
   role: Role;
 };
@@ -20,7 +21,7 @@ export async function validatePersistedSessionToken(
 
   const user = await findSessionUser(token.id);
 
-  if (!user) {
+  if (!user || !user.emailVerifiedAt) {
     return null;
   }
 

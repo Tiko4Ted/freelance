@@ -10,7 +10,11 @@ export type SafeUser = {
   referralCode: string;
 };
 
-export type UserWithPassword = SafeUser & {
+export type SessionUser = SafeUser & {
+  emailVerifiedAt: Date | null;
+};
+
+export type UserWithPassword = SessionUser & {
   passwordHash: string;
 };
 
@@ -22,8 +26,13 @@ const safeUserSelect = {
   referralCode: true,
 } satisfies Prisma.UserSelect;
 
-const userWithPasswordSelect = {
+const sessionUserSelect = {
   ...safeUserSelect,
+  emailVerifiedAt: true,
+} satisfies Prisma.UserSelect;
+
+const userWithPasswordSelect = {
+  ...sessionUserSelect,
   passwordHash: true,
 } satisfies Prisma.UserSelect;
 
@@ -31,7 +40,7 @@ export const UserRepository = {
   findSafeById(id: string) {
     return prisma.user.findUnique({
       where: { id },
-      select: safeUserSelect,
+      select: sessionUserSelect,
     });
   },
 
