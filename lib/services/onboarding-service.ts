@@ -32,7 +32,6 @@ export type OnboardingStatus = {
   identityLegalName: string | null;
   identityDateOfBirth: string | null;
   identityDocumentType: string | null;
-  identityDocumentLast4: string | null;
   identityVerifiedAt: string | null;
   paymentMethod: string | null;
   paymentDestination: string | null;
@@ -108,7 +107,6 @@ function serializeStatus(user: UserWithOnboarding): OnboardingStatus {
     identityLegalName: onboarding?.identityLegalName ?? null,
     identityDateOfBirth: toDateOnly(onboarding?.identityDateOfBirth),
     identityDocumentType: onboarding?.identityDocumentType ?? null,
-    identityDocumentLast4: onboarding?.identityDocumentLast4 ?? null,
     identityVerifiedAt: toIsoDate(onboarding?.identityVerifiedAt),
     paymentMethod: onboarding?.paymentMethod ?? null,
     paymentDestination: onboarding?.paymentDestination ?? null,
@@ -517,14 +515,14 @@ export const OnboardingService = {
         identityLegalName: input.legalName.trim().replace(/\s+/g, " "),
         identityDateOfBirth: dateOnlyToDate(input.dateOfBirth),
         identityDocumentType: input.documentType,
-        identityDocumentLast4: input.documentLast4.trim().toUpperCase(),
+        identityDocumentLast4: null,
         identityVerifiedAt: new Date(),
       },
       update: {
         identityLegalName: input.legalName.trim().replace(/\s+/g, " "),
         identityDateOfBirth: dateOnlyToDate(input.dateOfBirth),
         identityDocumentType: input.documentType,
-        identityDocumentLast4: input.documentLast4.trim().toUpperCase(),
+        identityDocumentLast4: null,
         identityVerifiedAt: new Date(),
       },
     });

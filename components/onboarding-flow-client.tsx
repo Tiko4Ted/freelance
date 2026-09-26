@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent, useState } from "react";
+import { type ChangeEvent, type FormEvent, useState } from "react";
 import {
   CreditCard,
   FileText,
@@ -11,6 +11,7 @@ import {
   X,
   Check,
   UserCheck,
+  Upload,
 } from "lucide-react";
 
 type OnboardingStatus = {
@@ -23,7 +24,6 @@ type OnboardingStatus = {
   identityLegalName: string | null;
   identityDateOfBirth: string | null;
   identityDocumentType: string | null;
-  identityDocumentLast4: string | null;
   identityVerifiedAt: string | null;
   paymentMethod: string | null;
   paymentDestination: string | null;
@@ -54,6 +54,8 @@ type PayoutMethod =
   | "PAYPAL";
 
 type OnboardingStep = "legal" | "phone" | "identity" | "payments";
+type IdentityDocumentType = "national_id" | "passport" | "drivers_license";
+type IdentityDocumentSide = "front" | "back";
 
 interface OnboardingFlowClientProps {
   initialOnboarding: OnboardingStatus;
@@ -62,12 +64,33 @@ interface OnboardingFlowClientProps {
 }
 
 const payoutMethods: Array<{ value: PayoutMethod; label: string }> = [
-  { value: "MPESA", label: "M-Pesa" },
-  { value: "AIRTEL_MONEY", label: "Airtel Money" },
-  { value: "BANK_CARD", label: "Bank card" },
-  { value: "BINANCE", label: "Binance" },
   { value: "PAYPAL", label: "PayPal" },
+  { value: "BINANCE", label: "Binance" },
+  { value: "BANK_CARD", label: "Bank card" },
+  { value: "AIRTEL_MONEY", label: "Airtel Money" },
+  { value: "MPESA", label: "M-Pesa" },
 ];
+
+const identityDocumentUploadLabels: Record<
+  IdentityDocumentType,
+  { front: string; back: string }
+> = {
+  national_id: {
+    front: "Front of national ID",
+    back: "Back of national ID",
+  },
+  passport: {
+    front: "Passport photo page",
+    back: "Passport signature/details page",
+  },
+  drivers_license: {
+    front: "Front of driver's license",
+    back: "Back of driver's license",
+  },
+};
+
+const identityFileTypes = ["image/jpeg", "image/png", "application/pdf"];
+const identityFileMaxBytes = 5 * 1024 * 1024;
 
 const paymentPlaceholders: Record<PayoutMethod, string> = {
   MPESA: "M-Pesa phone number",
@@ -141,14 +164,15 @@ export function OnboardingFlowClient({
   const [identityDateOfBirth, setIdentityDateOfBirth] = useState(
     onboarding.identityDateOfBirth ?? "",
   );
-  const [identityDocumentType, setIdentityDocumentType] = useState(
-    onboarding.identityDocumentType ?? "national_id",
-  );
-  const [identityDocumentLast4, setIdentityDocumentLast4] = useState(
-    onboarding.identityDocumentLast4 ?? "",
-  );
+  const [identityDocumentType, setIdentityDocumentType] =
+    useState<IdentityDocumentType>(
+      (onboarding.identityDocumentType as IdentityDocumentType | null) ??
+        "national_id",
+    );
+  const [identityFrontFileName, setIdentityFrontFileName] = useState("");
+  const [identityBackFileName, setIdentityBackFileName] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PayoutMethod>(
-    (onboarding.paymentMethod as PayoutMethod | null) ?? "MPESA",
+    (onboarding.paymentMethod as PayoutMethod | null) ?? "PAYPAL",
   );
   const [paymentDestination, setPaymentDestination] = useState(
     onboarding.paymentDestination ?? "",
@@ -294,13 +318,23 @@ export function OnboardingFlowClient({
 
   const handleIdentitySubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (!identityFrontFileName || !identityBackFileName) {
+      setState({
+        status: "error",
+        message: "Select both required document sides before continuing.",
+      });
+      return;
+    }
+
     const verified = await saveOnboardingAction(
       {
         action: "verifyIdentity",
         legalName: identityLegalName,
         dateOfBirth: identityDateOfBirth,
         documentType: identityDocumentType,
-        documentLast4: identityDocumentLast4,
+        documentFrontSelected: true,
+        documentBackSelected: true,
       },
       "Identity verification saved",
     );
@@ -308,6 +342,51 @@ export function OnboardingFlowClient({
     if (verified) {
       setActiveStep("payments");
     }
+  };
+
+  const handleIdentityDocumentTypeChange = (
+    event: ChangeEvent<HTMLSelectElement>,
+  ) => {
+    setIdentityDocumentType(event.target.value as IdentityDocumentType);
+    setIdentityFrontFileName("");
+    setIdentityBackFileName("");
+  };
+
+  const handleIdentityFileSelection = (
+    side: IdentityDocumentSide,
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    const setFileName =
+      side === "front" ? setIdentityFrontFileName : setIdentityBackFileName;
+
+    if (!file) {
+      setFileName("");
+      return;
+    }
+
+    if (!identityFileTypes.includes(file.type)) {
+      event.target.value = "";
+      setFileName("");
+      setState({
+        status: "error",
+        message: "Choose a JPG, PNG, or PDF document.",
+      });
+      return;
+    }
+
+    if (file.size > identityFileMaxBytes) {
+      event.target.value = "";
+      setFileName("");
+      setState({
+        status: "error",
+        message: "Choose a document smaller than 5 MB.",
+      });
+      return;
+    }
+
+    setFileName(file.name);
+    setState({ status: "idle", message: "" });
   };
 
   const handlePaymentSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -763,9 +842,7 @@ export function OnboardingFlowClient({
                 </span>
                 <select
                   className="mt-1 h-11 w-full rounded-xl border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none transition focus:border-brand-gold focus:ring-1 focus:ring-brand-gold disabled:bg-brand-sand/50"
-                  onChange={(event) =>
-                    setIdentityDocumentType(event.target.value)
-                  }
+                  onChange={handleIdentityDocumentTypeChange}
                   value={identityDocumentType}
                 >
                   <option value="national_id">National ID</option>
@@ -773,21 +850,61 @@ export function OnboardingFlowClient({
                   <option value="drivers_license">Driver license</option>
                 </select>
               </label>
-              <label className="block sm:col-span-2">
-                <span className="text-xs font-semibold text-slate-600">
-                  Document last 4
-                </span>
-                <input
-                  className="mt-1 h-11 w-full rounded-xl border border-brand-sand bg-brand-canvas/50 px-3 text-sm uppercase outline-none transition focus:border-brand-gold focus:ring-1 focus:ring-brand-gold disabled:bg-brand-sand/50"
-                  maxLength={4}
-                  minLength={4}
-                  onChange={(event) =>
-                    setIdentityDocumentLast4(event.target.value)
-                  }
-                  required
-                  value={identityDocumentLast4}
-                />
-              </label>
+              {(["front", "back"] as const).map((side) => {
+                const fileName =
+                  side === "front"
+                    ? identityFrontFileName
+                    : identityBackFileName;
+                const label =
+                  identityDocumentUploadLabels[identityDocumentType][side];
+
+                return (
+                  <label
+                    className="group block cursor-pointer rounded-xl border border-dashed border-brand-sand bg-brand-canvas/50 p-4 transition hover:border-brand-gold hover:bg-brand-gold-light/10 focus-within:border-brand-gold focus-within:ring-2 focus-within:ring-brand-gold/30"
+                    key={side}
+                  >
+                    <input
+                      accept="image/jpeg,image/png,application/pdf"
+                      className="sr-only"
+                      onChange={(event) =>
+                        handleIdentityFileSelection(side, event)
+                      }
+                      required
+                      type="file"
+                    />
+                    <span className="flex items-start gap-3">
+                      <span
+                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+                          fileName
+                            ? "bg-emerald-50 text-emerald-700"
+                            : "bg-brand-ivory text-brand-gold-strong"
+                        }`}
+                      >
+                        {fileName ? (
+                          <CheckCircle2 className="h-5 w-5" />
+                        ) : (
+                          <Upload className="h-5 w-5" />
+                        )}
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block text-xs font-semibold text-slate-700">
+                          {label}
+                        </span>
+                        <span className="mt-1 block truncate text-sm text-slate-500">
+                          {fileName || "Choose a JPG, PNG, or PDF"}
+                        </span>
+                        <span className="mt-1 block text-[11px] text-slate-400">
+                          Maximum 5 MB
+                        </span>
+                      </span>
+                    </span>
+                  </label>
+                );
+              })}
+              <p className="text-xs leading-5 text-slate-500 sm:col-span-2">
+                Select both sides to continue. Files stay in this browser and
+                are not stored with your account.
+              </p>
             </fieldset>
             <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
               <button
@@ -800,7 +917,12 @@ export function OnboardingFlowClient({
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <button
                   className="inline-flex h-11 items-center justify-center rounded-xl border border-brand-gold bg-[#f2e8d7] px-5 text-sm font-semibold text-brand-gold-strong transition hover:bg-brand-gold-light/50 disabled:cursor-not-allowed disabled:opacity-50"
-                  disabled={!onboarding.phoneVerified || saving}
+                  disabled={
+                    !onboarding.phoneVerified ||
+                    saving ||
+                    !identityFrontFileName ||
+                    !identityBackFileName
+                  }
                   type="submit"
                 >
                   {onboarding.identityVerified

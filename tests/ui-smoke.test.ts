@@ -13,8 +13,71 @@ import { ApplicationSubmissionPage } from "../components/application-feedback";
 import { HomeDashboardClient } from "../components/home-dashboard-client";
 import { JobBoard } from "../components/jobs/job-board";
 import { LoginForm } from "../components/auth/login-form";
+import { OnboardingFlowClient } from "../components/onboarding-flow-client";
 import { PortalSidebar } from "../components/portal-sidebar";
 import { ReferralClient } from "../components/referral-client";
+
+const onboardingStatus = {
+  ndaSignedAt: null,
+  dataSubmissionSignedAt: null,
+  phoneCountryCode: "+254",
+  phoneNumber: "712345678",
+  phoneVerifiedAt: "2026-09-26T10:00:00.000Z",
+  phoneVerificationPending: false,
+  identityLegalName: null,
+  identityDateOfBirth: null,
+  identityDocumentType: null,
+  identityVerifiedAt: null,
+  paymentMethod: null,
+  paymentDestination: null,
+  paymentSetupAt: null,
+  payoutAccountReady: false,
+  completedAt: null,
+  reviewAvailableAt: null,
+  legalComplete: false,
+  phoneVerified: true,
+  identityVerified: false,
+  paymentsSetup: false,
+  requirementsComplete: false,
+  reviewPending: false,
+  complete: false,
+};
+
+test("identity onboarding asks for both document sides instead of last four", () => {
+  const markup = renderToStaticMarkup(
+    createElement(OnboardingFlowClient, {
+      initialOnboarding: onboardingStatus,
+      isAuthenticated: true,
+      userName: "Ada",
+    }),
+  );
+
+  assert.match(markup, /Front of national ID/);
+  assert.match(markup, /Back of national ID/);
+  assert.match(markup, /type="file"/);
+  assert.match(markup, /Files stay in this browser/);
+  assert.doesNotMatch(markup, /Document last 4/i);
+});
+
+test("payment onboarding displays payout options in reverse order", () => {
+  const markup = renderToStaticMarkup(
+    createElement(OnboardingFlowClient, {
+      initialOnboarding: {
+        ...onboardingStatus,
+        identityVerifiedAt: "2026-09-26T10:05:00.000Z",
+        identityVerified: true,
+      },
+      isAuthenticated: true,
+      userName: "Ada",
+    }),
+  );
+
+  const labels = ["PayPal", "Binance", "Bank card", "Airtel Money", "M-Pesa"];
+  const positions = labels.map((label) => markup.indexOf(`>${label}<`));
+
+  assert.ok(positions.every((position) => position >= 0));
+  assert.deepEqual(positions, [...positions].sort((left, right) => left - right));
+});
 
 test("authenticated portal sidebar renders a logout control", () => {
   const markup = renderToStaticMarkup(
