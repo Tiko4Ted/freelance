@@ -11,6 +11,7 @@ import {
   User,
   Wallet,
   LogOut,
+  type LucideIcon,
 } from "lucide-react";
 
 import { BrandLogo } from "@/components/brand-logo";
@@ -31,6 +32,33 @@ interface PortalSidebarProps {
   isAuthenticated?: boolean;
 }
 
+type PortalNavItem = {
+  id: PortalTab;
+  label: string;
+  href: string;
+  icon: LucideIcon;
+};
+
+const NAV_ITEMS: PortalNavItem[] = [
+  { id: "home", label: "Home", href: "/home", icon: Home },
+  { id: "apply", label: "Apply", href: "/apply", icon: ShoppingBag },
+  {
+    id: "onboarding",
+    label: "Onboarding",
+    href: "/onboarding",
+    icon: ClipboardList,
+  },
+  {
+    id: "referrals",
+    label: "Referrals",
+    href: "/referral",
+    icon: UserPlus,
+  },
+  { id: "payments", label: "Payments", href: "/wallet", icon: Wallet },
+  { id: "help", label: "Help", href: "/help-center", icon: LifeBuoy },
+  { id: "profile", label: "Profile", href: "/profile", icon: User },
+];
+
 export function PortalSidebar({
   activeTab,
   userName = "Teddy",
@@ -39,153 +67,92 @@ export function PortalSidebar({
 }: PortalSidebarProps) {
   const initial = (userName.trim()[0] || "T").toUpperCase();
 
-  const navItems = [
-    {
-      id: "home" as const,
-      label: "Home",
-      href: "/home",
-      icon: Home,
-      hasDot: false,
-    },
-    {
-      id: "apply" as const,
-      label: "Apply",
-      href: "/apply",
-      icon: ShoppingBag,
-      hasDot: false,
-    },
-    {
-      id: "onboarding" as const,
-      label: "Onboarding",
-      href: "/onboarding",
-      icon: ClipboardList,
-      hasDot: true,
-    },
-    {
-      id: "referrals" as const,
-      label: "Referrals",
-      href: "/referral",
-      icon: UserPlus,
-      hasDot: false,
-    },
-    {
-      id: "payments" as const,
-      label: "Payments",
-      href: "/wallet",
-      icon: Wallet,
-      hasDot: false,
-    },
-    {
-      id: "help" as const,
-      label: "Help",
-      href: "/help-center",
-      icon: LifeBuoy,
-      hasDot: true,
-    },
-    {
-      id: "profile" as const,
-      label: "Profile",
-      href: "/profile",
-      icon: User,
-      hasDot: false,
-    },
-  ];
-
   return (
-    <aside className="sticky top-0 z-40 flex h-dvh w-[88px] shrink-0 select-none flex-col items-center overflow-hidden border-r border-brand-gold/25 bg-brand-ink py-0">
-      {/* Top Logo */}
-      <div className="flex min-h-0 w-full flex-1 flex-col items-center">
+    <aside className="sticky top-0 z-40 flex h-dvh w-[88px] shrink-0 select-none flex-col overflow-hidden border-r border-[#4b452f] bg-brand-ink text-brand-gold-light shadow-[8px_0_28px_rgba(38,41,31,0.12)] sm:w-[104px]">
+      <div className="flex min-h-0 w-full flex-1 flex-col">
         <Link
           href="/home"
           aria-label="Trinity-AI home"
-          className="group my-0 flex shrink-0 items-center justify-center rounded-xl py-0 outline-none transition focus-visible:shadow-brand-focus"
+          className="group flex shrink-0 items-center justify-center border-b border-[#4b452f] px-2 py-3 outline-none transition-colors hover:bg-[#303429] focus-visible:bg-[#303429] focus-visible:shadow-brand-focus"
         >
           <BrandLogo
-            className="m-0 p-0"
-            imageClassName="m-0 h-11 w-11 p-0 ring-1 ring-brand-gold/35"
-            size={44}
+            imageClassName="h-10 w-10 ring-1 ring-[#d2aa6e] transition-transform duration-200 group-hover:scale-[1.03] motion-reduce:transform-none sm:h-11 sm:w-11"
+            size={40}
           />
         </Link>
 
-        {/* Navigation Items */}
-        <nav className="my-0 flex min-h-0 w-full flex-1 flex-col items-center gap-0 overflow-y-auto overscroll-contain py-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {navItems.map((item) => {
+        <nav
+          aria-label="Portal navigation"
+          className="flex min-h-0 w-full flex-1 flex-col gap-1 overflow-y-auto overscroll-contain px-2 py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {NAV_ITEMS.map((item) => {
             const isActive = activeTab === item.id;
             const Icon = item.icon;
 
             return (
-              <div
+              <Link
                 key={item.id}
-                className="relative my-0 flex shrink-0 items-center"
+                aria-current={isActive ? "page" : undefined}
+                href={item.href}
+                className={`group relative flex min-h-[58px] w-full shrink-0 flex-col items-center justify-center rounded-[14px] px-1 py-2 outline-none transition-[background-color,color,transform,box-shadow] duration-200 active:scale-[0.98] motion-reduce:transform-none ${
+                  isActive
+                    ? "bg-brand-gold-light text-brand-ink shadow-[0_8px_18px_rgba(18,20,15,0.2)]"
+                    : "text-brand-gold-light hover:bg-[#35382c] hover:text-brand-ivory focus-visible:bg-[#35382c] focus-visible:text-brand-ivory"
+                } focus-visible:ring-2 focus-visible:ring-brand-gold-light focus-visible:ring-offset-2 focus-visible:ring-offset-brand-ink`}
               >
-                <Link
-                  href={item.href}
-                  className={`group relative my-0 flex w-[58px] flex-col items-center justify-center rounded-xl py-2 outline-none transition-all focus-visible:ring-2 focus-visible:ring-brand-gold-light focus-visible:ring-offset-2 focus-visible:ring-offset-brand-ink ${
-                    isActive
-                      ? "bg-brand-gold text-brand-ink shadow-[0_7px_18px_rgba(0,0,0,0.16)]"
-                      : "text-brand-gold-light/70 hover:bg-white/5 hover:text-brand-gold-light"
-                  }`}
-                >
-                  <Icon
-                    className={`h-5 w-5 transition-transform group-hover:scale-105 ${
-                      isActive ? "text-brand-ink" : "text-current"
-                    }`}
-                    strokeWidth={isActive ? 2.25 : 1.75}
-                  />
-                  <span
-                    className={`mt-0.5 text-[11px] leading-tight ${
-                      isActive
-                        ? "font-semibold text-brand-ink"
-                        : "font-medium text-current"
-                    }`}
-                  >
-                    {item.label}
-                  </span>
-                </Link>
-
-                {/* Informational notification dot */}
-                {item.hasDot ? (
+                {isActive ? (
                   <span
                     aria-hidden="true"
-                    className="absolute -right-2 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-brand-gold-light ring-2 ring-brand-ink"
+                    className="absolute left-0 top-1/2 h-7 w-[3px] -translate-y-1/2 rounded-r-full bg-brand-gold-strong"
                   />
                 ) : null}
-              </div>
+                <Icon
+                  aria-hidden="true"
+                  className="h-5 w-5 transition-transform duration-200 group-hover:-translate-y-0.5 motion-reduce:transform-none"
+                  strokeWidth={isActive ? 2.25 : 1.8}
+                />
+                <span
+                  className={`mt-1 text-[11px] leading-none sm:text-xs ${
+                    isActive ? "font-semibold" : "font-medium"
+                  }`}
+                >
+                  {item.label}
+                </span>
+              </Link>
             );
           })}
         </nav>
       </div>
 
-      {/* Bottom User Profile */}
-      <div className="mt-3 flex shrink-0 flex-col items-center gap-2">
-        <div
-          style={{ backgroundColor: avatarColor }}
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-brand-gold-light/40 text-sm font-bold text-brand-ivory shadow-sm"
-        >
-          {initial}
-        </div>
-        <span className="max-w-[76px] truncate text-center text-xs font-medium text-brand-gold-light/80">
-          {userName}
-        </span>
-        {isAuthenticated ? (
-          <div className="border-t border-brand-gold/20 pt-2">
-            <button
-              aria-label="Log out"
-              className="group flex h-12 w-[58px] flex-col items-center justify-center rounded-xl text-brand-gold-light/70 outline-none transition-colors hover:bg-white/5 hover:text-brand-gold-light focus-visible:ring-2 focus-visible:ring-brand-gold-light focus-visible:ring-offset-2 focus-visible:ring-offset-brand-ink"
-              onClick={() => signOut({ redirectTo: "/login" })}
-              title="Log out"
-              type="button"
-            >
-              <LogOut
-                aria-hidden="true"
-                className="h-5 w-5 transition-transform group-hover:translate-x-0.5"
-                strokeWidth={1.75}
-              />
-              <span className="mt-1 text-[11px] font-medium leading-tight">
-                Log out
-              </span>
-            </button>
+      <div className="flex shrink-0 flex-col items-center gap-2 border-t border-[#4b452f] px-2 py-3">
+        <div className="flex w-full flex-col items-center gap-1.5">
+          <div
+            style={{ backgroundColor: avatarColor }}
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-[#ebcc90] text-sm font-bold text-brand-ivory shadow-[0_4px_12px_rgba(18,20,15,0.24)]"
+          >
+            {initial}
           </div>
+          <span className="max-w-[72px] truncate text-center text-[11px] font-semibold leading-tight text-brand-gold-light sm:max-w-[88px] sm:text-xs">
+            {userName}
+          </span>
+        </div>
+        {isAuthenticated ? (
+          <button
+            aria-label="Log out"
+            className="group flex min-h-12 w-full flex-col items-center justify-center rounded-[14px] px-1 py-2 text-brand-gold-light outline-none transition-[background-color,color,transform] duration-200 hover:bg-[#35382c] hover:text-brand-ivory active:scale-[0.98] focus-visible:bg-[#35382c] focus-visible:text-brand-ivory focus-visible:ring-2 focus-visible:ring-brand-gold-light focus-visible:ring-offset-2 focus-visible:ring-offset-brand-ink motion-reduce:transform-none"
+            onClick={() => signOut({ redirectTo: "/login" })}
+            title="Log out"
+            type="button"
+          >
+            <LogOut
+              aria-hidden="true"
+              className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-0.5 motion-reduce:transform-none"
+              strokeWidth={1.8}
+            />
+            <span className="mt-1 text-[11px] font-medium leading-none sm:text-xs">
+              Log out
+            </span>
+          </button>
         ) : null}
       </div>
     </aside>
