@@ -4,7 +4,10 @@ import { HomeDashboardClient } from "@/components/home-dashboard-client";
 import { prisma } from "@/lib/db/prisma";
 import { JobService } from "@/lib/services/job-service";
 import { LedgerService } from "@/lib/services/ledger-service";
-import { OnboardingService } from "@/lib/services/onboarding-service";
+import {
+  emptyOnboardingStatus,
+  OnboardingService,
+} from "@/lib/services/onboarding-service";
 import { buildTaskAssignment } from "@/lib/task-assignment";
 
 export const dynamic = "force-dynamic";
@@ -46,6 +49,9 @@ export default async function HomePage() {
   const session = await auth();
   const userName = session?.user?.name || "Teddy";
   const userId = session?.user?.id;
+  const onboardingPromise = userId
+    ? OnboardingService.getStatus(userId)
+    : Promise.resolve(emptyOnboardingStatus());
 
   const paymentSummaryPromise = userId
     ? Promise.all([
@@ -65,7 +71,7 @@ export default async function HomePage() {
 
   const projectsPromise = userId
     ? Promise.all([
-        OnboardingService.getStatus(userId),
+        onboardingPromise,
         prisma.application.findMany({
           where: { applicantUserId: userId },
           orderBy: { updatedAt: "desc" },
@@ -154,11 +160,13 @@ export default async function HomePage() {
         )
     : Promise.resolve([]);
 
-  const [paymentSummary, projects, featuredProjects] = await Promise.all([
-    paymentSummaryPromise,
-    projectsPromise,
-    JobService.listHomeProjects(),
-  ]);
+  const [paymentSummary, projects, featuredProjects, onboarding] =
+    await Promise.all([
+      paymentSummaryPromise,
+      projectsPromise,
+      JobService.listHomeProjects(),
+      onboardingPromise,
+    ]);
   const featuredProjectCards = featuredProjects.map((project) => ({
     id: project.id,
     title: project.title,
@@ -181,6 +189,7 @@ export default async function HomePage() {
         <div className="mx-auto max-w-[1040px]">
           <HomeDashboardClient
             featuredProjects={featuredProjectCards}
+            onboardingComplete={onboarding.complete}
             paymentSummary={paymentSummary}
             projects={projects}
             userName={userName}

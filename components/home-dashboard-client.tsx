@@ -64,6 +64,7 @@ interface HomeDashboardClientProps {
     formattedHoursWorked: string;
   };
   featuredProjects?: FeaturedProject[];
+  onboardingComplete?: boolean;
   projects?: DashboardProject[];
   userName?: string;
 }
@@ -118,6 +119,7 @@ const faqs = [
 export function HomeDashboardClient({
   paymentSummary,
   featuredProjects = [],
+  onboardingComplete = false,
   projects = [],
   userName = "Teddy",
 }: HomeDashboardClientProps) {
@@ -230,7 +232,7 @@ export function HomeDashboardClient({
     <div className="flex flex-col lg:flex-row gap-8 items-start">
       {/* Main Left Column */}
       <div className="flex-1 space-y-8 min-w-0">
-        {/* Yellow / Amber Notification Banner */}
+        {!onboardingComplete ? (
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#fde68a] bg-[#fffbeb] px-5 py-3.5 shadow-sm">
         <div className="flex items-center gap-2.5">
           <Clock
@@ -248,6 +250,7 @@ export function HomeDashboardClient({
           View roles
         </Link>
       </div>
+        ) : null}
 
       {/* Greeting & Refer Button */}
       <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
@@ -263,7 +266,7 @@ export function HomeDashboardClient({
         </Link>
       </div>
 
-      {/* Pending Tasks */}
+      {!onboardingComplete ? (
       <section className="space-y-3">
         <div className="flex items-center gap-2">
           <span className="text-xs font-bold tracking-wider text-slate-500">
@@ -300,6 +303,7 @@ export function HomeDashboardClient({
           />
         </Link>
       </section>
+      ) : null}
 
       {featuredProjects.length ? (
         <section className="space-y-4">
