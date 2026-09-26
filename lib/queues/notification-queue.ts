@@ -2,6 +2,7 @@ import type { SendOptions, SendResult } from "@vercel/queue";
 import { z } from "zod";
 
 import { prisma } from "@/lib/db/prisma";
+import { ONBOARDING_REVIEW_DELAY_SECONDS } from "@/lib/onboarding-review";
 
 export const EMAIL_NOTIFICATION_TOPIC = "email-notifications";
 export const PHONE_VERIFICATION_TOPIC = "phone-verifications";
@@ -28,6 +29,11 @@ export const emailNotificationMessageSchema = z.discriminatedUnion("type", [
     signerTitle: z.string().max(200),
     signatureText: z.string().max(200),
     to: z.string().email(),
+  }),
+  jobEnvelopeSchema.extend({
+    type: z.literal("onboarding-review"),
+    userId: z.string().uuid(),
+    submittedAt: z.string().datetime(),
   }),
 ]);
 
@@ -66,6 +72,7 @@ export function createNotificationQueue(
   sendMessage: QueueSend = sendWithVercelQueue,
 ) {
   async function enqueue<T extends { jobId: string }>(input: {
+    delaySeconds?: number;
     kind: string;
     payload: Omit<T, "jobId">;
     retentionSeconds: number;
@@ -81,6 +88,9 @@ export function createNotificationQueue(
         input.topic,
         { ...input.payload, jobId: job.id } as T,
         {
+          ...(input.delaySeconds
+            ? { delaySeconds: input.delaySeconds }
+            : {}),
           idempotencyKey: job.id,
           retentionSeconds: input.retentionSeconds,
         },
@@ -118,6 +128,21 @@ export function createNotificationQueue(
       >,
     ) {
       return enqueue<EmailNotificationMessage>({
+        kind: input.type,
+        payload: input,
+        retentionSeconds: 86_400,
+        topic: EMAIL_NOTIFICATION_TOPIC,
+      });
+    },
+
+    enqueueOnboardingReview(
+      input: Omit<
+        Extract<EmailNotificationMessage, { type: "onboarding-review" }>,
+        "jobId"
+      >,
+    ) {
+      return enqueue<EmailNotificationMessage>({
+        delaySeconds: ONBOARDING_REVIEW_DELAY_SECONDS,
         kind: input.type,
         payload: input,
         retentionSeconds: 86_400,

@@ -4,6 +4,7 @@ import { HomeDashboardClient } from "@/components/home-dashboard-client";
 import { prisma } from "@/lib/db/prisma";
 import { JobService } from "@/lib/services/job-service";
 import { LedgerService } from "@/lib/services/ledger-service";
+import { OnboardingService } from "@/lib/services/onboarding-service";
 import { buildTaskAssignment } from "@/lib/task-assignment";
 
 export const dynamic = "force-dynamic";
@@ -63,8 +64,9 @@ export default async function HomePage() {
       });
 
   const projectsPromise = userId
-    ? prisma.application
-        .findMany({
+    ? Promise.all([
+        OnboardingService.getStatus(userId),
+        prisma.application.findMany({
           where: { applicantUserId: userId },
           orderBy: { updatedAt: "desc" },
           take: 6,
@@ -91,13 +93,17 @@ export default async function HomePage() {
               },
             },
           },
-        })
-        .then((applications) =>
+        }),
+      ]).then(([onboarding, applications]) =>
           applications.map((application) => {
             const skills = application.job.skills.map((skill) => skill.label);
+            const hasTaskAccess = ["ACTIVE", "MATCHED", "CERTIFIED"].includes(
+              application.status,
+            );
             const canSubmit =
+              onboarding.complete &&
               !application.taskSubmittedAt &&
-              ["ACTIVE", "MATCHED", "CERTIFIED"].includes(application.status);
+              hasTaskAccess;
             const taskAssignment = buildTaskAssignment({
               id: application.id,
               candidateName: userName,
@@ -114,10 +120,15 @@ export default async function HomePage() {
               description: application.job.description,
               companyName: application.job.companyName,
               status: application.status,
-              statusLabel: projectStatusLabel(
-                application.status,
-                application.taskSubmittedAt,
-              ),
+              statusLabel:
+                !onboarding.complete &&
+                hasTaskAccess &&
+                !application.taskSubmittedAt
+                  ? "Onboarding review pending"
+                  : projectStatusLabel(
+                      application.status,
+                      application.taskSubmittedAt,
+                    ),
               payoutLabel: formatCurrency(
                 application.lockedPayoutCents ??
                   application.job.payoutAmountCents,
@@ -130,10 +141,14 @@ export default async function HomePage() {
               canSubmit,
               isSubmitted: Boolean(application.taskSubmittedAt),
               submittedFileName: application.taskSubmissionFileName,
-              briefHref: `/api/v1/applications/${application.id}/task-material`,
-              taskBrief: taskAssignment.sections.filter(
-                (section) => section.heading !== "Candidate and role",
-              ),
+              briefHref: onboarding.complete
+                ? `/api/v1/applications/${application.id}/task-material`
+                : undefined,
+              taskBrief: onboarding.complete
+                ? taskAssignment.sections.filter(
+                    (section) => section.heading !== "Candidate and role",
+                  )
+                : [],
             };
           }),
         )

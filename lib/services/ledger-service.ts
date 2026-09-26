@@ -1,6 +1,7 @@
 import { ApplicationStatus, LedgerAccount, Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/db/prisma";
+import { isOnboardingReviewApproved } from "@/lib/onboarding-review";
 
 function formatCurrency(amountCents: number, currency = "USD") {
   return new Intl.NumberFormat("en-US", {
@@ -97,6 +98,9 @@ export const LedgerService = {
         walletBalanceCents: true,
         holdingBalanceCents: true,
         fundingBalanceCents: true,
+        onboarding: {
+          select: { completedAt: true },
+        },
         freelanceVerification: {
           select: {
             freelanceIdCode: true,
@@ -111,7 +115,9 @@ export const LedgerService = {
       throw new Error("USER_NOT_FOUND");
     }
 
-    await claimEligibleCandidatePayouts(userId, user.email);
+    if (isOnboardingReviewApproved(user.onboarding?.completedAt)) {
+      await claimEligibleCandidatePayouts(userId, user.email);
+    }
 
     const [updatedUser, ledgerEntries, transfers] = await Promise.all([
       prisma.user.findUniqueOrThrow({

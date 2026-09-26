@@ -146,6 +146,10 @@ export function HomeDashboardClient({
   const selectedProject = visibleProjects[0];
 
   const startProjectTask = () => {
+    if (!selectedProject?.canSubmit) {
+      return;
+    }
+
     setWorkspaceMode("work");
     setSubmissionStatus("idle");
   };
@@ -487,10 +491,13 @@ export function HomeDashboardClient({
                     ) : null}
                     <button
                       className={`inline-flex h-10 items-center gap-2 rounded-xl px-3 text-sm font-semibold transition ${
-                        workspaceMode === "work"
+                        !selectedProject.canSubmit
+                          ? "cursor-not-allowed bg-slate-200 text-slate-500"
+                          : workspaceMode === "work"
                           ? "bg-brand-gold text-brand-ink hover:bg-[#a57846]"
                           : "bg-brand-ink text-brand-ivory hover:bg-[#35392c]"
                       }`}
+                      disabled={!selectedProject.canSubmit}
                       onClick={startProjectTask}
                       type="button"
                     >

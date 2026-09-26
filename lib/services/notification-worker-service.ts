@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
+import { onboardingReviewAvailableAt } from "@/lib/onboarding-review";
 import {
   emailNotificationMessageSchema,
   phoneVerificationMessageSchema,
@@ -125,6 +126,57 @@ async function welcomeVerificationIsCurrent(
   );
 }
 
+async function getOnboardingReviewRecipient(
+  message: Extract<EmailNotificationMessage, { type: "onboarding-review" }>,
+) {
+  const user = await prisma.user.findUnique({
+    where: { id: message.userId },
+    select: {
+      email: true,
+      name: true,
+      payoutAccountReady: true,
+      onboarding: {
+        select: {
+          completedAt: true,
+          dataSubmissionSignedAt: true,
+          identityVerifiedAt: true,
+          ndaSignedAt: true,
+          paymentSetupAt: true,
+          phoneVerifiedAt: true,
+        },
+      },
+    },
+  });
+  const onboarding = user?.onboarding;
+  const submittedAt = onboarding?.completedAt;
+
+  if (
+    !user ||
+    !onboarding ||
+    !submittedAt ||
+    submittedAt.toISOString() !== message.submittedAt ||
+    !onboarding.ndaSignedAt ||
+    !onboarding.dataSubmissionSignedAt ||
+    !onboarding.phoneVerifiedAt ||
+    !onboarding.identityVerifiedAt ||
+    !onboarding.paymentSetupAt ||
+    !user.payoutAccountReady
+  ) {
+    return { status: "stale" as const };
+  }
+
+  const availableAt = onboardingReviewAvailableAt(submittedAt);
+  if (!availableAt || availableAt.getTime() > Date.now()) {
+    return { status: "early" as const };
+  }
+
+  return {
+    status: "ready" as const,
+    email: user.email,
+    name: user.name,
+  };
+}
+
 export async function processEmailNotificationMessage(payload: unknown) {
   const message = emailNotificationMessageSchema.parse(payload);
 
@@ -140,6 +192,23 @@ export async function processEmailNotificationMessage(payload: unknown) {
           to: message.to,
           verificationUrl: message.verificationUrl,
         },
+        message.jobId,
+      );
+    }
+
+    if (message.type === "onboarding-review") {
+      const recipient = await getOnboardingReviewRecipient(message);
+
+      if (recipient.status === "stale") {
+        throw new PermanentNotificationError("STALE_ONBOARDING_REVIEW");
+      }
+
+      if (recipient.status === "early") {
+        throw new Error("ONBOARDING_REVIEW_NOT_READY");
+      }
+
+      return EmailNotificationService.sendOnboardingApprovedEmail(
+        { name: recipient.name, to: recipient.email },
         message.jobId,
       );
     }

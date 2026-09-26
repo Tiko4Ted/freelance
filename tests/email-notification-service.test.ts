@@ -7,6 +7,7 @@ import {
   buildEmailDeliveryTestEmail,
   buildApplicationStatusEmail,
   buildNewJobEmail,
+  buildOnboardingApprovedEmail,
   buildSignedLegalDocumentEmail,
   buildWelcomeVerificationEmail,
   EmailNotificationService,
@@ -56,6 +57,19 @@ test("builds a combined welcome and verification email", () => {
   assert.match(email.text, /expires in 24 hours/);
   assert.match(email.html, /Verify email/);
   assert.match(email.html, /secure-token/);
+});
+
+test("builds an onboarding approval email that unlocks work", () => {
+  const email = buildOnboardingApprovedEmail({
+    name: "Ada",
+    to: "ada@example.test",
+  });
+
+  assert.equal(email.to, "ada@example.test");
+  assert.match(email.subject, /onboarding is approved/i);
+  assert.match(email.text, /start eligible project tasks/i);
+  assert.match(email.text, /receive payment for approved work/i);
+  assert.match(email.html, /Open dashboard/);
 });
 
 test("builds a signed legal email with a PDF copy", () => {
