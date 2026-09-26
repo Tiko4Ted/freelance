@@ -12,6 +12,38 @@ import {
   EmailNotificationService,
 } from "../lib/services/email-notification-service";
 
+function assertStructurallyValidPdf(pdf: Buffer) {
+  const text = pdf.toString("latin1");
+
+  assert.match(text, /^%PDF-1\.4\n/);
+  assert.match(text, /\/Kids \[(?:\d+ 0 R ?)+\]/);
+
+  const startXrefMatch = /startxref\n(\d+)\n%%EOF\n$/.exec(text);
+  assert.ok(startXrefMatch, "PDF must contain a startxref pointer");
+
+  const xrefOffset = Number(startXrefMatch[1]);
+  assert.equal(text.slice(xrefOffset, xrefOffset + 5), "xref\n");
+
+  const xrefMatch = /xref\n0 (\d+)\n([\s\S]+?)trailer\n/.exec(
+    text.slice(xrefOffset),
+  );
+  assert.ok(xrefMatch, "PDF must contain a complete cross-reference table");
+
+  const objectCount = Number(xrefMatch[1]);
+  const entries = xrefMatch[2].trim().split("\n");
+  assert.equal(entries.length, objectCount);
+  assert.match(entries[0], /^0000000000 65535 f/);
+
+  for (let objectId = 1; objectId < objectCount; objectId += 1) {
+    const objectOffset = Number(entries[objectId].slice(0, 10));
+    const objectHeader = `${objectId} 0 obj`;
+    assert.equal(
+      text.slice(objectOffset, objectOffset + objectHeader.length),
+      objectHeader,
+    );
+  }
+}
+
 test("builds a combined welcome and verification email", () => {
   const email = buildWelcomeVerificationEmail({
     name: "Ada",
@@ -41,11 +73,9 @@ test("builds a signed legal email with a PDF copy", () => {
   assert.match(email.subject, /signed Non-Disclosure Agreement/);
   assert.equal(email.attachments?.length, 1);
   assert.match(email.attachments?.[0]?.filename ?? "", /NDA.*\.pdf$/);
-  assert.equal(
-    Buffer.from(email.attachments?.[0]?.content ?? "", "base64")
-      .subarray(0, 8)
-      .toString("ascii"),
-    "%PDF-1.4",
+  assert.equal(email.attachments?.[0]?.content_type, "application/pdf");
+  assertStructurallyValidPdf(
+    Buffer.from(email.attachments?.[0]?.content ?? "", "base64"),
   );
 });
 
@@ -78,6 +108,10 @@ test("uses the notification job id as Resend's idempotency key", async () => {
 
     assert.equal(idempotencyKey, "job-123");
     assert.equal(Array.isArray(requestBody?.attachments), true);
+    const attachments = requestBody?.attachments as Array<
+      Record<string, unknown>
+    >;
+    assert.equal(attachments[0]?.content_type, "application/pdf");
   } finally {
     globalThis.fetch = originalFetch;
     if (originalApiKey === undefined) {

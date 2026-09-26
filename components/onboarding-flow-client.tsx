@@ -254,6 +254,7 @@ export function OnboardingFlowClient({
     if (verified) {
       setVerificationCode("");
       setVerificationRequested(false);
+      setActiveStep("identity");
     }
   };
 
@@ -290,7 +291,7 @@ export function OnboardingFlowClient({
 
   const handleIdentitySubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    await saveOnboardingAction(
+    const verified = await saveOnboardingAction(
       {
         action: "verifyIdentity",
         legalName: identityLegalName,
@@ -300,11 +301,15 @@ export function OnboardingFlowClient({
       },
       "Identity verification saved",
     );
+
+    if (verified) {
+      setActiveStep("payments");
+    }
   };
 
   const handlePaymentSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    await saveOnboardingAction(
+    const saved = await saveOnboardingAction(
       {
         action: "setupPayments",
         paymentMethod,
@@ -312,6 +317,10 @@ export function OnboardingFlowClient({
       },
       "Payment setup saved",
     );
+
+    if (saved) {
+      setActiveStep("legal");
+    }
   };
 
   const todayFormatted = new Intl.DateTimeFormat("en-US", {
