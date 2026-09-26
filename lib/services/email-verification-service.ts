@@ -1,7 +1,7 @@
 import { createHash, randomBytes } from "node:crypto";
 
 import { prisma } from "@/lib/db/prisma";
-import { EmailNotificationService } from "@/lib/services/email-notification-service";
+import { NotificationQueue } from "@/lib/queues/notification-queue";
 
 const TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
 const TOKEN_PATTERN = /^[A-Za-z0-9_-]{32,256}$/;
@@ -45,7 +45,10 @@ export const EmailVerificationService = {
     });
 
     try {
-      return await EmailNotificationService.sendWelcomeVerificationEmail({
+      return await NotificationQueue.enqueueWelcomeVerification({
+        type: "welcome-verification",
+        userId: user.id,
+        tokenHash,
         name: user.name,
         to: user.email,
         verificationUrl: buildEmailVerificationUrl(token),

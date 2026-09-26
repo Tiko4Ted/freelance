@@ -7,6 +7,7 @@ import {
   buildEmailDeliveryTestEmail,
   buildApplicationStatusEmail,
   buildNewJobEmail,
+  buildSignedLegalDocumentEmail,
   buildWelcomeVerificationEmail,
   EmailNotificationService,
 } from "../lib/services/email-notification-service";
@@ -23,6 +24,68 @@ test("builds a combined welcome and verification email", () => {
   assert.match(email.text, /expires in 24 hours/);
   assert.match(email.html, /Verify email/);
   assert.match(email.html, /secure-token/);
+});
+
+test("builds a signed legal email with a PDF copy", () => {
+  const email = buildSignedLegalDocumentEmail({
+    document: "nda",
+    name: "Ada",
+    signedAt: "2026-09-26T12:00:00.000Z",
+    signerName: "Ada Lovelace",
+    signerTitle: "Consultant",
+    signatureText: "Ada Lovelace",
+    to: "ada@example.test",
+  });
+
+  assert.equal(email.to, "ada@example.test");
+  assert.match(email.subject, /signed Non-Disclosure Agreement/);
+  assert.equal(email.attachments?.length, 1);
+  assert.match(email.attachments?.[0]?.filename ?? "", /NDA.*\.pdf$/);
+  assert.equal(
+    Buffer.from(email.attachments?.[0]?.content ?? "", "base64")
+      .subarray(0, 8)
+      .toString("ascii"),
+    "%PDF-1.4",
+  );
+});
+
+test("uses the notification job id as Resend's idempotency key", async () => {
+  const originalFetch = globalThis.fetch;
+  const originalApiKey = process.env.RESEND_API_KEY;
+  let idempotencyKey: string | null = null;
+  let requestBody: Record<string, unknown> | undefined;
+
+  process.env.RESEND_API_KEY = "test-key";
+  globalThis.fetch = async (_input, init) => {
+    idempotencyKey = new Headers(init?.headers).get("Idempotency-Key");
+    requestBody = JSON.parse(String(init?.body));
+    return Response.json({ id: "email-legal-123" });
+  };
+
+  try {
+    await EmailNotificationService.sendSignedLegalDocumentEmail(
+      {
+        document: "dataSubmission",
+        name: "Ada",
+        signedAt: "2026-09-26T12:00:00.000Z",
+        signerName: "Ada Lovelace",
+        signerTitle: "Consultant",
+        signatureText: "Ada Lovelace",
+        to: "ada@example.test",
+      },
+      "job-123",
+    );
+
+    assert.equal(idempotencyKey, "job-123");
+    assert.equal(Array.isArray(requestBody?.attachments), true);
+  } finally {
+    globalThis.fetch = originalFetch;
+    if (originalApiKey === undefined) {
+      delete process.env.RESEND_API_KEY;
+    } else {
+      process.env.RESEND_API_KEY = originalApiKey;
+    }
+  }
 });
 
 test("builds a fixed delivery test email for the requested recipient", () => {

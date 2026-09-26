@@ -1,6 +1,11 @@
 import { ApplicationStatus, Role } from "@prisma/client";
 
 import { prisma } from "@/lib/db/prisma";
+import {
+  createSignedLegalDocumentPdf,
+  legalDocumentTitle,
+  type SignedLegalDocument,
+} from "@/lib/legal/signed-document";
 
 type EmailRecipient = {
   email: string;
@@ -12,6 +17,10 @@ type EmailMessage = {
   subject: string;
   html: string;
   text: string;
+  attachments?: Array<{
+    content: string;
+    filename: string;
+  }>;
 };
 
 type EmailSendResult =
@@ -196,6 +205,48 @@ export function buildWelcomeVerificationEmail(input: {
   };
 }
 
+export function buildSignedLegalDocumentEmail(
+  input: SignedLegalDocument & { name: string; to: string },
+): EmailMessage {
+  const title = legalDocumentTitle(input.document);
+  const signedDate = new Date(input.signedAt).toISOString().slice(0, 10);
+  const greeting = input.name.trim() ? `Hi ${input.name.trim()},` : "Hi,";
+  const filename =
+    input.document === "nda"
+      ? `Trinity-AI-NDA-${signedDate}.pdf`
+      : `Trinity-AI-Data-Submission-Agreement-${signedDate}.pdf`;
+
+  return {
+    to: input.to,
+    subject: `Your signed ${title}`,
+    text: [
+      greeting,
+      "",
+      `Your signed ${title} is attached for your records.`,
+      `Signed on: ${signedDate}`,
+      `Signed by: ${input.signerName}`,
+      "",
+      "Keep this email and attachment for your records.",
+    ].join("\n"),
+    html: layoutHtml({
+      heading: "Your signed agreement",
+      preview: `A copy of your signed ${title} is attached.`,
+      body: `
+        <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#334155">${escapeHtml(greeting)}</p>
+        <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#334155">Your signed <strong>${escapeHtml(title)}</strong> is attached for your records.</p>
+        <p style="margin:0 0 6px;font-size:13px;line-height:1.6;color:#64748b"><strong>Signed on:</strong> ${escapeHtml(signedDate)}</p>
+        <p style="margin:0;font-size:13px;line-height:1.6;color:#64748b"><strong>Signed by:</strong> ${escapeHtml(input.signerName)}</p>
+      `,
+    }),
+    attachments: [
+      {
+        content: createSignedLegalDocumentPdf(input).toString("base64"),
+        filename,
+      },
+    ],
+  };
+}
+
 export function buildNewJobEmail(job: NotificationJob, recipient: EmailRecipient) {
   const applyUrl = `${appUrl()}/jobs/${job.id}/apply`;
   const skills = job.skills?.map((skill) => skill.label).filter(Boolean) ?? [];
@@ -348,7 +399,10 @@ export function buildApplicationStatusEmail(
   };
 }
 
-async function sendEmail(message: EmailMessage): Promise<EmailSendResult> {
+async function sendEmail(
+  message: EmailMessage,
+  options: { idempotencyKey?: string } = {},
+): Promise<EmailSendResult> {
   const apiKey = process.env.RESEND_API_KEY;
 
   if (!apiKey) {
@@ -360,6 +414,7 @@ async function sendEmail(message: EmailMessage): Promise<EmailSendResult> {
     body: JSON.stringify({
       from: emailFrom(),
       html: message.html,
+      attachments: message.attachments,
       subject: message.subject,
       text: message.text,
       to: message.to,
@@ -367,6 +422,9 @@ async function sendEmail(message: EmailMessage): Promise<EmailSendResult> {
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
+      ...(options.idempotencyKey
+        ? { "Idempotency-Key": options.idempotencyKey }
+        : {}),
     },
     method: "POST",
   });
@@ -431,6 +489,36 @@ export const EmailNotificationService = {
     verificationUrl: string;
   }) {
     const result = await sendEmail(buildWelcomeVerificationEmail(input));
+
+    if (result.status === "skipped") {
+      throw new Error("EMAIL_PROVIDER_NOT_CONFIGURED");
+    }
+
+    return result;
+  },
+
+  async sendQueuedWelcomeVerificationEmail(
+    input: { name: string; to: string; verificationUrl: string },
+    idempotencyKey: string,
+  ) {
+    const result = await sendEmail(buildWelcomeVerificationEmail(input), {
+      idempotencyKey,
+    });
+
+    if (result.status === "skipped") {
+      throw new Error("EMAIL_PROVIDER_NOT_CONFIGURED");
+    }
+
+    return result;
+  },
+
+  async sendSignedLegalDocumentEmail(
+    input: SignedLegalDocument & { name: string; to: string },
+    idempotencyKey: string,
+  ) {
+    const result = await sendEmail(buildSignedLegalDocumentEmail(input), {
+      idempotencyKey,
+    });
 
     if (result.status === "skipped") {
       throw new Error("EMAIL_PROVIDER_NOT_CONFIGURED");

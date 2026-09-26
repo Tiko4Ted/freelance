@@ -1,0 +1,21 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "app/api/queues/email-notifications/route.ts": {
+      "experimentalTriggers": [
+        {
+          "type": "queue/v2beta",
+          "topic": "email-notifications"
+        }
+      ]
+    },
+    "app/api/queues/phone-verifications/route.ts": {
+      "experimentalTriggers": [
+        {
+          "type": "queue/v2beta",
+          "topic": "phone-verifications"
+        }
+      ]
+    }
+  }
+}

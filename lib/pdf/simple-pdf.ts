@@ -64,11 +64,15 @@ function textCommand(line: TextLine, x: number, y: number) {
   )}) Tj ET`;
 }
 
-function buildTextLines(title: string, sections: PdfSection[]) {
+function buildTextLines(
+  title: string,
+  sections: PdfSection[],
+  subtitle = "Downloadable task brief for approved candidate work.",
+) {
   const lines: TextLine[] = [
     { text: title, size: 19, bold: true },
     {
-      text: "Downloadable task brief for approved candidate work.",
+      text: subtitle,
       size: 10,
       gapBefore: 18,
     },
@@ -105,8 +109,12 @@ function paginate(lines: TextLine[]) {
   return pages;
 }
 
-export function createSimplePdf(title: string, sections: PdfSection[]) {
-  const pages = paginate(buildTextLines(title, sections));
+export function createSimplePdf(
+  title: string,
+  sections: PdfSection[],
+  subtitle?: string,
+) {
+  const pages = paginate(buildTextLines(title, sections, subtitle));
   const pageCount = pages.length;
   const pageStartId = 3;
   const contentStartId = pageStartId + pageCount;

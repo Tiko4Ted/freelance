@@ -1,7 +1,7 @@
 import { Prisma, type UserOnboarding } from "@prisma/client";
 
 import { prisma } from "@/lib/db/prisma";
-import { AfricasTalkingSmsService } from "@/lib/services/africas-talking-sms-service";
+import { NotificationQueue } from "@/lib/queues/notification-queue";
 import { PayoutAccountService } from "@/lib/services/payout-account-service";
 import {
   PHONE_VERIFICATION_CODE_TTL_MS,
@@ -198,6 +198,26 @@ export const OnboardingService = {
       where: { userId },
       create: { userId, ...data },
       update: data,
+    });
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true, name: true },
+    });
+
+    if (!user) {
+      throw new Error("USER_NOT_FOUND");
+    }
+
+    await NotificationQueue.enqueueSignedLegalDocument({
+      type: "signed-legal-document",
+      document: input.document,
+      name: user.name,
+      signedAt: signedAt.toISOString(),
+      signerName: signature.signerName,
+      signerTitle: signature.signerTitle,
+      signatureText: signature.signatureText,
+      to: user.email,
     });
 
     return getStatusAfterMutation(userId);
@@ -419,9 +439,13 @@ export const OnboardingService = {
     });
 
     try {
-      await AfricasTalkingSmsService.sendVerificationCode({
+      await NotificationQueue.enqueuePhoneVerification({
+        type: "phone-verification",
+        userId,
         to: phone.e164,
         code,
+        codeHash,
+        expiresAt: expiresAt.toISOString(),
       });
     } catch (error) {
       await prisma.userOnboarding.updateMany({
