@@ -11,9 +11,13 @@ type LoginState =
 
 type LoginFormProps = {
   callbackUrl?: string;
+  emailVerified?: boolean;
 };
 
-export function LoginForm({ callbackUrl = "/home" }: LoginFormProps) {
+export function LoginForm({
+  callbackUrl = "/home",
+  emailVerified = false,
+}: LoginFormProps) {
   const [state, setState] = useState<LoginState>({
     status: "idle",
     message: "",
@@ -45,6 +49,15 @@ export function LoginForm({ callbackUrl = "/home" }: LoginFormProps) {
 
   return (
     <form className="space-y-5" onSubmit={handleSubmit}>
+      {emailVerified ? (
+        <div
+          aria-live="polite"
+          className="rounded-xl border border-brand-gold bg-[#f2e8d7] p-4 text-sm font-medium leading-6 text-brand-gold-strong"
+          role="status"
+        >
+          Email verified. Sign in to continue.
+        </div>
+      ) : null}
       <div>
         <label className="text-sm font-medium text-brand-ink" htmlFor="email">
           Email

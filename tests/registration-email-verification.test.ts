@@ -41,12 +41,8 @@ test("registration sends a welcome verification email", async () => {
 
   assert.equal(response.status, 201);
   assert.equal(deliveredTo, registrationInput.email);
+  assert.equal(response.headers.get("cache-control"), "no-store");
   assert.deepEqual(await response.json(), {
-    user: {
-      id: "user-1",
-      email: registrationInput.email,
-      name: registrationInput.name,
-    },
     verificationEmailSent: true,
   });
 });
@@ -94,6 +90,7 @@ test("verification endpoint maps valid, expired, and reused tokens", async () =>
   );
 
   assert.equal(verifiedResponse.status, 200);
+  assert.equal(verifiedResponse.headers.get("cache-control"), "no-store");
   assert.equal(expiredResponse.status, 410);
   assert.equal(invalidResponse.status, 400);
 });

@@ -33,8 +33,11 @@ export function createRegisterPostHandler(dependencies: RegisterDependencies) {
       }
 
       return NextResponse.json(
-        { user, verificationEmailSent },
-        { status: 201 },
+        { verificationEmailSent },
+        {
+          status: 201,
+          headers: { "Cache-Control": "no-store" },
+        },
       );
     } catch (error) {
       if (error instanceof ZodError) {
