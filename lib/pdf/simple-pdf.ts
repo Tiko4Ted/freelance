@@ -123,9 +123,9 @@ export function createSimplePdf(
   const objects: string[] = [];
 
   objects[0] = "<< /Type /Catalog /Pages 2 0 R >>";
-  objects[1] = `<< /Type /Pages /Kids ${pages
+  objects[1] = `<< /Type /Pages /Kids [${pages
     .map((_, index) => `${pageStartId + index} 0 R`)
-    .join(" ")} /Count ${pageCount} >>`;
+    .join(" ")}] /Count ${pageCount} >>`;
 
   pages.forEach((_, index) => {
     objects[pageStartId + index - 1] =

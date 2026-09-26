@@ -19,6 +19,7 @@ type EmailMessage = {
   text: string;
   attachments?: Array<{
     content: string;
+    content_type?: string;
     filename: string;
   }>;
 };
@@ -241,6 +242,7 @@ export function buildSignedLegalDocumentEmail(
     attachments: [
       {
         content: createSignedLegalDocumentPdf(input).toString("base64"),
+        content_type: "application/pdf",
         filename,
       },
     ],
