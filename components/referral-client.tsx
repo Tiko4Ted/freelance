@@ -10,16 +10,15 @@ import {
 } from "lucide-react";
 
 interface ReferralClientProps {
+  referralLink: string;
   userName?: string;
-  referralCode?: string;
 }
 
 export function ReferralClient({
+  referralLink,
   userName = "Teddy",
-  referralCode = "teddy123",
 }: ReferralClientProps) {
   const [copied, setCopied] = useState(false);
-  const referralLink = `https://joinhandshake.com/ref/${referralCode}`;
 
   const copyToClipboard = async () => {
     try {
