@@ -4,6 +4,7 @@ import { scoreAptitudeTest } from "@/lib/aptitude-test";
 import { prisma } from "@/lib/db/prisma";
 import { createSimplePdf } from "@/lib/pdf/simple-pdf";
 import { EmailNotificationService } from "@/lib/services/email-notification-service";
+import { OnboardingService } from "@/lib/services/onboarding-service";
 import { buildTaskAssignment } from "@/lib/task-assignment";
 import type { ApplicationInput } from "@/lib/validation/application";
 import type { TaskSubmissionInput } from "@/lib/validation/task-submission";
@@ -280,6 +281,11 @@ export const ApplicationService = {
   },
 
   async getTaskMaterial(applicationId: string, applicantUserId: string) {
+    const onboarding = await OnboardingService.getStatus(applicantUserId);
+    if (!onboarding.complete) {
+      throw new Error("APPLICATION_NOT_FOUND");
+    }
+
     const application = await prisma.application.findFirst({
       where: {
         id: applicationId,
@@ -329,6 +335,11 @@ export const ApplicationService = {
     applicantUserId: string,
     input: TaskSubmissionInput,
   ) {
+    const onboarding = await OnboardingService.getStatus(applicantUserId);
+    if (!onboarding.complete) {
+      throw new Error("TASK_NOT_SUBMITTABLE");
+    }
+
     const existingApplication = await prisma.application.findFirst({
       where: {
         id: applicationId,

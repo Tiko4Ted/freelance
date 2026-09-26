@@ -1,6 +1,10 @@
 import { Prisma, type UserOnboarding } from "@prisma/client";
 
 import { prisma } from "@/lib/db/prisma";
+import {
+  isOnboardingReviewApproved,
+  onboardingReviewAvailableAt,
+} from "@/lib/onboarding-review";
 import { NotificationQueue } from "@/lib/queues/notification-queue";
 import { PayoutAccountService } from "@/lib/services/payout-account-service";
 import {
@@ -35,10 +39,13 @@ export type OnboardingStatus = {
   paymentSetupAt: string | null;
   payoutAccountReady: boolean;
   completedAt: string | null;
+  reviewAvailableAt: string | null;
   legalComplete: boolean;
   phoneVerified: boolean;
   identityVerified: boolean;
   paymentsSetup: boolean;
+  requirementsComplete: boolean;
+  reviewPending: boolean;
   complete: boolean;
 };
 
@@ -82,8 +89,14 @@ function serializeStatus(user: UserWithOnboarding): OnboardingStatus {
   const paymentsSetup = Boolean(
     onboarding?.paymentSetupAt && user.payoutAccountReady,
   );
-  const complete =
+  const requirementsComplete =
     legalComplete && phoneVerified && identityVerified && paymentsSetup;
+  const reviewAvailableAt = requirementsComplete
+    ? onboardingReviewAvailableAt(onboarding?.completedAt)
+    : null;
+  const complete =
+    requirementsComplete &&
+    isOnboardingReviewApproved(onboarding?.completedAt);
 
   return {
     ndaSignedAt: toIsoDate(onboarding?.ndaSignedAt),
@@ -102,10 +115,15 @@ function serializeStatus(user: UserWithOnboarding): OnboardingStatus {
     paymentSetupAt: toIsoDate(onboarding?.paymentSetupAt),
     payoutAccountReady: user.payoutAccountReady,
     completedAt: toIsoDate(onboarding?.completedAt),
+    reviewAvailableAt: toIsoDate(reviewAvailableAt),
     legalComplete,
     phoneVerified,
     identityVerified,
     paymentsSetup,
+    requirementsComplete,
+    reviewPending: Boolean(
+      requirementsComplete && onboarding?.completedAt && !complete,
+    ),
     complete,
   };
 }
@@ -150,15 +168,32 @@ async function getUserWithOnboarding(userId: string) {
 }
 
 async function getStatusAfterMutation(userId: string): Promise<OnboardingStatus> {
-  const status = serializeStatus(await getUserWithOnboarding(userId));
+  let status = serializeStatus(await getUserWithOnboarding(userId));
 
-  if (status.complete && !status.completedAt) {
-    await prisma.userOnboarding.update({
-      where: { userId },
-      data: { completedAt: new Date() },
+  if (status.requirementsComplete && !status.completedAt) {
+    const submittedAt = new Date();
+    const submitted = await prisma.userOnboarding.updateMany({
+      where: { userId, completedAt: null },
+      data: { completedAt: submittedAt },
     });
 
-    return serializeStatus(await getUserWithOnboarding(userId));
+    if (submitted.count === 1) {
+      try {
+        await NotificationQueue.enqueueOnboardingReview({
+          type: "onboarding-review",
+          userId,
+          submittedAt: submittedAt.toISOString(),
+        });
+      } catch (error) {
+        await prisma.userOnboarding.updateMany({
+          where: { userId, completedAt: submittedAt },
+          data: { completedAt: null },
+        });
+        throw error;
+      }
+    }
+
+    status = serializeStatus(await getUserWithOnboarding(userId));
   }
 
   return status;

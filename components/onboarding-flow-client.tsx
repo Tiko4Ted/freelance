@@ -30,10 +30,13 @@ type OnboardingStatus = {
   paymentSetupAt: string | null;
   payoutAccountReady: boolean;
   completedAt: string | null;
+  reviewAvailableAt: string | null;
   legalComplete: boolean;
   phoneVerified: boolean;
   identityVerified: boolean;
   paymentsSetup: boolean;
+  requirementsComplete: boolean;
+  reviewPending: boolean;
   complete: boolean;
 };
 
@@ -467,7 +470,19 @@ export function OnboardingFlowClient({
               <div>
                 <p className="font-semibold">Onboarding complete</p>
                 <p className="text-xs text-emerald-700">
-                  Your onboarding state is saved to your account.
+                  You can now start eligible tasks and receive payment for
+                  approved work.
+                </p>
+              </div>
+            </div>
+          ) : onboarding.reviewPending ? (
+            <div className="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50/80 p-4 text-sm text-amber-950">
+              <Lock className="h-5 w-5 shrink-0 text-amber-700" />
+              <div>
+                <p className="font-semibold">Onboarding review in progress</p>
+                <p className="text-xs text-amber-800">
+                  We will email you after the 15-minute review. Eligible tasks
+                  and candidate payouts unlock after approval.
                 </p>
               </div>
             </div>

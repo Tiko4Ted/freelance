@@ -206,6 +206,37 @@ export function buildWelcomeVerificationEmail(input: {
   };
 }
 
+export function buildOnboardingApprovedEmail(input: {
+  name: string;
+  to: string;
+}): EmailMessage {
+  const greeting = input.name.trim() ? `Hi ${input.name.trim()},` : "Hi,";
+  const dashboardUrl = `${appUrl()}/home`;
+
+  return {
+    to: input.to,
+    subject: "Your Trinity-AI onboarding is approved",
+    text: [
+      greeting,
+      "",
+      "Your onboarding review was successful.",
+      "You can now open your dashboard, start eligible project tasks, submit your work, and receive payment for approved work.",
+      "",
+      `Open your dashboard: ${dashboardUrl}`,
+    ].join("\n"),
+    html: layoutHtml({
+      heading: "Your onboarding is approved",
+      preview: "You can now start eligible tasks and receive payment for approved work.",
+      body: `
+        <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#334155">${escapeHtml(greeting)}</p>
+        <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#334155">Your onboarding review was successful.</p>
+        <p style="margin:0 0 22px;font-size:15px;line-height:1.7;color:#334155">You can now start eligible project tasks, submit your work, and receive payment for approved work.</p>
+        <p style="margin:0">${buttonHtml(dashboardUrl, "Open dashboard")}</p>
+      `,
+    }),
+  };
+}
+
 export function buildSignedLegalDocumentEmail(
   input: SignedLegalDocument & { name: string; to: string },
 ): EmailMessage {
@@ -519,6 +550,21 @@ export const EmailNotificationService = {
     idempotencyKey: string,
   ) {
     const result = await sendEmail(buildSignedLegalDocumentEmail(input), {
+      idempotencyKey,
+    });
+
+    if (result.status === "skipped") {
+      throw new Error("EMAIL_PROVIDER_NOT_CONFIGURED");
+    }
+
+    return result;
+  },
+
+  async sendOnboardingApprovedEmail(
+    input: { name: string; to: string },
+    idempotencyKey: string,
+  ) {
+    const result = await sendEmail(buildOnboardingApprovedEmail(input), {
       idempotencyKey,
     });
 

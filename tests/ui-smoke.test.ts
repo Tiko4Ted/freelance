@@ -148,6 +148,41 @@ test("dashboard UI renders application and payment state", () => {
   assert.match(markup, /\$25\.00/);
 });
 
+test("dashboard keeps task controls locked during onboarding review", () => {
+  const markup = renderToStaticMarkup(
+    createElement(HomeDashboardClient, {
+      userName: "Ada",
+      paymentSummary: {
+        formattedAwaitingPayment: "$0.00",
+        formattedHoursWorked: "0",
+      },
+      projects: [
+        {
+          id: "application-1",
+          applicationId: "application-1",
+          jobHref: "/jobs/job-1",
+          appliedAt: "2026-09-22T00:00:00.000Z",
+          title: "AI Reviewer",
+          description: "Review AI responses.",
+          companyName: "Trinity-AI",
+          status: "CERTIFIED",
+          statusLabel: "Onboarding review pending",
+          payoutLabel: "$25.00",
+          payoutType: "Per approved task",
+          skills: ["Research"],
+          canSubmit: false,
+          isSubmitted: false,
+          taskBrief: [],
+        },
+      ],
+    }),
+  );
+
+  assert.match(markup, /Onboarding review pending/);
+  assert.match(markup, /cursor-not-allowed/);
+  assert.doesNotMatch(markup, /Download brief/);
+});
+
 test("empty dashboard does not render demo projects or task workspace", () => {
   const markup = renderToStaticMarkup(
     createElement(HomeDashboardClient, {
