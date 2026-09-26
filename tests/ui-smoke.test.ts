@@ -14,6 +14,7 @@ import { HomeDashboardClient } from "../components/home-dashboard-client";
 import { JobBoard } from "../components/jobs/job-board";
 import { LoginForm } from "../components/auth/login-form";
 import { PortalSidebar } from "../components/portal-sidebar";
+import { ReferralClient } from "../components/referral-client";
 
 test("authenticated portal sidebar renders a logout control", () => {
   const markup = renderToStaticMarkup(
@@ -80,6 +81,21 @@ test("public jobs UI renders a referral-preserving application link", () => {
   assert.match(markup, /AI Reviewer/);
   assert.match(markup, /Apply now/);
   assert.match(markup, /\/jobs\/job-1\/apply\?referralCode=REF%20CODE/);
+});
+
+test("referral page shows and copies the Trinity referral URL", () => {
+  const referralLink =
+    "https://freelance-nu-swart.vercel.app/referral/jobs?referralCode=TRINITY-123";
+  const markup = renderToStaticMarkup(
+    createElement(ReferralClient, {
+      referralLink,
+      userName: "Ada",
+    }),
+  );
+
+  assert.match(markup, /freelance-nu-swart\.vercel\.app\/referral\/jobs/);
+  assert.match(markup, /referralCode=TRINITY-123/);
+  assert.doesNotMatch(markup, /joinhandshake/i);
 });
 
 test("application submission UI renders the successful completion state", () => {
