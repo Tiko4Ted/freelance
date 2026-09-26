@@ -11,6 +11,7 @@ import { JobCreateForm } from "../components/admin/job-create-form";
 import { HomeProjectToggle } from "../components/admin/home-project-toggle";
 import { ApplicationSubmissionPage } from "../components/application-feedback";
 import { HomeDashboardClient } from "../components/home-dashboard-client";
+import { HelpCenterClient } from "../components/help-center-client";
 import { JobBoard } from "../components/jobs/job-board";
 import { LoginForm } from "../components/auth/login-form";
 import { OnboardingFlowClient } from "../components/onboarding-flow-client";
@@ -42,6 +43,18 @@ const onboardingStatus = {
   reviewPending: false,
   complete: false,
 };
+
+test("help center renders the redesigned searchable support library", () => {
+  const markup = renderToStaticMarkup(createElement(HelpCenterClient));
+
+  assert.match(markup, /Help for every step of the work\./);
+  assert.match(markup, /Search the help center/);
+  assert.match(markup, /Browse by topic/);
+  assert.match(markup, /Read the full library/);
+  assert.match(markup, /Describe the issue/);
+  assert.match(markup, /<textarea/);
+  assert.doesNotMatch(markup, /App Store|Google Play/);
+});
 
 test("identity onboarding asks for both document sides instead of last four", () => {
   const markup = renderToStaticMarkup(

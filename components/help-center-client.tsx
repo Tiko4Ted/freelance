@@ -2,7 +2,23 @@
 
 import { useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
-import { ArrowRight, ChevronRight, Mail, Search, Send } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  BookOpen,
+  BriefcaseBusiness,
+  CheckCircle2,
+  ChevronRight,
+  CircleHelp,
+  ClipboardCheck,
+  Mail,
+  Rocket,
+  Search,
+  Send,
+  ShieldCheck,
+  WalletCards,
+  type LucideIcon,
+} from "lucide-react";
 
 import { BrandLogo } from "@/components/brand-logo";
 
@@ -47,54 +63,6 @@ function getCategoryById(categoryId?: string) {
 function categoryHref(category: string) {
   return `/help-center/${categoryIds[category]}`;
 }
-
-const sidebarGroups = [
-  {
-    title: "Getting Started",
-    items: [
-      "Age requirement",
-      "Program overview",
-      "Getting started",
-      "Sign up",
-      "Post-application",
-      "Identity verification",
-      "Phone verification",
-      "Troubleshoot verification",
-      "Background check",
-      "Background check FAQs",
-      "Verification issues",
-      "What to expect",
-    ],
-  },
-  {
-    title: "Fellowship Expectations",
-    items: [
-      "Work quality",
-      "Staying safe",
-      "Communication",
-      "Availability",
-      "Account standing",
-    ],
-  },
-  {
-    title: "Project Participation",
-    items: [
-      "Project matching",
-      "Submitting work",
-      "Returned work",
-      "Project reviews",
-      "Ending a project",
-    ],
-  },
-  {
-    title: "Policies",
-    items: ["Code of conduct", "Data handling", "Account security"],
-  },
-  {
-    title: "Payments",
-    items: ["Expected earnings", "Wallet", "Withdrawals", "Payment delays"],
-  },
-];
 
 const articles: Article[] = [
   {
@@ -401,38 +369,6 @@ const articles: Article[] = [
   },
 ];
 
-const sidebarArticleTitleByItem: Record<string, string> = {
-  "Age requirement": "Age requirement",
-  "Program overview": "Introduction to the Trinity-AI program",
-  "Getting started": "Getting started",
-  "Sign up": "Sign up",
-  "Post-application": "Next steps after applying to a project",
-  "Identity verification": "Identity verification",
-  "Phone verification": "Phone verification",
-  "Troubleshoot verification": "Troubleshoot verification",
-  "Background check": "Background check",
-  "Background check FAQs": "Background check FAQs",
-  "Verification issues": "Verification issues",
-  "What to expect": "What to expect",
-  "Work quality": "Work quality",
-  "Staying safe": "Getting started and staying safe",
-  Communication: "Communication",
-  Availability: "Availability",
-  "Account standing": "Account standing",
-  "Project matching": "Project matching",
-  "Submitting work": "Submitting project work",
-  "Returned work": "Returned work",
-  "Project reviews": "Project reviews",
-  "Ending a project": "Ending a project",
-  "Code of conduct": "Code of conduct",
-  "Data handling": "Data handling",
-  "Account security": "Account security",
-  "Expected earnings": "Expected earnings and wallet timing",
-  Wallet: "Wallet",
-  Withdrawals: "Withdrawals",
-  "Payment delays": "Payment delays",
-};
-
 const popularTitles = [
   "Introduction to the Trinity-AI program",
   "Getting started and staying safe",
@@ -440,11 +376,18 @@ const popularTitles = [
   "Next steps after applying to a project",
 ];
 
-const fallbackPopularArticles = [
-  "Introduction to the Trinity-AI program",
-  "Getting started and staying safe",
+const categoryIcons: Record<string, LucideIcon> = {
+  "Getting Started": Rocket,
+  "Fellowship Expectations": ClipboardCheck,
+  "Project Participation": BriefcaseBusiness,
+  Policies: ShieldCheck,
+  Payments: WalletCards,
+};
+
+const quickHelpTitles = [
+  "Getting started",
+  "Identity verification",
   "Expected earnings and wallet timing",
-  "Next steps after applying to a project",
 ];
 
 function getArticle(title: string) {
@@ -540,147 +483,112 @@ export function HelpCenterClient({ categoryId }: HelpCenterClientProps) {
   const mailtoHref = `mailto:support@trinity-ai.com?subject=${encodeURIComponent(
     "Trinity-AI support request",
   )}&body=${encodeURIComponent(preparedMessage)}`;
+  const hasQuery = Boolean(query.trim());
+  const articleCountLabel = `${displayedArticles.length} ${
+    displayedArticles.length === 1 ? "article" : "articles"
+  }`;
 
   return (
-    <main className="min-h-screen bg-brand-canvas text-brand-ink">
-      <header className="border-b border-brand-gold/40 bg-brand-gold-light px-5 py-7 md:px-8">
-        <nav className="mx-auto flex max-w-7xl items-center justify-between gap-6">
-          <Link
-            aria-label="Trinity-AI home"
-            href="/home"
-          >
+    <main className="min-h-screen bg-brand-canvas text-brand-ink dark:bg-[#171915] dark:text-[#f7f3ea]">
+      <a
+        className="sr-only rounded-xl bg-brand-ink px-4 py-3 text-brand-ivory focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 dark:bg-brand-gold-light dark:text-brand-ink"
+        href="#help-library"
+      >
+        Skip to help articles
+      </a>
+
+      <header className="border-b border-brand-sand/80 bg-brand-canvas dark:border-[#363a30] dark:bg-[#171915]">
+        <nav
+          aria-label="Main navigation"
+          className="mx-auto flex h-[72px] max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8"
+        >
+          <Link aria-label="Trinity-AI home" href="/home">
             <BrandLogo
-              imageClassName="h-12 w-12 shadow-sm"
-              nameClassName="text-xl font-black italic text-brand-ink sm:text-2xl"
+              imageClassName="h-10 w-10 shadow-sm"
+              nameClassName="hidden text-lg font-black italic text-brand-ink dark:text-[#f7f3ea] sm:inline"
               showName
-              size={48}
+              size={40}
             />
           </Link>
-          <div className="hidden items-center gap-9 text-sm font-semibold text-brand-ink md:flex">
-            <Link href="/apply">Find work</Link>
-            <Link href="/about-us">About</Link>
-            <Link href="/help-center">Trinity-AI</Link>
-            <Link href="/help-center#contact-support">Support</Link>
+          <div className="hidden items-center gap-8 text-sm font-semibold text-brand-muted dark:text-[#b8b9b1] md:flex">
+            <Link
+              className="text-brand-ink transition hover:text-brand-gold-strong dark:text-[#f7f3ea] dark:hover:text-brand-gold-light"
+              href="/help-center"
+            >
+              Help center
+            </Link>
+            <Link
+              className="transition hover:text-brand-ink dark:hover:text-[#f7f3ea]"
+              href="/apply"
+            >
+              Find work
+            </Link>
+            <Link
+              className="transition hover:text-brand-ink dark:hover:text-[#f7f3ea]"
+              href="/about-us"
+            >
+              About
+            </Link>
           </div>
           <div className="flex items-center gap-2">
             <Link
-              className="rounded-xl border border-brand-ink px-4 py-2 text-sm font-bold text-brand-ink transition hover:bg-brand-ivory/50"
+              className="inline-flex h-10 items-center justify-center whitespace-nowrap rounded-xl border border-brand-sand px-3 text-sm font-bold text-brand-ink transition hover:border-brand-gold active:translate-y-px dark:border-[#4c5044] dark:text-[#f7f3ea] dark:hover:border-brand-gold"
               href="/login"
             >
               Log in
             </Link>
             <Link
-              className="rounded-xl bg-brand-ink px-4 py-2 text-sm font-bold text-brand-ivory transition hover:bg-[#35392c]"
+              className="inline-flex h-10 items-center justify-center whitespace-nowrap rounded-xl bg-brand-ink px-3 text-sm font-bold text-brand-ivory transition hover:bg-[#35392c] active:translate-y-px dark:bg-brand-gold-light dark:text-brand-ink dark:hover:bg-[#f3dcae]"
               href="/register"
             >
               Sign up
             </Link>
           </div>
         </nav>
-
-        <section className="mx-auto grid max-w-7xl gap-8 py-20 md:grid-cols-[1.1fr_0.9fr] md:items-end">
-          <div>
-            <h1 className="max-w-3xl text-[64px] font-black uppercase leading-[0.9] text-brand-ink md:text-[96px]">
-              Help Center
-            </h1>
-            <p className="mt-6 max-w-2xl text-xl font-medium leading-7 text-brand-ink/80">
-              Whether you are starting onboarding, applying for projects, or
-              sorting out payments, this is your support home for Trinity-AI.
-            </p>
-          </div>
-          <label className="flex h-14 items-center gap-3 rounded-xl border border-brand-gold bg-brand-ivory px-4 shadow-brand-card focus-within:ring-2 focus-within:ring-brand-ink/20">
-            <Search className="h-5 w-5 shrink-0 text-brand-gold-strong" />
-            <input
-              aria-label="Search help articles"
-              className="h-full min-w-0 flex-1 bg-transparent text-sm text-brand-ink outline-none placeholder:text-brand-muted"
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search"
-              type="search"
-              value={query}
-            />
-          </label>
-        </section>
       </header>
 
-      <div className="mx-auto grid max-w-7xl gap-10 px-5 py-16 md:grid-cols-[240px_1fr] md:px-8">
-        <aside className="space-y-8">
-          {sidebarGroups.map((group) => (
-            <section key={group.title}>
-              <Link
-                className="text-lg font-bold text-brand-ink hover:text-brand-gold-strong hover:underline"
-                href={categoryHref(group.title)}
-              >
-                {group.title}
-              </Link>
-              <div className="mt-4 space-y-4">
-                {group.items.map((item) => {
-                  const articleTitle = sidebarArticleTitleByItem[item];
-                  const article = getArticle(articleTitle);
-                  const isActive = activeArticle.title === articleTitle;
-
-                  return (
-                    <Link
-                      className={`block text-left text-sm font-medium leading-5 transition ${
-                        isActive ? "text-brand-gold-strong" : "text-brand-muted"
-                      } hover:text-brand-ink`}
-                      href={`${categoryHref(article.category)}#${toId(
-                        article.title,
-                      )}`}
-                      key={item}
-                      onClick={() => openArticle(articleTitle)}
-                    >
-                      {item}
-                    </Link>
-                  );
-                })}
-              </div>
-            </section>
-          ))}
-        </aside>
-
-        <section className="min-w-0">
-          {isCategoryPage ? (
-            <div className="max-w-3xl">
-              <Link
-                className="text-sm font-bold text-brand-gold-strong underline"
-                href="/help-center"
-              >
-                Back to help center
-              </Link>
-              <h2 className="mt-6 text-4xl font-semibold text-brand-ink">
-                {activeCategory}
-              </h2>
-              <p className="mt-6 text-base font-medium leading-7 text-brand-muted">
-                Browse all {activeCategory.toLowerCase()} articles for
-                Trinity-AI. Each article opens on this category page with a
-                stable id in the URL.
-              </p>
-            </div>
-          ) : (
-          <>
-          <div className="max-w-3xl">
-            <h2 className="text-4xl font-semibold text-brand-ink">
-              Welcome to Trinity-AI
-            </h2>
-            <p className="mt-8 text-base font-medium leading-7 text-brand-muted">
-              Trinity-AI connects skilled contributors with flexible project
-              work that helps evaluate, improve, and operate AI systems.
+      <section className="border-b border-brand-sand/80 dark:border-[#363a30]">
+        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:py-20 lg:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)] lg:items-center lg:px-8">
+          <div>
+            <p className="text-sm font-bold text-brand-gold-strong dark:text-brand-gold-light">
+              Trinity-AI Help Center
             </p>
+            <h1 className="mt-4 max-w-3xl text-4xl font-black tracking-[-0.045em] text-brand-ink dark:text-[#f7f3ea] sm:text-5xl lg:text-6xl lg:leading-[1.02]">
+              Help for every step of the work.
+            </h1>
+            <p className="mt-5 max-w-xl text-base leading-7 text-brand-muted dark:text-[#b8b9b1]">
+              Find clear guidance for onboarding, project work, account safety,
+              and getting paid.
+            </p>
+            <label className="mt-8 block max-w-2xl">
+              <span className="text-sm font-bold text-brand-ink dark:text-[#f7f3ea]">
+                Search the help center
+              </span>
+              <span className="mt-2 flex min-h-14 items-center gap-3 rounded-2xl border border-brand-sand bg-brand-ivory px-4 shadow-[0_16px_50px_rgba(38,41,31,0.08)] transition focus-within:border-brand-gold focus-within:ring-2 focus-within:ring-brand-gold/30 dark:border-[#44483d] dark:bg-[#23261f] dark:shadow-none">
+                <Search className="h-5 w-5 shrink-0 text-brand-gold-strong dark:text-brand-gold-light" />
+                <input
+                  className="h-12 min-w-0 flex-1 bg-transparent text-base text-brand-ink outline-none placeholder:text-[#77796f] dark:text-[#f7f3ea] dark:placeholder:text-[#9b9d94]"
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="Search onboarding, payments, or projects"
+                  type="search"
+                  value={query}
+                />
+              </span>
+            </label>
           </div>
 
-          <section className="mt-20">
-            <h2 className="text-3xl font-semibold">
-              Popular topics
-            </h2>
-            <div className="mt-8 grid max-w-2xl grid-cols-1 gap-3 sm:grid-cols-2">
-              {popularTitles.map((title, index) => {
-                const article =
-                  articles.find((item) => item.title === title) ??
-                  getArticle(fallbackPopularArticles[index]);
+          <aside className="rounded-2xl border border-brand-gold/50 bg-[#f2e8d7] p-5 dark:border-brand-gold/40 dark:bg-[#29271f] sm:p-6">
+            <div className="flex items-center gap-3">
+              <CircleHelp className="h-5 w-5 text-brand-gold-strong dark:text-brand-gold-light" />
+              <h2 className="text-lg font-bold">Most requested help</h2>
+            </div>
+            <div className="mt-4 space-y-1">
+              {quickHelpTitles.map((title) => {
+                const article = getArticle(title);
 
                 return (
                   <Link
-                    className="flex min-h-32 items-center justify-between rounded-2xl border border-brand-sand bg-brand-ivory px-8 py-6 text-left text-xl font-semibold leading-6 shadow-brand-card transition hover:border-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold/40"
+                    className="group flex items-center justify-between gap-4 rounded-xl px-3 py-3 text-sm font-semibold transition hover:bg-brand-ivory/70 active:translate-y-px dark:hover:bg-[#35372f]"
                     href={`${categoryHref(article.category)}#${toId(
                       article.title,
                     )}`}
@@ -688,50 +596,206 @@ export function HelpCenterClient({ categoryId }: HelpCenterClientProps) {
                     onClick={() => openArticle(article.title)}
                   >
                     <span>{article.title}</span>
-                    <ChevronRight className="h-6 w-6 shrink-0" />
+                    <ArrowRight className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-0.5" />
+                  </Link>
+                );
+              })}
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      {!isCategoryPage && !hasQuery ? (
+        <div className="mx-auto max-w-7xl space-y-24 px-4 py-20 sm:px-6 lg:px-8">
+          <section aria-labelledby="popular-heading">
+            <h2
+              className="text-3xl font-black tracking-[-0.035em] sm:text-4xl"
+              id="popular-heading"
+            >
+              Start with a popular guide
+            </h2>
+            <div className="mt-8 grid gap-4 md:grid-cols-12 md:grid-rows-3">
+              {popularTitles.map((title, index) => {
+                const article = getArticle(title);
+                const ArticleIcon = index === 0 ? BookOpen : CheckCircle2;
+
+                return (
+                  <Link
+                    className={`group flex min-h-36 flex-col justify-between rounded-2xl border border-brand-sand bg-brand-ivory p-6 transition hover:-translate-y-0.5 hover:border-brand-gold hover:shadow-[0_18px_45px_rgba(38,41,31,0.08)] focus:outline-none focus:ring-2 focus:ring-brand-gold/40 active:translate-y-px dark:border-[#3b3f35] dark:bg-[#20231d] dark:hover:border-brand-gold dark:hover:shadow-none ${
+                      index === 0
+                        ? "md:col-span-7 md:row-span-3 md:min-h-[28rem] md:p-8"
+                        : "md:col-span-5"
+                    }`}
+                    href={`${categoryHref(article.category)}#${toId(
+                      article.title,
+                    )}`}
+                    key={title}
+                    onClick={() => openArticle(article.title)}
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <ArticleIcon className="h-6 w-6 text-brand-gold-strong dark:text-brand-gold-light" />
+                      <ChevronRight className="h-5 w-5 text-brand-muted transition-transform group-hover:translate-x-0.5 dark:text-[#9b9d94]" />
+                    </div>
+                    <div className={index === 0 ? "mt-16" : "mt-8"}>
+                      <p className="text-sm font-semibold text-brand-gold-strong dark:text-brand-gold-light">
+                        {article.category}
+                      </p>
+                      <h3
+                        className={`mt-2 font-bold tracking-[-0.025em] ${
+                          index === 0 ? "text-3xl sm:text-4xl" : "text-xl"
+                        }`}
+                      >
+                        {article.title}
+                      </h3>
+                      {index === 0 ? (
+                        <p className="mt-4 max-w-lg text-sm leading-6 text-brand-muted dark:text-[#b8b9b1]">
+                          {article.summary}
+                        </p>
+                      ) : null}
+                    </div>
                   </Link>
                 );
               })}
             </div>
           </section>
 
-          <section className="mt-20">
-            <h2 className="text-3xl font-semibold">
-              Categories
+          <section className="grid gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:gap-20">
+            <div>
+              <h2 className="text-3xl font-black tracking-[-0.035em] sm:text-4xl">
+                Browse by topic
+              </h2>
+              <p className="mt-4 max-w-md text-base leading-7 text-brand-muted dark:text-[#b8b9b1]">
+                Follow the part of your Trinity-AI journey you need help with
+                right now.
+              </p>
+            </div>
+            <div className="space-y-2">
+              {categories.map((category) => {
+                const CategoryIcon = categoryIcons[category];
+                const categoryArticleCount = articles.filter(
+                  (article) => article.category === category,
+                ).length;
+
+                return (
+                  <Link
+                    className="group grid min-h-20 grid-cols-[auto_1fr_auto] items-center gap-4 rounded-2xl border border-transparent px-4 py-4 transition hover:border-brand-sand hover:bg-brand-ivory focus:outline-none focus:ring-2 focus:ring-brand-gold/40 active:translate-y-px dark:hover:border-[#3b3f35] dark:hover:bg-[#20231d] sm:px-5"
+                    href={categoryHref(category)}
+                    key={category}
+                  >
+                    <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#f2e8d7] text-brand-gold-strong dark:bg-[#302d24] dark:text-brand-gold-light">
+                      <CategoryIcon className="h-5 w-5" />
+                    </span>
+                    <span>
+                      <span className="block text-base font-bold sm:text-lg">
+                        {category}
+                      </span>
+                      <span className="mt-0.5 block text-sm text-brand-muted dark:text-[#b8b9b1]">
+                        {categoryArticleCount} articles
+                      </span>
+                    </span>
+                    <ChevronRight className="h-5 w-5 text-brand-muted transition-transform group-hover:translate-x-0.5 dark:text-[#9b9d94]" />
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        </div>
+      ) : null}
+
+      <section
+        className={`mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 ${
+          isCategoryPage || hasQuery ? "py-16 md:py-20" : "pb-24"
+        }`}
+        id="help-library"
+      >
+        {isCategoryPage ? (
+          <div className="mb-10 max-w-3xl">
+            <Link
+              className="inline-flex items-center gap-2 text-sm font-bold text-brand-gold-strong transition hover:text-brand-ink dark:text-brand-gold-light dark:hover:text-[#f7f3ea]"
+              href="/help-center"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              All help topics
+            </Link>
+            <h2 className="mt-5 text-4xl font-black tracking-[-0.04em] sm:text-5xl">
+              {activeCategory}
             </h2>
-            <div className="mt-8 max-w-2xl space-y-3">
-              {categories.map((category) => (
+            <p className="mt-4 max-w-2xl text-base leading-7 text-brand-muted dark:text-[#b8b9b1]">
+              Practical guidance for {activeCategory.toLowerCase()} on
+              Trinity-AI.
+            </p>
+          </div>
+        ) : hasQuery ? (
+          <div className="mb-8">
+            <p className="text-sm font-bold text-brand-gold-strong dark:text-brand-gold-light">
+              Search results
+            </p>
+            <h2 className="mt-2 text-3xl font-black tracking-[-0.035em]">
+              {articleCountLabel} for &ldquo;{query.trim()}&rdquo;
+            </h2>
+          </div>
+        ) : (
+          <div className="mb-8 max-w-2xl">
+            <h2 className="text-3xl font-black tracking-[-0.035em] sm:text-4xl">
+              Read the full library
+            </h2>
+            <p className="mt-4 text-base leading-7 text-brand-muted dark:text-[#b8b9b1]">
+              Choose a topic and open any guide without leaving the page.
+            </p>
+          </div>
+        )}
+
+        <div className="grid gap-5 xl:grid-cols-[210px_300px_minmax(0,1fr)]">
+          <nav
+            aria-label="Help categories"
+            className="flex gap-2 overflow-x-auto pb-2 xl:block xl:space-y-1 xl:overflow-visible xl:pb-0"
+          >
+            {categories.map((category) => {
+              const CategoryIcon = categoryIcons[category];
+              const isActive = !hasQuery && activeCategory === category;
+
+              return (
                 <Link
-                  className={`flex h-20 w-full items-center justify-between rounded-2xl border px-8 text-left text-xl font-semibold transition focus:outline-none focus:ring-2 focus:ring-brand-gold/40 ${
-                    activeCategory === category
-                      ? "border-brand-gold bg-[#f2e8d7]"
-                      : "border-brand-sand bg-brand-ivory hover:border-brand-gold"
+                  aria-current={isActive ? "page" : undefined}
+                  className={`flex shrink-0 items-center gap-3 whitespace-nowrap rounded-xl px-3 py-3 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-brand-gold/40 active:translate-y-px xl:w-full ${
+                    isActive
+                      ? "bg-[#f2e8d7] text-brand-ink dark:bg-[#302d24] dark:text-[#f7f3ea]"
+                      : "text-brand-muted hover:bg-brand-ivory hover:text-brand-ink dark:text-[#b8b9b1] dark:hover:bg-[#20231d] dark:hover:text-[#f7f3ea]"
                   }`}
                   href={categoryHref(category)}
                   key={category}
                 >
+                  <CategoryIcon className="h-4 w-4 shrink-0" />
                   {category}
-                  <ChevronRight className="h-6 w-6" />
                 </Link>
-              ))}
-            </div>
-          </section>
-          </>
-          )}
+              );
+            })}
+          </nav>
 
-          <section className="mt-20 grid gap-8 lg:grid-cols-[280px_minmax(0,1fr)]">
-            <div>
-              <h2 className="text-2xl font-semibold">
-                {query.trim() ? "Search results" : "Articles"}
-              </h2>
-              <div className="mt-5 space-y-2">
-                {displayedArticles.length ? (
-                  displayedArticles.map((article) => (
+          <div
+            aria-live="polite"
+            className="rounded-2xl border border-brand-sand bg-brand-ivory p-2 dark:border-[#3b3f35] dark:bg-[#20231d] xl:max-h-[680px] xl:overflow-y-auto"
+          >
+            <div className="flex items-center justify-between gap-3 px-3 pb-2 pt-2">
+              <h3 className="text-sm font-bold">
+                {hasQuery ? "Matches" : activeCategory}
+              </h3>
+              <span className="text-xs font-semibold text-brand-muted dark:text-[#9b9d94]">
+                {articleCountLabel}
+              </span>
+            </div>
+            {displayedArticles.length ? (
+              <div className="space-y-1">
+                {displayedArticles.map((article) => {
+                  const isActive = activeArticle.title === article.title;
+
+                  return (
                     <Link
-                      className={`flex min-h-12 w-full items-center rounded-xl px-4 py-3 text-left text-sm font-semibold leading-5 transition focus:outline-none focus:ring-2 focus:ring-brand-gold/40 ${
-                        activeArticle.title === article.title
-                          ? "bg-brand-ink text-brand-ivory"
-                          : "bg-brand-ivory text-brand-ink hover:bg-[#f2e8d7]"
+                      aria-current={isActive ? "location" : undefined}
+                      className={`block rounded-xl px-3 py-3 transition focus:outline-none focus:ring-2 focus:ring-brand-gold/40 active:translate-y-px ${
+                        isActive
+                          ? "bg-brand-ink text-brand-ivory dark:bg-brand-gold-light dark:text-brand-ink"
+                          : "hover:bg-[#f2e8d7] dark:hover:bg-[#302d24]"
                       }`}
                       href={`${categoryHref(article.category)}#${toId(
                         article.title,
@@ -739,148 +803,160 @@ export function HelpCenterClient({ categoryId }: HelpCenterClientProps) {
                       key={article.title}
                       onClick={() => openArticle(article.title)}
                     >
-                      {article.title}
+                      {hasQuery ? (
+                        <span
+                          className={`mb-1 block text-xs font-semibold ${
+                            isActive
+                              ? "text-brand-gold-light dark:text-brand-gold-strong"
+                              : "text-brand-gold-strong dark:text-brand-gold-light"
+                          }`}
+                        >
+                          {article.category}
+                        </span>
+                      ) : null}
+                      <span className="block text-sm font-semibold leading-5">
+                        {article.title}
+                      </span>
                     </Link>
-                  ))
-                ) : (
-                  <p className="rounded-xl border border-brand-sand bg-brand-ivory p-4 text-sm text-brand-muted">
-                    No articles match this search. Try a shorter phrase or
-                    choose a category.
-                  </p>
-                )}
+                  );
+                })}
               </div>
-            </div>
-
-            <article
-              className="scroll-mt-8 rounded-2xl border border-brand-sand bg-brand-ivory p-6 shadow-brand-card"
-              id={toId(activeArticle.title)}
-            >
-              <p className="text-sm font-bold text-brand-gold-strong">
-                {activeArticle.category}
-              </p>
-              <h2 className="mt-3 text-3xl font-semibold">
-                {activeArticle.title}
-              </h2>
-              <p className="mt-3 text-base font-medium leading-7 text-brand-muted">
-                {activeArticle.summary}
-              </p>
-              <div className="mt-6 space-y-4">
-                {activeArticle.body.map((paragraph) => (
-                  <p
-                    className="text-sm font-medium leading-7 text-brand-ink"
-                    key={paragraph}
-                  >
-                    {paragraph}
-                  </p>
-                ))}
+            ) : (
+              <div className="px-3 py-10 text-center">
+                <CircleHelp className="mx-auto h-7 w-7 text-brand-gold-strong dark:text-brand-gold-light" />
+                <p className="mt-3 text-sm font-bold">No matching articles</p>
+                <p className="mt-1 text-sm leading-6 text-brand-muted dark:text-[#b8b9b1]">
+                  Try a shorter phrase or browse a topic.
+                </p>
               </div>
-            </article>
-          </section>
+            )}
+          </div>
 
-          <section
-            className="mt-20 rounded-2xl border border-brand-gold/50 bg-[#f2e8d7] p-6"
-            id="contact-support"
+          <article
+            className="scroll-mt-24 rounded-2xl border border-brand-sand bg-brand-ivory p-6 dark:border-[#3b3f35] dark:bg-[#20231d] sm:p-8 xl:sticky xl:top-6 xl:self-start"
+            id={toId(activeArticle.title)}
           >
-            <div className="flex items-center gap-3">
-              <Mail className="h-7 w-7 text-brand-gold-strong" />
-              <h2 className="text-3xl font-semibold">
-                Contact support
-              </h2>
-            </div>
-            <p className="mt-3 max-w-2xl text-sm font-medium leading-7 text-brand-muted">
-              Send a clear note with your project name, account email, and the
-              issue you need help with. This form prepares your message and
-              opens your email app so support can follow up.
+            <p className="text-sm font-bold text-brand-gold-strong dark:text-brand-gold-light">
+              {activeArticle.category}
             </p>
-            <div className="mt-5 grid gap-3 md:grid-cols-[1fr_auto]">
-              <input
-                className="h-12 rounded-xl border border-brand-sand bg-brand-ivory px-4 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
+            <h2 className="mt-3 text-3xl font-black tracking-[-0.035em] sm:text-4xl">
+              {activeArticle.title}
+            </h2>
+            <p className="mt-4 text-base font-medium leading-7 text-brand-muted dark:text-[#b8b9b1]">
+              {activeArticle.summary}
+            </p>
+            <div className="mt-7 space-y-5 border-t border-brand-sand pt-7 dark:border-[#3b3f35]">
+              {activeArticle.body.map((paragraph) => (
+                <p className="text-sm leading-7 sm:text-base" key={paragraph}>
+                  {paragraph}
+                </p>
+              ))}
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section
+        className="border-y border-brand-sand bg-[#f2e8d7] dark:border-[#3b3f35] dark:bg-[#29271f]"
+        id="contact-support"
+      >
+        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:px-6 md:py-20 lg:grid-cols-[0.75fr_1.25fr] lg:gap-20 lg:px-8">
+          <div>
+            <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-ivory text-brand-gold-strong dark:bg-[#20231d] dark:text-brand-gold-light">
+              <Mail className="h-5 w-5" />
+            </span>
+            <h2 className="mt-5 text-3xl font-black tracking-[-0.035em] sm:text-4xl">
+              Still need help?
+            </h2>
+            <p className="mt-4 max-w-md text-base leading-7 text-brand-muted dark:text-[#b8b9b1]">
+              Include the project name, your account email, and the exact issue
+              so support can respond clearly.
+            </p>
+          </div>
+          <div>
+            <label className="block" htmlFor="support-message">
+              <span className="text-sm font-bold">Describe the issue</span>
+              <textarea
+                className="mt-2 min-h-32 w-full resize-y rounded-2xl border border-brand-sand bg-brand-ivory px-4 py-3 text-sm leading-6 text-brand-ink outline-none placeholder:text-[#77796f] focus:border-brand-gold focus:ring-2 focus:ring-brand-gold/30 dark:border-[#44483d] dark:bg-[#20231d] dark:text-[#f7f3ea] dark:placeholder:text-[#9b9d94]"
+                id="support-message"
                 onChange={(event) => {
                   setSupportMessage(event.target.value);
                   setPreparedMessage("");
                 }}
-                placeholder="Describe what you need help with"
+                placeholder="Tell us what happened and what you expected."
                 value={supportMessage}
               />
+            </label>
+            <p className="mt-2 text-xs leading-5 text-brand-muted dark:text-[#b8b9b1]">
+              This opens your email app. Your message is not submitted until
+              you send the email.
+            </p>
+            <div className="mt-4 flex flex-wrap items-center gap-3">
               <button
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-brand-ink px-5 text-sm font-bold text-brand-ivory transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold/40 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-brand-ink px-5 text-sm font-bold text-brand-ivory transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold/40 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50 dark:bg-brand-gold-light dark:text-brand-ink dark:hover:bg-[#f3dcae]"
                 disabled={!supportMessage.trim()}
                 onClick={prepareSupportMessage}
                 type="button"
               >
                 <Send className="h-4 w-4" />
-                Prepare message
+                Prepare email
               </button>
-            </div>
-            {preparedMessage ? (
-              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-brand-ivory p-4">
-                <p className="text-sm font-semibold text-[#064e3b]">
-                  Message prepared. Send it to support so the team can follow up.
-                </p>
+              {preparedMessage ? (
                 <a
-                  className="inline-flex items-center gap-2 text-sm font-bold text-brand-gold-strong underline"
+                  className="inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-brand-gold px-5 text-sm font-bold text-brand-ink transition hover:bg-brand-ivory focus:outline-none focus:ring-2 focus:ring-brand-gold/40 active:translate-y-px dark:text-[#f7f3ea] dark:hover:bg-[#20231d]"
                   href={mailtoHref}
                 >
                   Email support
                   <ArrowRight className="h-4 w-4" />
                 </a>
-              </div>
-            ) : null}
-          </section>
-        </section>
-      </div>
-
-      <footer className="overflow-hidden rounded-t-3xl bg-brand-ink px-5 py-10 text-brand-ivory md:px-8">
-        <div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-[1fr_1.2fr]">
-          <div>
-            <p className="max-w-sm text-4xl font-semibold leading-tight">
-              The project network for the AI economy
-            </p>
-            <div className="mt-8 flex gap-3">
-              <span className="rounded-lg bg-black px-4 py-2 text-xs font-bold">
-                App Store
-              </span>
-              <span className="rounded-lg bg-black px-4 py-2 text-xs font-bold">
-                Google Play
-              </span>
+              ) : null}
             </div>
-          </div>
-          <div className="grid grid-cols-2 gap-8 text-sm md:grid-cols-4">
-            {[
-              ["Contributors", "Find work", "Career tips"],
-              ["Trinity-AI", "Program", "Opportunities", "Help center"],
-              ["Clients", "Pricing", "Request demo"],
-              ["Company", "About", "Support", "Contact"],
-            ].map(([heading, ...items]) => (
-              <div key={heading}>
-                <h3 className="font-bold text-brand-gold-light">{heading}</h3>
-                <div className="mt-4 space-y-3">
-                  {items.map((item) => (
-                    <Link
-                      className="block font-semibold text-brand-ivory hover:text-brand-gold-light hover:underline"
-                      href={
-                        item === "Help center" || item === "Support"
-                          ? "/help-center"
-                          : "/home"
-                      }
-                      key={item}
-                    >
-                      {item}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            ))}
+            {preparedMessage ? (
+              <p
+                className="mt-3 text-sm font-semibold text-brand-gold-strong dark:text-brand-gold-light"
+                role="status"
+              >
+                Your message is ready to open in your email app.
+              </p>
+            ) : null}
           </div>
         </div>
-        <p className="mt-12 text-[92px] font-black italic leading-none text-brand-gold-light sm:text-[140px] md:text-[220px]">
-          Trinity-AI
-        </p>
-        <div className="mx-auto flex max-w-7xl flex-wrap gap-6 text-xs font-semibold text-brand-gold-light/70">
-          <span>&copy;2026 Trinity-AI. All rights reserved</span>
-          <Link href="/home">Privacy policy</Link>
-          <Link href="/home">Accessibility</Link>
-          <Link href="/home">Terms of service</Link>
+      </section>
+
+      <footer className="bg-brand-canvas dark:bg-[#171915]">
+        <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-10 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
+          <div>
+            <BrandLogo
+              imageClassName="h-9 w-9"
+              nameClassName="text-base font-black italic text-brand-ink dark:text-[#f7f3ea]"
+              showName
+              size={36}
+            />
+            <p className="mt-3 text-sm text-brand-muted dark:text-[#b8b9b1]">
+              Clear answers for contributors doing important AI work.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm font-semibold text-brand-muted dark:text-[#b8b9b1]">
+            <Link
+              className="hover:text-brand-ink dark:hover:text-[#f7f3ea]"
+              href="/apply"
+            >
+              Find work
+            </Link>
+            <Link
+              className="hover:text-brand-ink dark:hover:text-[#f7f3ea]"
+              href="/about-us"
+            >
+              About
+            </Link>
+            <Link
+              className="hover:text-brand-ink dark:hover:text-[#f7f3ea]"
+              href="/help-center#contact-support"
+            >
+              Support
+            </Link>
+            <span>&copy; 2026 Trinity-AI</span>
+          </div>
         </div>
       </footer>
     </main>
