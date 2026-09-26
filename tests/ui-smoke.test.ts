@@ -224,6 +224,24 @@ test("dashboard UI renders application and payment state", () => {
   assert.match(markup, /\$25\.00/);
 });
 
+test("dashboard removes onboarding prompts after review approval", () => {
+  const markup = renderToStaticMarkup(
+    createElement(HomeDashboardClient, {
+      userName: "Ada",
+      onboardingComplete: true,
+      paymentSummary: {
+        formattedAwaitingPayment: "$0.00",
+        formattedHoursWorked: "0",
+      },
+      projects: [],
+    }),
+  );
+
+  assert.doesNotMatch(markup, /Complete onboarding/);
+  assert.doesNotMatch(markup, /Application under review/);
+  assert.doesNotMatch(markup, /PENDING TASKS/);
+});
+
 test("dashboard keeps task controls locked during onboarding review", () => {
   const markup = renderToStaticMarkup(
     createElement(HomeDashboardClient, {
