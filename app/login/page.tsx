@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
 type LoginPageProps = {
   searchParams: Promise<{
     callbackUrl?: string;
+    verified?: string;
   }>;
 };
 
@@ -22,6 +23,7 @@ function safeCallbackUrl(value: string | undefined) {
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
   const callbackUrl = safeCallbackUrl(params.callbackUrl);
+  const emailVerified = params.verified === "1";
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_18%_22%,rgba(235,204,144,0.28),transparent_30%),linear-gradient(135deg,#f7f3ea,#fffdf8)] text-brand-ink">
@@ -46,7 +48,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </p>
         </div>
         <div className="rounded-2xl border border-brand-sand bg-brand-ivory p-6 shadow-brand-card">
-          <LoginForm callbackUrl={callbackUrl} />
+          <LoginForm
+            callbackUrl={callbackUrl}
+            emailVerified={emailVerified}
+          />
         </div>
       </section>
     </main>

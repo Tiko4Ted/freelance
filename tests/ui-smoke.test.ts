@@ -12,6 +12,7 @@ import { HomeProjectToggle } from "../components/admin/home-project-toggle";
 import { ApplicationSubmissionPage } from "../components/application-feedback";
 import { HomeDashboardClient } from "../components/home-dashboard-client";
 import { JobBoard } from "../components/jobs/job-board";
+import { LoginForm } from "../components/auth/login-form";
 import { PortalSidebar } from "../components/portal-sidebar";
 
 test("authenticated portal sidebar renders a logout control", () => {
@@ -30,6 +31,18 @@ test("authenticated portal sidebar renders a logout control", () => {
   assert.match(markup, /text-brand-gold-light/);
   assert.doesNotMatch(markup, /text-brand-gold-light\/70/);
   assert.doesNotMatch(markup, /Informational notification dot/);
+});
+
+test("login renders confirmation after email verification", () => {
+  const markup = renderToStaticMarkup(
+    createElement(LoginForm, {
+      callbackUrl: "/home",
+      emailVerified: true,
+    }),
+  );
+
+  assert.match(markup, /Email verified\. Sign in to continue\./);
+  assert.match(markup, /role="status"/);
 });
 
 test("public jobs UI renders a referral-preserving application link", () => {

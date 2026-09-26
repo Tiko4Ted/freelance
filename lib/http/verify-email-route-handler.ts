@@ -11,6 +11,10 @@ type VerifyEmailDependencies = {
   verifyToken: (token: string) => Promise<EmailVerificationResult>;
 };
 
+const noStore = {
+  headers: { "Cache-Control": "no-store" },
+};
+
 export function createVerifyEmailPostHandler(
   dependencies: VerifyEmailDependencies,
 ) {
@@ -19,29 +23,35 @@ export function createVerifyEmailPostHandler(
     try {
       body = await request.json();
     } catch {
-      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid request" },
+        { ...noStore, status: 400 },
+      );
     }
 
     const parsed = verifyEmailSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json({ error: "Invalid verification link" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid verification link" },
+        { ...noStore, status: 400 },
+      );
     }
 
     const result = await dependencies.verifyToken(parsed.data.token);
     if (result === "expired") {
       return NextResponse.json(
         { error: "Verification link has expired" },
-        { status: 410 },
+        { ...noStore, status: 410 },
       );
     }
 
     if (result === "invalid") {
       return NextResponse.json(
         { error: "Verification link is invalid or has already been used" },
-        { status: 400 },
+        { ...noStore, status: 400 },
       );
     }
 
-    return NextResponse.json({ verified: true });
+    return NextResponse.json({ verified: true }, noStore);
   };
 }

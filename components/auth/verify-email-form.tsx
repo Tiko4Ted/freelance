@@ -1,12 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type VerificationState =
   | { status: "idle"; message: string }
   | { status: "submitting"; message: string }
-  | { status: "success"; message: string }
   | { status: "error"; message: string };
 
 type VerifyEmailFormProps = {
@@ -32,6 +31,18 @@ export function VerifyEmailForm({ token }: VerifyEmailFormProps) {
     message: token ? "" : "This verification link is incomplete.",
   });
 
+  useEffect(() => {
+    if (!token || !window.location.search) {
+      return;
+    }
+
+    window.history.replaceState(
+      window.history.state,
+      "",
+      window.location.pathname,
+    );
+  }, [token]);
+
   async function verifyEmail() {
     if (!token || state.status === "submitting") {
       return;
@@ -52,32 +63,13 @@ export function VerifyEmailForm({ token }: VerifyEmailFormProps) {
         return;
       }
 
-      setState({
-        status: "success",
-        message: "Your email is verified. Your Trinity-AI account is ready.",
-      });
+      window.location.replace("/login?verified=1");
     } catch {
       setState({
         status: "error",
         message: "Unable to reach the verification service. Try again.",
       });
     }
-  }
-
-  if (state.status === "success") {
-    return (
-      <div aria-live="polite" className="space-y-5 text-center">
-        <p className="text-sm font-medium leading-6 text-brand-muted">
-          {state.message}
-        </p>
-        <Link
-          className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-brand-ink px-5 text-sm font-semibold text-brand-ivory transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold/40"
-          href="/login"
-        >
-          Continue to sign in
-        </Link>
-      </div>
-    );
   }
 
   return (
