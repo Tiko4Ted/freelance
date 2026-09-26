@@ -19,6 +19,7 @@ type OnboardingStatus = {
   phoneCountryCode: string | null;
   phoneNumber: string | null;
   phoneVerifiedAt: string | null;
+  phoneVerificationPending: boolean;
   identityLegalName: string | null;
   identityDateOfBirth: string | null;
   identityDocumentType: string | null;
@@ -124,10 +125,13 @@ export function OnboardingFlowClient({
   const [agreed, setAgreed] = useState(false);
   const [signatureText, setSignatureText] = useState(userName);
   const [phoneCountryCode, setPhoneCountryCode] = useState(
-    onboarding.phoneCountryCode ?? "+1",
+    onboarding.phoneCountryCode ?? "+254",
   );
   const [phoneNumber, setPhoneNumber] = useState(onboarding.phoneNumber ?? "");
-  const [verificationCode, setVerificationCode] = useState("123456");
+  const [verificationCode, setVerificationCode] = useState("");
+  const [verificationRequested, setVerificationRequested] = useState(
+    onboarding.phoneVerificationPending,
+  );
   const [identityLegalName, setIdentityLegalName] = useState(
     onboarding.identityLegalName ?? userName,
   );
@@ -161,6 +165,7 @@ export function OnboardingFlowClient({
   const saveOnboardingAction = async (
     payload: Record<string, unknown>,
     successMessage: string,
+    submittingMessage = "Saving onboarding progress",
   ) => {
     if (!isAuthenticated) {
       setState({
@@ -170,7 +175,7 @@ export function OnboardingFlowClient({
       return false;
     }
 
-    setState({ status: "submitting", message: "Saving onboarding progress" });
+    setState({ status: "submitting", message: submittingMessage });
 
     let response: Response;
     let responsePayload: unknown;
@@ -229,15 +234,58 @@ export function OnboardingFlowClient({
 
   const handlePhoneSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    await saveOnboardingAction(
+
+    if (!verificationRequested) {
+      await handleSendVerificationCode();
+      return;
+    }
+
+    const verified = await saveOnboardingAction(
       {
         action: "verifyPhone",
         phoneCountryCode,
         phoneNumber,
         verificationCode,
       },
-      "Phone verification saved",
+      "Phone number verified",
+      "Checking verification code",
     );
+
+    if (verified) {
+      setVerificationCode("");
+      setVerificationRequested(false);
+    }
+  };
+
+  const handleSendVerificationCode = async () => {
+    const sent = await saveOnboardingAction(
+      {
+        action: "requestPhoneVerification",
+        phoneCountryCode,
+        phoneNumber,
+      },
+      "Verification code sent by SMS",
+      "Sending verification code",
+    );
+
+    if (sent) {
+      setVerificationCode("");
+      setVerificationRequested(true);
+    }
+  };
+
+  const handlePhoneFieldChange = (
+    field: "countryCode" | "number",
+    value: string,
+  ) => {
+    if (field === "countryCode") {
+      setPhoneCountryCode(value);
+    } else {
+      setPhoneNumber(value);
+    }
+
+    setVerificationCode("");
+    setVerificationRequested(false);
   };
 
   const handleIdentitySubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -272,6 +320,11 @@ export function OnboardingFlowClient({
     year: "numeric",
   }).format(new Date());
   const saving = state.status === "submitting";
+  const matchesVerifiedPhone = Boolean(
+    onboarding.phoneVerified &&
+      phoneCountryCode === onboarding.phoneCountryCode &&
+      phoneNumber === onboarding.phoneNumber,
+  );
   const steps = [
     {
       id: "phone" as const,
@@ -527,7 +580,7 @@ export function OnboardingFlowClient({
                   Verify phone
                 </h3>
                 <p className="mt-1 text-sm text-slate-500">
-                  Add the phone number used for account updates.
+                  We will text a six-digit code to confirm this number.
                 </p>
               </div>
               {onboarding.phoneVerified ? (
@@ -545,8 +598,12 @@ export function OnboardingFlowClient({
                   Code
                 </span>
                 <input
+                  autoComplete="tel-country-code"
                   className="mt-1 h-11 w-full rounded-xl border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none transition focus:border-brand-gold focus:ring-1 focus:ring-brand-gold disabled:bg-brand-sand/50"
-                  onChange={(event) => setPhoneCountryCode(event.target.value)}
+                  inputMode="tel"
+                  onChange={(event) =>
+                    handlePhoneFieldChange("countryCode", event.target.value)
+                  }
                   required
                   value={phoneCountryCode}
                 />
@@ -556,35 +613,62 @@ export function OnboardingFlowClient({
                   Phone number
                 </span>
                 <input
+                  autoComplete="tel-national"
                   className="mt-1 h-11 w-full rounded-xl border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none transition focus:border-brand-gold focus:ring-1 focus:ring-brand-gold disabled:bg-brand-sand/50"
-                  onChange={(event) => setPhoneNumber(event.target.value)}
-                  placeholder="555 123 4567"
+                  inputMode="tel"
+                  onChange={(event) =>
+                    handlePhoneFieldChange("number", event.target.value)
+                  }
+                  placeholder="712 345 678"
                   required
                   value={phoneNumber}
                 />
               </label>
+              {verificationRequested ? (
               <label className="block sm:col-span-2">
                 <span className="text-xs font-semibold text-slate-600">
                   Verification code
                 </span>
                 <input
+                  autoComplete="one-time-code"
                   className="mt-1 h-11 w-full rounded-xl border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none transition focus:border-brand-gold focus:ring-1 focus:ring-brand-gold disabled:bg-brand-sand/50"
                   inputMode="numeric"
+                  maxLength={6}
                   onChange={(event) => setVerificationCode(event.target.value)}
+                  pattern="[0-9]{6}"
+                  placeholder="6-digit code"
                   required
                   value={verificationCode}
                 />
+                <span className="mt-1 block text-xs text-slate-500">
+                  The code expires after 10 minutes and can only be used once.
+                </span>
               </label>
+              ) : null}
             </fieldset>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <button
                   className="inline-flex h-11 items-center justify-center rounded-xl border border-brand-gold bg-[#f2e8d7] px-5 text-sm font-semibold text-brand-gold-strong transition hover:bg-brand-gold-light/50 disabled:cursor-not-allowed disabled:opacity-50"
-                  disabled={saving}
-                  type="submit"
+                  disabled={saving || matchesVerifiedPhone}
+                  onClick={handleSendVerificationCode}
+                  type="button"
                 >
-                  {onboarding.phoneVerified ? "Update Phone" : "Verify Phone"}
+                  {matchesVerifiedPhone
+                    ? "Phone verified"
+                    : verificationRequested
+                      ? "Send another code"
+                      : "Send verification code"}
                 </button>
+                {verificationRequested ? (
+                  <button
+                    className="inline-flex h-11 items-center justify-center rounded-xl border border-brand-gold bg-brand-gold px-5 text-sm font-semibold text-brand-ink transition hover:bg-brand-gold-light disabled:cursor-not-allowed disabled:opacity-50"
+                    disabled={saving || verificationCode.length !== 6}
+                    type="submit"
+                  >
+                    Verify code
+                  </button>
+                ) : null}
                 <button
                   className="inline-flex h-11 items-center justify-center rounded-xl bg-brand-ink px-5 text-sm font-semibold text-brand-ivory shadow-xs transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold/40 disabled:cursor-not-allowed disabled:opacity-50"
                   disabled={!onboarding.phoneVerified}

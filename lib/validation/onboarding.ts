@@ -11,8 +11,8 @@ const signatureFields = z.object({
 const phoneCountryCode = z
   .string()
   .trim()
-  .regex(/^\+\d{1,4}$/, "Use a phone country code like +1")
-  .max(5);
+  .regex(/^\+[1-9]\d{0,2}$/, "Use a phone country code like +254")
+  .max(4);
 
 const phoneNumber = z
   .string()
@@ -23,7 +23,7 @@ const phoneNumber = z
 const verificationCode = z
   .string()
   .trim()
-  .regex(/^\d{4,8}$/, "Enter the verification code");
+  .regex(/^\d{6}$/, "Enter the six-digit verification code");
 
 const dateOnly = z
   .string()
@@ -37,6 +37,11 @@ export const onboardingActionSchema = z.discriminatedUnion("action", [
       document: signedDocumentSchema,
     })
     .merge(signatureFields),
+  z.object({
+    action: z.literal("requestPhoneVerification"),
+    phoneCountryCode,
+    phoneNumber,
+  }),
   z.object({
     action: z.literal("verifyPhone"),
     phoneCountryCode,

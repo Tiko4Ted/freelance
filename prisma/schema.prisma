@@ -93,30 +93,36 @@ model EmailVerificationToken {
 }
 
 model UserOnboarding {
-  userId                      String    @id
-  user                        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  ndaSignedAt                 DateTime?
-  ndaSignerName               String?
-  ndaSignerTitle              String?
-  ndaSignatureText            String?
-  dataSubmissionSignedAt      DateTime?
-  dataSubmissionSignerName    String?
-  dataSubmissionSignerTitle   String?
-  dataSubmissionSignatureText String?
-  phoneCountryCode            String?
-  phoneNumber                 String?
-  phoneVerifiedAt             DateTime?
-  identityLegalName           String?
-  identityDateOfBirth         DateTime?
-  identityDocumentType        String?
-  identityDocumentLast4       String?
-  identityVerifiedAt          DateTime?
-  paymentMethod               String?
-  paymentDestination          String?
-  paymentSetupAt              DateTime?
-  completedAt                 DateTime?
-  createdAt                   DateTime  @default(now())
-  updatedAt                   DateTime  @updatedAt
+  userId                           String    @id
+  user                             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ndaSignedAt                      DateTime?
+  ndaSignerName                    String?
+  ndaSignerTitle                   String?
+  ndaSignatureText                 String?
+  dataSubmissionSignedAt           DateTime?
+  dataSubmissionSignerName         String?
+  dataSubmissionSignerTitle        String?
+  dataSubmissionSignatureText      String?
+  phoneCountryCode                 String?
+  phoneNumber                      String?
+  phoneVerifiedAt                  DateTime?
+  phoneVerificationCodeHash        String?
+  phoneVerificationExpiresAt       DateTime?
+  phoneVerificationAttempts        Int       @default(0)
+  phoneVerificationSentAt          DateTime?
+  phoneVerificationSendCount       Int       @default(0)
+  phoneVerificationWindowStartedAt DateTime?
+  identityLegalName                String?
+  identityDateOfBirth              DateTime?
+  identityDocumentType             String?
+  identityDocumentLast4            String?
+  identityVerifiedAt               DateTime?
+  paymentMethod                    String?
+  paymentDestination               String?
+  paymentSetupAt                   DateTime?
+  completedAt                      DateTime?
+  createdAt                        DateTime  @default(now())
+  updatedAt                        DateTime  @updatedAt
 }
 
 model Job {
