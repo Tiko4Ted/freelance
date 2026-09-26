@@ -53,7 +53,8 @@ export const onboardingActionSchema = z.discriminatedUnion("action", [
     legalName: z.string().trim().min(1).max(160),
     dateOfBirth: dateOnly,
     documentType: z.enum(["national_id", "passport", "drivers_license"]),
-    documentLast4: z.string().trim().regex(/^[A-Za-z0-9]{4}$/),
+    documentFrontSelected: z.literal(true),
+    documentBackSelected: z.literal(true),
   }),
   z.object({
     action: z.literal("setupPayments"),

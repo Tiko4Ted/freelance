@@ -56,6 +56,16 @@ function statusClass(value: boolean) {
     : "bg-amber-50 text-amber-700";
 }
 
+function identityDocumentLabel(value?: string | null) {
+  const labels: Record<string, string> = {
+    national_id: "National ID",
+    passport: "Passport",
+    drivers_license: "Driver's license",
+  };
+
+  return labels[value ?? ""] ?? "Identity document";
+}
+
 export default async function ProfilePage() {
   const session = await auth();
   const userId = session?.user?.id;
@@ -173,7 +183,7 @@ export default async function ProfilePage() {
       complete: onboarding.identityVerified,
       label: "Identity",
       value: onboarding.identityVerified
-        ? `${onboarding.identityDocumentType ?? "Document"} ending ${onboarding.identityDocumentLast4 ?? "----"}`
+        ? `${identityDocumentLabel(onboarding.identityDocumentType)} images confirmed`
         : "Verify identity",
     },
     {
