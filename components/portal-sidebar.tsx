@@ -68,12 +68,12 @@ export function PortalSidebar({
   const initial = (userName.trim()[0] || "T").toUpperCase();
 
   return (
-    <aside className="sticky top-0 z-40 flex h-dvh w-[88px] shrink-0 select-none flex-col overflow-hidden border-r border-[#4b452f] bg-brand-ink text-brand-gold-light shadow-[8px_0_28px_rgba(38,41,31,0.12)] sm:w-[104px]">
+    <aside className="sticky top-0 z-40 flex h-dvh w-[92px] shrink-0 select-none flex-col overflow-hidden border-r border-[#4b452f] bg-brand-ink text-brand-gold-light shadow-[8px_0_28px_rgba(38,41,31,0.12)] sm:w-[112px]">
       <div className="flex min-h-0 w-full flex-1 flex-col">
         <Link
           href="/home"
           aria-label="Trinity-AI home"
-          className="group flex shrink-0 items-center justify-center border-b border-[#4b452f] px-2 py-3 outline-none transition-colors hover:bg-[#303429] focus-visible:bg-[#303429] focus-visible:shadow-brand-focus"
+          className="group flex shrink-0 items-center justify-center border-b border-[#4b452f] px-2 py-4 outline-none transition-colors hover:bg-[#303429] focus-visible:bg-[#303429] focus-visible:shadow-brand-focus"
         >
           <BrandLogo
             imageClassName="h-10 w-10 ring-1 ring-[#d2aa6e] transition-transform duration-200 group-hover:scale-[1.03] motion-reduce:transform-none sm:h-11 sm:w-11"
@@ -94,7 +94,7 @@ export function PortalSidebar({
                 key={item.id}
                 aria-current={isActive ? "page" : undefined}
                 href={item.href}
-                className={`group relative flex min-h-[58px] w-full shrink-0 flex-col items-center justify-center rounded-[14px] px-1 py-2 outline-none transition-[background-color,color,transform,box-shadow] duration-200 active:scale-[0.98] motion-reduce:transform-none ${
+                className={`group relative flex min-h-[58px] w-full shrink-0 flex-col items-center justify-center rounded-[12px] px-1 py-2 outline-none transition-[background-color,color,transform,box-shadow] duration-200 active:scale-[0.98] motion-reduce:transform-none ${
                   isActive
                     ? "bg-brand-gold-light text-brand-ink shadow-[0_8px_18px_rgba(18,20,15,0.2)]"
                     : "text-brand-gold-light hover:bg-[#35382c] hover:text-brand-ivory focus-visible:bg-[#35382c] focus-visible:text-brand-ivory"

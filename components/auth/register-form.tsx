@@ -80,7 +80,7 @@ export function RegisterForm({ callbackUrl = "/home" }: RegisterFormProps) {
   if (state.status === "success") {
     return (
       <div aria-live="polite" className="space-y-5" role="status">
-        <div className="rounded-xl border border-brand-gold bg-[#f2e8d7] p-5">
+        <div className="rounded-[12px] border border-brand-gold/50 bg-[var(--color-accent-soft)] p-5">
           <h2 className="text-lg font-semibold text-brand-ink">
             Check your email
           </h2>
@@ -91,7 +91,7 @@ export function RegisterForm({ callbackUrl = "/home" }: RegisterFormProps) {
         <p className="text-sm text-brand-muted">
           After verification, return to{" "}
           <Link
-            className="font-medium text-brand-gold-strong hover:text-brand-ink hover:underline"
+            className="font-semibold text-brand-gold-strong underline-offset-4 hover:text-brand-ink hover:underline"
             href={`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`}
           >
             sign in
@@ -109,10 +109,12 @@ export function RegisterForm({ callbackUrl = "/home" }: RegisterFormProps) {
           Name
         </label>
         <input
-          className="mt-2 h-11 w-full rounded-lg border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
+          autoComplete="name"
+          className="mt-2 h-12 w-full rounded-[10px] border border-brand-sand bg-brand-canvas/35 px-3.5 text-sm text-brand-ink outline-none transition placeholder:text-brand-muted/70 focus:border-brand-gold focus:ring-4 focus:ring-brand-gold/15"
           id="name"
           minLength={2}
           name="name"
+          placeholder="Your full name"
           required
         />
       </div>
@@ -121,9 +123,11 @@ export function RegisterForm({ callbackUrl = "/home" }: RegisterFormProps) {
           Email
         </label>
         <input
-          className="mt-2 h-11 w-full rounded-lg border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
+          autoComplete="email"
+          className="mt-2 h-12 w-full rounded-[10px] border border-brand-sand bg-brand-canvas/35 px-3.5 text-sm text-brand-ink outline-none transition placeholder:text-brand-muted/70 focus:border-brand-gold focus:ring-4 focus:ring-brand-gold/15"
           id="email"
           name="email"
+          placeholder="you@example.com"
           required
           type="email"
         />
@@ -136,26 +140,29 @@ export function RegisterForm({ callbackUrl = "/home" }: RegisterFormProps) {
           Password
         </label>
         <input
-          className="mt-2 h-11 w-full rounded-lg border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
+          autoComplete="new-password"
+          className="mt-2 h-12 w-full rounded-[10px] border border-brand-sand bg-brand-canvas/35 px-3.5 text-sm text-brand-ink outline-none transition placeholder:text-brand-muted/70 focus:border-brand-gold focus:ring-4 focus:ring-brand-gold/15"
           id="password"
           minLength={8}
           name="password"
+          placeholder="At least 8 characters"
           required
           type="password"
         />
       </div>
       <button
-        className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-brand-ink px-5 text-sm font-semibold text-brand-ivory transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold/40 disabled:cursor-not-allowed disabled:opacity-50"
+        className="inline-flex h-12 w-full items-center justify-center rounded-[10px] bg-brand-ink px-5 text-sm font-semibold text-brand-ivory transition hover:bg-[var(--color-action-hover)] active:scale-[0.99] focus:outline-none focus:ring-4 focus:ring-brand-gold/20 disabled:cursor-not-allowed disabled:opacity-50"
         disabled={state.status === "submitting"}
         type="submit"
       >
-        Create account
+        {state.status === "submitting" ? "Creating account" : "Create account"}
       </button>
       {state.message ? (
         <p
+          aria-live="polite"
           className={
             state.status === "error"
-              ? "text-sm font-medium text-red-700"
+              ? "rounded-[10px] border border-red-200 bg-red-50 px-3 py-2.5 text-sm font-medium leading-5 text-red-800"
               : "text-sm font-medium text-brand-gold-strong"
           }
         >
@@ -165,7 +172,7 @@ export function RegisterForm({ callbackUrl = "/home" }: RegisterFormProps) {
       <p className="text-sm text-brand-muted">
         Have an account?{" "}
         <Link
-          className="font-medium text-brand-gold-strong hover:text-brand-ink hover:underline"
+          className="font-semibold text-brand-gold-strong underline-offset-4 hover:text-brand-ink hover:underline"
           href={`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`}
         >
           Sign in

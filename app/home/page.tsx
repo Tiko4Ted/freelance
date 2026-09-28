@@ -179,14 +179,27 @@ export default async function HomePage() {
   }));
 
   return (
-    <div className="flex min-h-screen bg-brand-canvas text-brand-ink">
+    <div className="flex min-h-[100dvh] bg-[#eeece5] text-brand-ink">
       <PortalSidebar
         activeTab="home"
         isAuthenticated={Boolean(userId)}
         userName={userName}
       />
-      <main className="flex-1 overflow-y-auto px-6 py-8 md:px-12 md:py-10">
-        <div className="mx-auto max-w-[1040px]">
+      <main className="flex-1 overflow-y-auto px-5 py-6 md:px-10 md:py-8">
+        <div className="mx-auto max-w-[1180px]">
+          <div className="mb-7 flex items-center justify-between gap-4 border-b border-brand-sand/70 pb-4">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-gold-strong">
+                Workspace
+              </p>
+              <p className="mt-1 text-sm text-brand-muted">
+                Your work, referrals, and payouts in one place.
+              </p>
+            </div>
+            <span className="hidden text-xs font-medium text-brand-muted sm:block">
+              Trinity-AI
+            </span>
+          </div>
           <HomeDashboardClient
             featuredProjects={featuredProjectCards}
             onboardingComplete={onboarding.complete}
