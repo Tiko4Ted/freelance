@@ -1,16 +1,17 @@
 "use client";
 
-import { Eye, Search, X } from "lucide-react";
+import { ChevronDown, Eye, LoaderCircle, Search, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { JobDetailContent } from "@/components/jobs/job-detail-content";
 import { JobDetailShell } from "@/components/jobs/job-detail-shell";
-import type { PublicJobView } from "@/lib/services/job-service";
+import type { PublicJobListView } from "@/lib/services/job-service";
 
 type JobBoardProps = {
   headerCopy: string;
-  jobs: PublicJobView[];
+  hasMore?: boolean;
+  jobs: PublicJobListView[];
   referralCode?: string;
 };
 
@@ -26,7 +27,7 @@ function openingLabel(openings: number) {
   return `${openings} ${openings === 1 ? "opening" : "openings"}`;
 }
 
-function visibleSkills(job: PublicJobView) {
+function visibleSkills(job: PublicJobListView) {
   return {
     visible: job.skills.slice(0, 3),
     hiddenCount: Math.max(0, job.skills.length - 3),
@@ -38,8 +39,8 @@ function JobCard({
   onView,
   referralCode,
 }: {
-  job: PublicJobView;
-  onView: (job: PublicJobView) => void;
+  job: PublicJobListView;
+  onView: (job: PublicJobListView) => void;
   referralCode?: string;
 }) {
   const skills = visibleSkills(job);
@@ -127,19 +128,28 @@ function JobCard({
   );
 }
 
-export function JobBoard({ headerCopy, jobs, referralCode }: JobBoardProps) {
+export function JobBoard({
+  headerCopy,
+  hasMore: initialHasMore = false,
+  jobs,
+  referralCode,
+}: JobBoardProps) {
+  const [loadedJobs, setLoadedJobs] = useState(jobs);
+  const [hasMore, setHasMore] = useState(initialHasMore);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [loadMoreError, setLoadMoreError] = useState("");
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
-  const [selectedJob, setSelectedJob] = useState<PublicJobView | null>(null);
+  const [selectedJob, setSelectedJob] = useState<PublicJobListView | null>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const normalizedQuery = query.trim().toLowerCase();
   const filteredJobs = useMemo(() => {
     if (!normalizedQuery) {
-      return jobs;
+      return loadedJobs;
     }
 
-    return jobs.filter((job) => {
+    return loadedJobs.filter((job) => {
       const searchable = [
         job.title,
         job.companyName,
@@ -150,7 +160,37 @@ export function JobBoard({ headerCopy, jobs, referralCode }: JobBoardProps) {
 
       return searchable.includes(normalizedQuery);
     });
-  }, [jobs, normalizedQuery]);
+  }, [loadedJobs, normalizedQuery]);
+
+  async function loadMoreJobs() {
+    if (isLoadingMore || !hasMore) {
+      return;
+    }
+
+    setIsLoadingMore(true);
+    setLoadMoreError("");
+
+    try {
+      const response = await fetch(
+        `/api/v1/jobs?view=cards&skip=${loadedJobs.length}`,
+      );
+      const payload = (await response.json()) as {
+        jobs?: PublicJobListView[];
+        hasMore?: boolean;
+      };
+
+      if (!response.ok || !Array.isArray(payload.jobs)) {
+        throw new Error("Unable to load more roles");
+      }
+
+      setLoadedJobs((current) => [...current, ...payload.jobs!]);
+      setHasMore(Boolean(payload.hasMore));
+    } catch {
+      setLoadMoreError("Unable to load more roles. Try again.");
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }
 
   useEffect(() => {
     if (!searchOpen) {
@@ -284,6 +324,27 @@ export function JobBoard({ headerCopy, jobs, referralCode }: JobBoardProps) {
         {filteredJobs.length === 0 ? (
           <div className="mt-8 rounded-md border border-brand-sand bg-brand-ivory p-6 text-sm font-medium text-brand-muted shadow-brand-card">
             No roles match that search.
+          </div>
+        ) : null}
+
+        {hasMore ? (
+          <div className="mt-8 flex flex-col items-center gap-3">
+            <button
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-brand-sand bg-brand-ivory px-5 text-sm font-semibold text-brand-ink shadow-brand-card transition hover:border-brand-gold hover:bg-[#f2e8d7] disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={isLoadingMore}
+              onClick={loadMoreJobs}
+              type="button"
+            >
+              {isLoadingMore ? (
+                <LoaderCircle className="h-4 w-4 animate-spin" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
+              {isLoadingMore ? "Loading roles…" : "Load more roles"}
+            </button>
+            {loadMoreError ? (
+              <p className="text-xs font-medium text-red-700">{loadMoreError}</p>
+            ) : null}
           </div>
         ) : null}
       </section>

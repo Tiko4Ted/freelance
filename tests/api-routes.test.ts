@@ -189,3 +189,30 @@ test("public jobs API returns the service payload", async () => {
     JobService.listActiveJobs = originalListActiveJobs;
   }
 });
+
+test("public jobs card API returns a compact paginated page", async () => {
+  const originalListActiveJobCards = JobService.listActiveJobCards;
+  let receivedSkip = -1;
+  JobService.listActiveJobCards = async (skip) => {
+    receivedSkip = skip ?? 0;
+    return {
+      jobs: [{ id: "job-card-1", title: "AI Reviewer" }],
+      hasMore: true,
+    } as Awaited<ReturnType<typeof originalListActiveJobCards>>;
+  };
+
+  try {
+    const response = await getJobs(
+      new Request("https://example.test/api/v1/jobs?view=cards&skip=48"),
+    );
+
+    assert.equal(response.status, 200);
+    assert.equal(receivedSkip, 48);
+    assert.deepEqual(await response.json(), {
+      jobs: [{ id: "job-card-1", title: "AI Reviewer" }],
+      hasMore: true,
+    });
+  } finally {
+    JobService.listActiveJobCards = originalListActiveJobCards;
+  }
+});

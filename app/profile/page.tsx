@@ -100,7 +100,7 @@ export default async function ProfilePage() {
           },
         }),
         OnboardingService.getStatus(userId),
-        LedgerService.getWallet(userId),
+        LedgerService.getBalanceSummary(userId),
       ])
     : [
         {

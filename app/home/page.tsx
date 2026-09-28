@@ -55,7 +55,7 @@ export default async function HomePage() {
 
   const paymentSummaryPromise = userId
     ? Promise.all([
-        LedgerService.getWallet(userId),
+        LedgerService.getBalanceSummary(userId),
         prisma.application.aggregate({
           where: { applicantUserId: userId },
           _sum: { hoursLogged: true },
