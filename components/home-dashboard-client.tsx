@@ -106,7 +106,7 @@ const faqs = [
         unofficial channel. If anything feels wrong, stop and use our{" "}
         <Link
           className="font-semibold text-brand-gold-strong hover:text-brand-ink hover:underline"
-          href="https://freelance-nu-swart.vercel.app/help-center"
+          href="/help-center/policies#fraud-and-account-safety-guide"
         >
           Help Center fraud and account safety guide
         </Link>

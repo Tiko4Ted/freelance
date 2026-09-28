@@ -309,6 +309,18 @@ const articles: Article[] = [
   },
   {
     category: "Policies",
+    title: "Fraud and account safety guide",
+    summary:
+      "How to spot scams, protect your information, and report suspicious activity.",
+    body: [
+      "Trinity-AI will not ask for your password, one-time verification code, identity documents, or payout details through an unsolicited message. Complete account, identity, and payment steps only from the official Trinity-AI app.",
+      "Treat urgent payment requests, guaranteed-work offers, requests to pay a fee, shortened links, unusual email domains, and messages asking you to move to WhatsApp, Telegram, Google Forms, or another unofficial channel as warning signs. Do not click, reply, or send information until you verify the request in the app.",
+      "If you shared sensitive information or think your account was accessed, stop communicating with the sender, change your password, and contact support immediately. Include the message, sender details, link, and time of the incident when it is safe to do so.",
+      "Never let someone use your account or create a second account for you. Keeping your login, project files, and payout destination under your control helps protect your work and payments.",
+    ],
+  },
+  {
+    category: "Policies",
     title: "Data handling",
     summary: "How to protect project information and client materials.",
     body: [
@@ -370,8 +382,8 @@ const articles: Article[] = [
 ];
 
 const popularTitles = [
+  "Fraud and account safety guide",
   "Introduction to the Trinity-AI program",
-  "Getting started and staying safe",
   "Work authorization and eligibility",
   "Next steps after applying to a project",
 ];
@@ -385,7 +397,7 @@ const categoryIcons: Record<string, LucideIcon> = {
 };
 
 const quickHelpTitles = [
-  "Getting started",
+  "Fraud and account safety guide",
   "Identity verification",
   "Expected earnings and wallet timing",
 ];
