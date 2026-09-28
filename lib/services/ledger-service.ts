@@ -90,6 +90,47 @@ async function claimEligibleCandidatePayouts(userId: string, email: string) {
 }
 
 export const LedgerService = {
+  async getBalanceSummary(userId: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        email: true,
+        holdingBalanceCents: true,
+        fundingBalanceCents: true,
+        onboarding: {
+          select: { completedAt: true },
+        },
+      },
+    });
+
+    if (!user) {
+      throw new Error("USER_NOT_FOUND");
+    }
+
+    let holdingBalanceCents = user.holdingBalanceCents;
+    let fundingBalanceCents = user.fundingBalanceCents;
+
+    if (isOnboardingReviewApproved(user.onboarding?.completedAt)) {
+      await claimEligibleCandidatePayouts(userId, user.email);
+      const updatedUser = await prisma.user.findUniqueOrThrow({
+        where: { id: userId },
+        select: {
+          holdingBalanceCents: true,
+          fundingBalanceCents: true,
+        },
+      });
+      holdingBalanceCents = updatedUser.holdingBalanceCents;
+      fundingBalanceCents = updatedUser.fundingBalanceCents;
+    }
+
+    return {
+      holdingBalanceCents,
+      fundingBalanceCents,
+      formattedHoldingBalance: formatCurrency(holdingBalanceCents),
+      formattedFundingBalance: formatCurrency(fundingBalanceCents),
+    };
+  },
+
   async getWallet(userId: string) {
     const user = await prisma.user.findUnique({
       where: { id: userId },

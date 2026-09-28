@@ -188,6 +188,7 @@ test("public jobs UI renders a referral-preserving application link", () => {
   const markup = renderToStaticMarkup(
     createElement(JobBoard, {
       headerCopy: "Open roles",
+      hasMore: true,
       referralCode: "REF CODE",
       jobs: [
         {
@@ -219,6 +220,7 @@ test("public jobs UI renders a referral-preserving application link", () => {
   assert.match(markup, /AI Reviewer/);
   assert.match(markup, /Apply now/);
   assert.match(markup, /\/jobs\/job-1\/apply\?referralCode=REF%20CODE/);
+  assert.match(markup, /Load more roles/);
 });
 
 test("referral page shows and copies the Trinity referral URL", () => {

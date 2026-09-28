@@ -1,7 +1,12 @@
-import type { PublicJob } from "@/lib/repositories/job-repository";
+import type {
+  PublicJob,
+  PublicJobCard,
+} from "@/lib/repositories/job-repository";
 import { JobRepository } from "@/lib/repositories/job-repository";
 
-function formatPayout(job: PublicJob) {
+type PublicJobValueSource = Omit<PublicJob, "description">;
+
+function formatPayout(job: Pick<PublicJobValueSource, "currency" | "payoutAmountCents">) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: job.currency,
@@ -9,7 +14,12 @@ function formatPayout(job: PublicJob) {
   }).format(job.payoutAmountCents / 100);
 }
 
-function formatHourlyPay(job: PublicJob) {
+function formatHourlyPay(
+  job: Pick<
+    PublicJobValueSource,
+    "currency" | "hourlyMinCents" | "hourlyMaxCents"
+  >,
+) {
   if (!job.hourlyMinCents || !job.hourlyMaxCents) {
     return null;
   }
@@ -25,7 +35,7 @@ function formatHourlyPay(job: PublicJob) {
   )}/hr`;
 }
 
-function describeTrigger(job: PublicJob) {
+function describeTrigger(job: Pick<PublicJobValueSource, "payoutType">) {
   if (job.payoutType === "TASK_1") {
     return "after 1 completed task";
   }
@@ -55,11 +65,10 @@ function isNew(postedAt: Date) {
   return diffMs < 1000 * 60 * 60 * 24 * 7;
 }
 
-function toPublicJob(job: PublicJob) {
+function toPublicJobValues(job: PublicJobValueSource) {
   return {
     id: job.id,
     title: job.title,
-    description: job.description,
     payoutAmountCents: job.payoutAmountCents,
     payoutType: job.payoutType,
     currency: job.currency,
@@ -83,12 +92,38 @@ function toPublicJob(job: PublicJob) {
   };
 }
 
+function toPublicJob(job: PublicJob) {
+  return {
+    ...toPublicJobValues(job),
+    description: job.description,
+  };
+}
+
+function toPublicJobCard(job: PublicJobCard) {
+  return toPublicJobValues(job);
+}
+
 export type PublicJobView = ReturnType<typeof toPublicJob>;
+export type PublicJobListView = Omit<PublicJobView, "description"> & {
+  description?: string;
+};
+
+const JOB_CARD_PAGE_SIZE = 48;
 
 export const JobService = {
   async listActiveJobs() {
     const jobs = await JobRepository.listActive();
     return jobs.map(toPublicJob);
+  },
+
+  async listActiveJobCards(skip = 0) {
+    const jobs = await JobRepository.listActiveCards(skip, JOB_CARD_PAGE_SIZE);
+    const hasMore = jobs.length > JOB_CARD_PAGE_SIZE;
+
+    return {
+      jobs: jobs.slice(0, JOB_CARD_PAGE_SIZE).map(toPublicJobCard),
+      hasMore,
+    };
   },
 
   async listHomeProjects() {

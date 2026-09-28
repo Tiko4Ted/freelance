@@ -41,8 +41,8 @@ export default async function ApplyPage({ searchParams }: ApplyPageProps) {
 
   const referralCode = params.ref ?? params.referralCode;
   const lookupKey = getLookupKey(headerStore);
-  const [jobs, referralContext] = await Promise.all([
-    JobService.listActiveJobs(),
+  const [jobPage, referralContext] = await Promise.all([
+    JobService.listActiveJobCards(),
     ReferralContextService.getPublicContext(referralCode, lookupKey),
   ]);
 
@@ -61,7 +61,8 @@ export default async function ApplyPage({ searchParams }: ApplyPageProps) {
       <main className="flex-1 overflow-x-hidden">
         <JobBoard
           headerCopy={getHeaderCopy(referralContext?.firstName)}
-          jobs={jobs}
+          hasMore={jobPage.hasMore}
+          jobs={jobPage.jobs}
           referralCode={referralCode}
         />
       </main>

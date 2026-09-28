@@ -29,8 +29,17 @@ const publicJobSelect = {
   },
 } satisfies Prisma.JobSelect;
 
+const publicJobCardSelect = {
+  ...publicJobSelect,
+  description: false,
+} satisfies Prisma.JobSelect;
+
 export type PublicJob = Prisma.JobGetPayload<{
   select: typeof publicJobSelect;
+}>;
+
+export type PublicJobCard = Prisma.JobGetPayload<{
+  select: typeof publicJobCardSelect;
 }>;
 
 export const JobRepository = {
@@ -39,6 +48,16 @@ export const JobRepository = {
       where: { isActive: true },
       orderBy: { postedAt: "desc" },
       select: publicJobSelect,
+    });
+  },
+
+  listActiveCards(skip = 0, take = 48) {
+    return prisma.job.findMany({
+      where: { isActive: true },
+      orderBy: { postedAt: "desc" },
+      skip,
+      take: take + 1,
+      select: publicJobCardSelect,
     });
   },
 

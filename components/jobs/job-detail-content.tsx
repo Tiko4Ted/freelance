@@ -1,11 +1,11 @@
 import { buildJobDetailCopy } from "@/lib/job-detail-copy";
-import type { PublicJobView } from "@/lib/services/job-service";
+import type { PublicJobListView } from "@/lib/services/job-service";
 import Link from "next/link";
 import { ArrowUpRight, Check, MapPin, Timer } from "lucide-react";
 
 type JobDetailContentProps = {
   applyHref: string;
-  job: PublicJobView;
+  job: PublicJobListView;
 };
 
 function openingLabel(openings: number) {
