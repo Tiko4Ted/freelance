@@ -5,7 +5,7 @@ import { ReactNode, useEffect, useRef, useState } from "react";
 import { ArrowLeft, X } from "lucide-react";
 
 const OPEN_TRANSITION_MS = 1000;
-const CLOSE_TRANSITION_MS = 500;
+const CLOSE_TRANSITION_MS = 220;
 
 type JobDetailShellProps = {
   children: ReactNode;
@@ -48,7 +48,7 @@ export function JobDetailShell({
     closeCompletedRef.current = false;
     setTransitionMs(CLOSE_TRANSITION_MS);
     setIsOpen(false);
-    timeoutRef.current = setTimeout(completeClose, CLOSE_TRANSITION_MS + 100);
+    timeoutRef.current = setTimeout(completeClose, CLOSE_TRANSITION_MS + 80);
   }
 
   function completeClose() {
