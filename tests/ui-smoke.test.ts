@@ -51,6 +51,7 @@ test("help center renders the redesigned searchable support library", () => {
   assert.match(markup, /Search the help center/);
   assert.match(markup, /Browse by topic/);
   assert.match(markup, /Read the full library/);
+  assert.match(markup, /Fraud and account safety guide/);
   assert.match(markup, /Describe the issue/);
   assert.match(markup, /<textarea/);
   assert.doesNotMatch(markup, /App Store|Google Play/);
