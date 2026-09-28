@@ -289,7 +289,10 @@ export function JobBoard({ headerCopy, jobs, referralCode }: JobBoardProps) {
       </section>
       {selectedJob ? (
         <JobDetailShell onCloseComplete={() => setSelectedJob(null)}>
-          <JobDetailContent job={selectedJob} />
+          <JobDetailContent
+            applyHref={withReferral(`/jobs/${selectedJob.id}/apply`, referralCode)}
+            job={selectedJob}
+          />
         </JobDetailShell>
       ) : null}
     </>

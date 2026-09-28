@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { ReactNode, useEffect, useRef, useState } from "react";
+import { ArrowLeft, X } from "lucide-react";
 
 const OPEN_TRANSITION_MS = 1000;
 const CLOSE_TRANSITION_MS = 500;
@@ -74,7 +75,7 @@ export function JobDetailShell({
 
   return (
     <main
-      className="fixed inset-0 z-50 overflow-y-auto bg-brand-canvas px-5 py-14 text-brand-ink sm:px-8"
+      className="fixed inset-0 z-50 overflow-y-auto bg-brand-canvas px-4 pb-12 pt-20 text-brand-ink sm:px-8"
       ref={shellRef}
       style={{
         transform: isOpen ? "translate3d(0, 0, 0)" : "translate3d(0, 100dvh, 0)",
@@ -87,14 +88,28 @@ export function JobDetailShell({
         }
       }}
     >
-      <div className="fixed inset-x-0 top-0 z-10 h-10 rounded-t-xl bg-brand-ink/90 backdrop-blur-md" />
+      <div className="fixed inset-x-0 top-0 z-10 border-b border-brand-sand/80 bg-brand-ivory/95 backdrop-blur-md">
+        <div className="mx-auto flex h-14 max-w-[1040px] items-center justify-between px-1">
+          <button
+            className="inline-flex items-center gap-2 rounded-[10px] px-2 py-2 text-sm font-semibold text-brand-muted transition hover:bg-[var(--color-accent-soft)] hover:text-brand-ink focus:outline-none focus:ring-2 focus:ring-brand-gold/40"
+            onClick={handleClose}
+            type="button"
+          >
+            <ArrowLeft aria-hidden="true" className="h-4 w-4" />
+            Back to roles
+          </button>
+          <span className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-gold-strong">
+            Trinity-AI roles
+          </span>
+        </div>
+      </div>
       <button
         aria-label="Close job details"
-        className="fixed right-0 top-0 z-20 flex h-10 w-10 items-center justify-center text-3xl font-light leading-none text-brand-ivory transition hover:text-brand-gold-light focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand-gold"
+        className="fixed right-3 top-3 z-20 flex h-8 w-8 items-center justify-center rounded-full text-brand-muted transition hover:bg-[var(--color-accent-soft)] hover:text-brand-ink focus:outline-none focus:ring-2 focus:ring-brand-gold"
         onClick={handleClose}
         type="button"
       >
-        &times;
+        <X aria-hidden="true" className="h-4 w-4" />
       </button>
       {children}
     </main>
