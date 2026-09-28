@@ -3,26 +3,26 @@
 @tailwind utilities;
 
 :root {
-  --brand-ink: #26291f;
-  --brand-gold: #b68a55;
-  --brand-gold-light: #ebcc90;
-  --brand-gold-strong: #765027;
-  --brand-ivory: #fffdf8;
-  --brand-canvas: #f7f3ea;
-  --brand-sand: #ded6c8;
-  --brand-muted: #686a61;
+  --brand-ink: #20261e;
+  --brand-gold: #bd8845;
+  --brand-gold-light: #f0d39a;
+  --brand-gold-strong: #704719;
+  --brand-ivory: #fffdf9;
+  --brand-canvas: #f4f1e9;
+  --brand-sand: #d9d1c2;
+  --brand-muted: #686b63;
 
   --color-page: var(--brand-canvas);
   --color-surface: var(--brand-ivory);
-  --color-surface-muted: #f1ebdf;
+  --color-surface-muted: #ece6da;
   --color-text: var(--brand-ink);
   --color-text-muted: var(--brand-muted);
   --color-border: var(--brand-sand);
   --color-action: var(--brand-ink);
-  --color-action-hover: #35392c;
+  --color-action-hover: #30382c;
   --color-action-text: var(--brand-ivory);
   --color-accent: var(--brand-gold);
-  --color-accent-soft: #f2e8d7;
+  --color-accent-soft: #f2e5ce;
   --color-focus: var(--brand-gold);
 
   --background: var(--color-page);
@@ -33,6 +33,7 @@ body {
   color: var(--foreground);
   background: var(--background);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  text-rendering: optimizeLegibility;
 }
 
 ::selection {
@@ -44,4 +45,28 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+
+  .shadow-brand-card {
+    box-shadow: 0 18px 42px rgba(32, 38, 30, 0.07);
+  }
+}
+
+.home-dashboard [class~="text-slate-950"],
+.home-dashboard [class~="text-slate-900"],
+.home-dashboard [class~="text-slate-700"] {
+  color: var(--brand-ink);
+}
+
+.home-dashboard [class~="text-slate-600"],
+.home-dashboard [class~="text-slate-500"],
+.home-dashboard [class~="text-slate-400"] {
+  color: var(--brand-muted);
+}
+
+.home-dashboard [class*="bg-[#f2e8d7]"] {
+  background-color: var(--color-accent-soft);
+}
+
+.home-dashboard [class*="bg-[#f1ebdf]"] {
+  background-color: var(--color-surface-muted);
 }

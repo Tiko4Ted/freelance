@@ -229,9 +229,9 @@ export function HomeDashboardClient({
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8 items-start">
+    <div className="home-dashboard flex flex-col items-start gap-9 lg:flex-row lg:gap-10">
       {/* Main Left Column */}
-      <div className="flex-1 space-y-8 min-w-0">
+      <div className="min-w-0 flex-1 space-y-9">
         {!onboardingComplete ? (
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#fde68a] bg-[#fffbeb] px-5 py-3.5 shadow-sm">
         <div className="flex items-center gap-2.5">
@@ -240,7 +240,7 @@ export function HomeDashboardClient({
             strokeWidth={2}
           />
           <span className="text-sm font-medium text-[#78350f]">
-            Application under review — We&apos;ll reach out once verified
+            Application under review. We&apos;ll reach out once verified.
           </span>
         </div>
         <Link
@@ -253,13 +253,18 @@ export function HomeDashboardClient({
         ) : null}
 
       {/* Greeting & Refer Button */}
-      <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
-        <h1 className="text-3xl font-bold tracking-tight text-brand-ink md:text-[34px]">
+      <div className="flex flex-wrap items-end justify-between gap-5 pt-1">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-muted">
+            Overview
+          </p>
+          <h1 className="mt-2 text-4xl font-semibold tracking-[-0.045em] text-brand-ink md:text-[42px]">
           Welcome back, {userName}
-        </h1>
+          </h1>
+        </div>
         <Link
           href="/referral"
-          className="inline-flex items-center gap-2 rounded-xl border border-brand-sand bg-brand-ivory px-4 py-2 text-sm font-medium text-brand-ink shadow-sm transition hover:border-brand-gold/60 hover:bg-[#f2e8d7]"
+          className="inline-flex items-center gap-2 rounded-[10px] border border-brand-sand bg-brand-ivory px-4 py-2.5 text-sm font-semibold text-brand-ink shadow-sm transition hover:border-brand-gold/60 hover:bg-[var(--color-accent-soft)] active:scale-[0.98]"
         >
           <UserPlus className="h-4 w-4 text-slate-700" strokeWidth={2} />
           <span>Refer &amp; Earn</span>
@@ -267,22 +272,22 @@ export function HomeDashboardClient({
       </div>
 
       {!onboardingComplete ? (
-      <section className="space-y-3">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-bold tracking-wider text-slate-500">
-            PENDING TASKS
+        <section className="space-y-3">
+          <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-muted">
+            Next up
           </span>
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#ef4444] text-[11px] font-bold text-white shadow-xs">
+          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand-gold-strong text-[11px] font-bold text-brand-ivory shadow-xs">
             1
           </span>
         </div>
 
         <Link
           href="/onboarding"
-          className="group flex items-center justify-between rounded-2xl border border-brand-sand bg-brand-ivory p-5 shadow-[0_1px_3px_rgba(38,41,31,0.04)] transition hover:border-brand-gold/60 hover:shadow-md"
+          className="group flex items-center justify-between rounded-[18px] border border-brand-sand bg-brand-ivory p-5 shadow-brand-card transition hover:border-brand-gold/60 hover:shadow-md"
         >
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-brand-gold/35 bg-[#f2e8d7]">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[12px] border border-brand-gold/35 bg-[var(--color-accent-soft)]">
               <ClipboardList
                 className="h-6 w-6 text-brand-gold-strong"
                 strokeWidth={2}
@@ -309,10 +314,10 @@ export function HomeDashboardClient({
         <section className="space-y-4">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-brand-gold-strong">
-                Available now
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-gold-strong">
+                Open roles
               </p>
-              <h2 className="mt-1 text-lg font-bold text-brand-ink">
+              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-brand-ink">
                 Featured projects
               </h2>
             </div>
@@ -323,10 +328,12 @@ export function HomeDashboardClient({
               View all roles
             </Link>
           </div>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {featuredProjects.map((project) => (
               <Link
-                className="group flex min-h-[190px] flex-col justify-between rounded-2xl border border-brand-sand bg-brand-ivory p-5 shadow-brand-card transition hover:-translate-y-0.5 hover:border-brand-gold/60 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-brand-gold"
+                className={`group flex min-h-[190px] flex-col justify-between rounded-[18px] border border-brand-sand bg-brand-ivory p-5 shadow-brand-card transition hover:-translate-y-0.5 hover:border-brand-gold/60 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-brand-gold ${
+                  project.id === featuredProjects[0]?.id ? "md:col-span-2" : ""
+                }`}
                 href={`/jobs/${project.id}`}
                 key={project.id}
               >
@@ -350,7 +357,7 @@ export function HomeDashboardClient({
                   <div className="flex flex-wrap gap-1.5">
                     {project.skills.slice(0, 2).map((skill) => (
                       <span
-                        className="rounded-full bg-[#f2e8d7] px-2.5 py-1 text-[11px] font-semibold text-brand-gold-strong"
+                        className="rounded-full bg-[var(--color-accent-soft)] px-2.5 py-1 text-[11px] font-semibold text-brand-gold-strong"
                         key={skill.id}
                       >
                         {skill.label}
@@ -375,7 +382,7 @@ export function HomeDashboardClient({
 
       {/* Tabs: Projects / Applications */}
       <div className="pt-2">
-        <div className="inline-flex rounded-full border border-brand-sand bg-[#ece5d8] p-1">
+        <div className="inline-flex rounded-full border border-brand-sand bg-[#e7e3da] p-1">
           <button
             type="button"
             onClick={() => setActiveTab("projects")}
@@ -406,7 +413,7 @@ export function HomeDashboardClient({
           {/* Your projects Header */}
           <section className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold text-brand-ink">
+              <h2 className="text-2xl font-semibold tracking-[-0.03em] text-brand-ink">
                 Your projects{" "}
                 <span className="font-normal text-slate-400">
                   ({visibleProjects.length})
@@ -422,13 +429,13 @@ export function HomeDashboardClient({
             </div>
 
             {/* Project Cards Grid */}
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {visibleProjects.map((project) => {
                 const isSelected = selectedProject?.id === project.id;
 
                 return (
                   <Link
-                    className={`flex min-h-[160px] flex-col justify-between rounded-2xl border bg-brand-ivory p-5 text-left shadow-[0_1px_2px_rgba(38,41,31,0.04)] transition hover:shadow-md focus:outline-none focus:ring-2 focus:ring-brand-gold ${
+                    className={`flex min-h-[160px] flex-col justify-between rounded-[18px] border bg-brand-ivory p-5 text-left shadow-brand-card transition hover:shadow-md focus:outline-none focus:ring-2 focus:ring-brand-gold ${
                       isSelected
                         ? "border-brand-gold ring-1 ring-brand-gold/25"
                         : "border-brand-sand hover:border-brand-gold/60"
@@ -452,7 +459,7 @@ export function HomeDashboardClient({
                       </p>
                     </div>
                     <div className="mt-5 flex flex-wrap items-center gap-2 text-xs">
-                      <span className="rounded-full bg-[#f2e8d7] px-2.5 py-1 font-semibold text-brand-gold-strong">
+                      <span className="rounded-full bg-[var(--color-accent-soft)] px-2.5 py-1 font-semibold text-brand-gold-strong">
                         {project.statusLabel}
                       </span>
                       <span className="font-medium text-slate-600">
@@ -465,7 +472,7 @@ export function HomeDashboardClient({
             </div>
 
             {selectedProject ? (
-              <section className="rounded-2xl border border-brand-sand bg-brand-ivory shadow-brand-card">
+              <section className="rounded-[20px] border border-brand-sand bg-brand-ivory shadow-brand-card">
                 <div className="flex flex-col gap-4 border-b border-slate-100 p-5 md:flex-row md:items-start md:justify-between">
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
@@ -742,7 +749,7 @@ export function HomeDashboardClient({
       ) : (
           <section className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2 className="text-lg font-bold text-brand-ink">
+              <h2 className="text-2xl font-semibold tracking-[-0.03em] text-brand-ink">
                 Your applications{" "}
                 <span className="font-normal text-slate-400">
                   ({projects.length})
@@ -850,7 +857,7 @@ export function HomeDashboardClient({
             </Link>
           </div>
 
-          <div className="overflow-hidden rounded-2xl border border-brand-sand bg-brand-ivory shadow-[0_1px_3px_rgba(38,41,31,0.04)]">
+          <div className="overflow-hidden rounded-[18px] border border-brand-sand bg-brand-ivory shadow-brand-card">
             {faqs.map((faq) => (
               <details
                 className="group border-b border-brand-sand/70 last:border-b-0"
