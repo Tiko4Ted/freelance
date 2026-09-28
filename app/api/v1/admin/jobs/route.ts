@@ -24,7 +24,9 @@ export async function POST(request: Request) {
     const body: unknown = await request.json();
     const input = adminCreateJobSchema.parse(body);
     const job = await AdminJobService.createJob(input);
-    await EmailNotificationService.notifyUsersOfNewJob(job);
+    if (job.showOnHome && job.isActive && job.openings > 0) {
+      await EmailNotificationService.notifyUsersOfNewJob(job);
+    }
 
     return NextResponse.json({ job }, { status: 201 });
   } catch (error) {

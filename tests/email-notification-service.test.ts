@@ -200,6 +200,8 @@ test("builds a new project email with the job apply link", () => {
 
   assert.equal(email.to, "candidate@example.test");
   assert.equal(email.subject, "New Trinity-AI project: AI Reviewer");
+  assert.match(email.text, /invited to participate/i);
+  assert.match(email.html, /invited to participate/i);
   assert.match(email.html, /https:\/\/example\.test\/jobs\/job-123\/apply/);
   assert.match(email.text, /Apply here: https:\/\/example\.test\/jobs\/job-123\/apply/);
 });

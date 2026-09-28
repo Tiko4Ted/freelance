@@ -4,6 +4,7 @@ import { ZodError } from "zod";
 
 import { requireRole } from "@/lib/auth/session";
 import { AdminJobService } from "@/lib/services/admin-job-service";
+import { EmailNotificationService } from "@/lib/services/email-notification-service";
 import { adminUpdateJobSchema } from "@/lib/validation/admin";
 
 type RouteContext = {
@@ -18,9 +19,18 @@ export async function PATCH(request: Request, context: RouteContext) {
     const { id } = await context.params;
     const body: unknown = await request.json();
     const input = adminUpdateJobSchema.parse(body);
-    const job = await AdminJobService.updateJob(id, input);
+    const result = await AdminJobService.updateJob(id, input);
 
-    return NextResponse.json({ job });
+    if (
+      !result.wasShownOnHome &&
+      result.job.showOnHome &&
+      result.job.isActive &&
+      result.job.openings > 0
+    ) {
+      await EmailNotificationService.notifyUsersOfNewJob(result.job);
+    }
+
+    return NextResponse.json({ job: result.job });
   } catch (error) {
     if (error instanceof ZodError) {
       return NextResponse.json(

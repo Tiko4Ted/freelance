@@ -105,6 +105,10 @@ export function HomeProjectToggle({
           Save spots
         </button>
       </div>
+      <p className="text-xs leading-5 text-brand-muted">
+        Showing this project on home sends an invitation email with its brief
+        details to registered users.
+      </p>
       {error ? (
         <span className="text-xs font-medium text-red-700">{error}</span>
       ) : null}

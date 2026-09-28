@@ -64,7 +64,11 @@ export const AdminJobService = {
 
   async updateJob(id: string, input: AdminUpdateJobInput) {
     const { skills, ...jobInput } = input;
-    const job = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
+      const previousJob = await tx.job.findUniqueOrThrow({
+        where: { id },
+        select: { showOnHome: true },
+      });
       const updatedJob = await tx.job.update({
         where: { id },
         data: jobInput,
@@ -77,15 +81,23 @@ export const AdminJobService = {
           data: skills.map((label) => ({ jobId: id, label })),
         });
 
-        return tx.job.findUniqueOrThrow({
+        const job = await tx.job.findUniqueOrThrow({
           where: { id },
           include: adminJobInclude,
         });
+
+        return { job, wasShownOnHome: previousJob.showOnHome };
       }
 
-      return updatedJob;
+      return {
+        job: updatedJob,
+        wasShownOnHome: previousJob.showOnHome,
+      };
     });
 
-    return toJobResponse(job);
+    return {
+      job: toJobResponse(result.job),
+      wasShownOnHome: result.wasShownOnHome,
+    };
   },
 };
