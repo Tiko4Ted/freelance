@@ -18,10 +18,10 @@ type JobDetailPageProps = {
 
 function closeHref(referralCode?: string) {
   if (!referralCode) {
-    return "/jobs";
+    return "/apply";
   }
 
-  return `/referral/jobs?referralCode=${encodeURIComponent(referralCode)}`;
+  return `/apply?referralCode=${encodeURIComponent(referralCode)}`;
 }
 
 function applyHref(jobId: string, referralCode?: string) {
