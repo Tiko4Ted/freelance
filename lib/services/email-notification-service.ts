@@ -289,7 +289,7 @@ export function buildNewJobEmail(job: NotificationJob, recipient: EmailRecipient
   const text = [
     greeting,
     "",
-    `A new Trinity-AI project is available: ${job.title}.`,
+    `You are invited to participate in a new Trinity-AI project: ${job.title}.`,
     `Company: ${job.companyName}`,
     `Expected pay: ${formatCurrency(job.payoutAmountCents, job.currency)}`,
     `Skills: ${skillText}`,
@@ -305,7 +305,7 @@ export function buildNewJobEmail(job: NotificationJob, recipient: EmailRecipient
         <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#334155">${escapeHtml(
           greeting,
         )}</p>
-        <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#334155">A new project just opened on Trinity-AI.</p>
+        <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#334155">You are invited to participate in a new project on Trinity-AI.</p>
         <div style="margin:18px 0;border:1px solid #e2e8f0;border-radius:12px;padding:16px;background:#f8fafc">
           <p style="margin:0 0 6px;font-size:17px;font-weight:800;color:#0f172a">${escapeHtml(
             job.title,

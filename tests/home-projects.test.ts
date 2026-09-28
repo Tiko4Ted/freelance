@@ -30,6 +30,7 @@ test("home projects query is flagged, active, available, and limited to three", 
     isActive: true,
     showOnHome: true,
     openings: { gt: 0 },
+    title: { not: "micro1", mode: "insensitive" },
   });
   assert.equal(capturedQuery?.take, 3);
 });

@@ -67,6 +67,7 @@ export const JobRepository = {
         isActive: true,
         showOnHome: true,
         openings: { gt: 0 },
+        title: { not: "micro1", mode: "insensitive" },
       },
       orderBy: [{ postedAt: "desc" }, { createdAt: "desc" }],
       take: 3,
