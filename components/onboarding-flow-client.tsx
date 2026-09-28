@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { type ChangeEvent, type FormEvent, useState } from "react";
 import {
   CreditCard,
@@ -47,11 +48,7 @@ type FormState =
   | { status: "error"; message: string };
 
 type PayoutMethod =
-  | "MPESA"
-  | "AIRTEL_MONEY"
-  | "BANK_CARD"
-  | "BINANCE"
-  | "PAYPAL";
+  "MPESA" | "AIRTEL_MONEY" | "BANK_CARD" | "BINANCE" | "PAYPAL";
 
 type OnboardingStep = "legal" | "phone" | "identity" | "payments";
 type IdentityDocumentType = "national_id" | "passport" | "drivers_license";
@@ -143,9 +140,9 @@ export function OnboardingFlowClient({
     status: "idle",
     message: "",
   });
-  const [activeModal, setActiveModal] = useState<"nda" | "dataSubmission" | null>(
-    null,
-  );
+  const [activeModal, setActiveModal] = useState<
+    "nda" | "dataSubmission" | null
+  >(null);
   const [signerName, setSignerName] = useState(userName);
   const [signerTitle, setSignerTitle] = useState("Contractor");
   const [agreed, setAgreed] = useState(false);
@@ -413,8 +410,8 @@ export function OnboardingFlowClient({
   const saving = state.status === "submitting";
   const matchesVerifiedPhone = Boolean(
     onboarding.phoneVerified &&
-      phoneCountryCode === onboarding.phoneCountryCode &&
-      phoneNumber === onboarding.phoneNumber,
+    phoneCountryCode === onboarding.phoneCountryCode &&
+    phoneNumber === onboarding.phoneNumber,
   );
   const steps = [
     {
@@ -447,6 +444,11 @@ export function OnboardingFlowClient({
     },
   ];
   const currentStep = steps.find((step) => step.id === activeStep) ?? steps[0];
+  const statusMode = onboarding.complete
+    ? "complete"
+    : onboarding.reviewPending
+      ? "review"
+      : null;
 
   const goToStep = (step: OnboardingStep) => {
     setActiveStep(step);
@@ -457,578 +459,683 @@ export function OnboardingFlowClient({
     <div className="mx-auto max-w-[680px] pt-2">
       {/* Title & Subtitle */}
       <div className="text-center">
-        <h1 className="text-[32px] font-bold tracking-tight text-brand-ink">
-          Welcome, {userName}!
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-brand-muted">
+          Trinity-AI applicant portal
+        </p>
+        <h1 className="mt-3 text-[32px] font-bold tracking-tight text-brand-ink">
+          {statusMode === "complete"
+            ? "You’re all set"
+            : statusMode === "review"
+              ? "Your details are with us"
+              : `Welcome, ${userName}!`}
         </h1>
         <p className="mt-2 text-sm text-brand-muted">
-          Complete the steps below to get started with Trinity-AI.
+          {statusMode
+            ? "We’ll keep this page updated as your application moves forward."
+            : "A few quick steps to get started with Trinity-AI."}
         </p>
       </div>
 
-      {/* Main Stepper Card */}
-      <div className="mt-8 rounded-2xl border border-brand-sand bg-brand-ivory shadow-brand-card">
-        {/* Stepper Header */}
-        <div className="border-b border-brand-sand px-8 py-6">
-          <div className="flex items-center justify-between">
-            {steps.map((step, index) => {
-              const StepIcon = step.icon;
-              const active = step.id === activeStep;
-
-              return (
-                <div className="contents" key={step.label}>
-                  {index > 0 ? (
-                    <div
-                      className={`mx-2 -mt-5 h-[1px] flex-1 ${
-                        steps[index - 1].complete
-                          ? "bg-emerald-200"
-                          : "bg-brand-sand"
-                      }`}
-                    />
-                  ) : null}
-                  <div className="flex min-w-[72px] flex-col items-center">
-                    <div
-                      className={`flex h-10 w-10 items-center justify-center rounded-full border transition-all ${
-                        step.complete
-                          ? "border-emerald-500 bg-emerald-50 text-emerald-600"
-                          : active
-                            ? "border-brand-gold bg-[#f2e8d7] text-brand-gold-strong shadow-brand-focus"
-                            : "border-brand-sand bg-brand-canvas text-brand-muted"
-                      }`}
-                    >
-                      {step.complete ? (
-                        <Check className="h-5 w-5 stroke-[2.5]" />
-                      ) : step.locked ? (
-                        <Lock className="h-4 w-4" strokeWidth={2} />
-                      ) : (
-                        <StepIcon className="h-5 w-5" strokeWidth={2} />
-                      )}
-                    </div>
-                    <span
-                      className={`mt-2 text-center text-xs font-semibold ${
-                        step.complete
-                          ? "text-emerald-700"
-                          : active
-                            ? "text-brand-gold-strong"
-                            : "text-brand-muted"
-                      }`}
-                    >
-                      {step.label}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="space-y-8 p-7 sm:p-8">
-          <div>
-            <h2 className="text-lg font-bold text-brand-ink">
-              {currentStep.label}
-            </h2>
-            <p className="mt-1 text-sm text-brand-muted">
-              Complete this step, then continue to the next one.
-            </p>
-          </div>
-
-          {state.message ? (
+      {statusMode ? (
+        <section className="relative mt-8 overflow-hidden rounded-[28px] border border-brand-sand bg-brand-ivory shadow-brand-card">
+          <div
+            className={`absolute inset-x-0 top-0 h-1.5 ${
+              statusMode === "complete" ? "bg-emerald-500" : "bg-brand-gold"
+            }`}
+          />
+          <div className="px-7 pb-8 pt-10 sm:px-10 sm:pb-10 sm:pt-12">
             <div
-              className={`rounded-xl border p-3 text-sm ${
-                state.status === "error"
-                  ? "border-red-200 bg-red-50 text-red-800"
-                  : "border-emerald-200 bg-emerald-50 text-emerald-800"
+              className={`flex h-16 w-16 items-center justify-center rounded-2xl ${
+                statusMode === "complete"
+                  ? "bg-emerald-50 text-emerald-600"
+                  : "bg-[#f2e8d7] text-brand-gold-strong"
               }`}
             >
-              {state.message}
+              {statusMode === "complete" ? (
+                <CheckCircle2 className="h-8 w-8" strokeWidth={1.8} />
+              ) : (
+                <Lock className="h-8 w-8" strokeWidth={1.8} />
+              )}
             </div>
-          ) : null}
 
-          {onboarding.complete ? (
-            <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50/80 p-4 text-sm text-emerald-900">
-              <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" />
-              <div>
-                <p className="font-semibold">Onboarding complete</p>
-                <p className="text-xs text-emerald-700">
-                  You can now start eligible tasks and receive payment for
-                  approved work.
-                </p>
-              </div>
-            </div>
-          ) : onboarding.reviewPending ? (
-            <div className="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50/80 p-4 text-sm text-amber-950">
-              <Lock className="h-5 w-5 shrink-0 text-amber-700" />
-              <div>
-                <p className="font-semibold">Onboarding review in progress</p>
-                <p className="text-xs text-amber-800">
-                  We will email you after the 15-minute review. Eligible tasks
-                  and candidate payouts unlock after approval.
-                </p>
-              </div>
-            </div>
-          ) : null}
+            <p className="mt-8 text-xs font-bold uppercase tracking-[0.2em] text-brand-muted">
+              {statusMode === "complete"
+                ? "Review complete"
+                : "Application status"}
+            </p>
+            <h2 className="mt-3 max-w-xl text-3xl font-bold tracking-tight text-brand-ink sm:text-4xl">
+              {statusMode === "complete"
+                ? "Onboarding completed successfully"
+                : "We’re reviewing your details"}
+            </h2>
+            <p className="mt-4 max-w-xl text-sm leading-7 text-brand-muted sm:text-base">
+              {statusMode === "complete"
+                ? "Your profile has passed review. You can now return to your workspace and start applying for roles."
+                : "Your documents and account details have been submitted for review. You’ll get an email once the review is complete."}
+            </p>
 
-          {activeStep === "legal" ? (
-          <section>
+            <div className="mt-8 grid gap-3 border-y border-brand-sand py-5 sm:grid-cols-3 sm:gap-0">
+              {[
+                "Details submitted",
+                "Documents received",
+                statusMode === "complete"
+                  ? "Review approved"
+                  : "Email notification pending",
+              ].map((label, index) => (
+                <div
+                  className={`flex items-center gap-2 text-sm font-semibold text-brand-ink ${
+                    index > 0 ? "sm:border-l sm:border-brand-sand sm:pl-5" : ""
+                  }`}
+                  key={label}
+                >
+                  <CheckCircle2
+                    className={`h-4 w-4 shrink-0 ${
+                      statusMode === "complete" || index < 2
+                        ? "text-emerald-500"
+                        : "text-brand-gold"
+                    }`}
+                  />
+                  {label}
+                </div>
+              ))}
+            </div>
+
+            <Link
+              className="mt-8 inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-brand-ink px-5 text-sm font-semibold text-brand-ivory shadow-xs transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold/40"
+              href="/home"
+            >
+              <X className="h-4 w-4" />
+              Close and go to home
+            </Link>
+          </div>
+        </section>
+      ) : (
+        /* Main Stepper Card */
+        <div className="mt-8 rounded-2xl border border-brand-sand bg-brand-ivory shadow-brand-card">
+          {/* Stepper Header */}
+          <div className="border-b border-brand-sand px-8 py-6">
+            <div className="flex items-center justify-between">
+              {steps.map((step, index) => {
+                const StepIcon = step.icon;
+                const active = step.id === activeStep;
+
+                return (
+                  <div className="contents" key={step.label}>
+                    {index > 0 ? (
+                      <div
+                        className={`mx-2 -mt-5 h-[1px] flex-1 ${
+                          steps[index - 1].complete
+                            ? "bg-emerald-200"
+                            : "bg-brand-sand"
+                        }`}
+                      />
+                    ) : null}
+                    <div className="flex min-w-[72px] flex-col items-center">
+                      <div
+                        className={`flex h-10 w-10 items-center justify-center rounded-full border transition-all ${
+                          step.complete
+                            ? "border-emerald-500 bg-emerald-50 text-emerald-600"
+                            : active
+                              ? "border-brand-gold bg-[#f2e8d7] text-brand-gold-strong shadow-brand-focus"
+                              : "border-brand-sand bg-brand-canvas text-brand-muted"
+                        }`}
+                      >
+                        {step.complete ? (
+                          <Check className="h-5 w-5 stroke-[2.5]" />
+                        ) : step.locked ? (
+                          <Lock className="h-4 w-4" strokeWidth={2} />
+                        ) : (
+                          <StepIcon className="h-5 w-5" strokeWidth={2} />
+                        )}
+                      </div>
+                      <span
+                        className={`mt-2 text-center text-xs font-semibold ${
+                          step.complete
+                            ? "text-emerald-700"
+                            : active
+                              ? "text-brand-gold-strong"
+                              : "text-brand-muted"
+                        }`}
+                      >
+                        {step.label}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="space-y-8 p-7 sm:p-8">
             <div>
-              <h3 className="text-base font-bold text-brand-ink">
-                Legal documents
-              </h3>
+              <h2 className="text-lg font-bold text-brand-ink">
+                {currentStep.label}
+              </h2>
               <p className="mt-1 text-sm text-brand-muted">
-                Sign both agreements to finish onboarding.
+                Complete this step, then continue to the next one.
               </p>
             </div>
 
-            <div className="mt-4 space-y-3.5">
-              <div className="flex items-center justify-between rounded-xl border border-brand-sand bg-brand-canvas/50 p-4 transition hover:border-brand-gold">
-                <div className="flex items-center gap-3.5">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-brand-sand bg-[#f2e8d7] text-brand-gold-strong">
-                    <Shield className="h-5 w-5" strokeWidth={1.8} />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-semibold text-brand-ink">
-                      Non-Disclosure Agreement
-                    </h4>
-                    {ndaSigned ? (
-                      <p className="mt-0.5 flex items-center gap-1 text-xs font-medium text-emerald-600">
-                        <CheckCircle2 className="h-3.5 w-3.5" /> Signed
-                      </p>
-                    ) : (
-                      <p className="mt-0.5 text-xs text-slate-500">
-                        Needs signature
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => openSignModal("nda")}
-                  className={
-                    ndaSigned
-                      ? "rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
-                      : "rounded-xl bg-brand-ink px-5 py-2 text-sm font-semibold text-brand-ivory shadow-xs transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold/40"
-                  }
-                >
-                  {ndaSigned ? "View Signed" : "Sign"}
-                </button>
+            {state.message ? (
+              <div
+                className={`rounded-xl border p-3 text-sm ${
+                  state.status === "error"
+                    ? "border-red-200 bg-red-50 text-red-800"
+                    : "border-emerald-200 bg-emerald-50 text-emerald-800"
+                }`}
+              >
+                {state.message}
               </div>
+            ) : null}
 
-              <div className="flex items-center justify-between rounded-xl border border-brand-sand bg-brand-canvas/50 p-4 transition hover:border-brand-gold">
-                <div className="flex items-center gap-3.5">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-brand-sand bg-[#f2e8d7] text-brand-gold-strong">
-                    <FileText className="h-5 w-5" strokeWidth={1.8} />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-semibold text-brand-ink">
-                      Data Submission Form
-                    </h4>
-                    {dataSubmissionSigned ? (
-                      <p className="mt-0.5 flex items-center gap-1 text-xs font-medium text-emerald-600">
-                        <CheckCircle2 className="h-3.5 w-3.5" /> Signed
-                      </p>
-                    ) : (
-                      <p className="mt-0.5 text-xs text-slate-500">
-                        Needs signature
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => openSignModal("dataSubmission")}
-                  className={
-                    dataSubmissionSigned
-                      ? "rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
-                      : "rounded-xl bg-brand-ink px-5 py-2 text-sm font-semibold text-brand-ivory shadow-xs transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold/40"
-                  }
-                >
-                  {dataSubmissionSigned ? "View Signed" : "Sign"}
-                </button>
-              </div>
-            </div>
-
-            {onboarding.legalComplete ? (
-              <div className="mt-4 flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50/80 p-4 text-sm text-emerald-900">
+            {onboarding.complete ? (
+              <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50/80 p-4 text-sm text-emerald-900">
                 <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" />
                 <div>
-                  <p className="font-semibold">Legal documents saved</p>
+                  <p className="font-semibold">Onboarding complete</p>
                   <p className="text-xs text-emerald-700">
-                    Your legal agreements were recorded in the database.
+                    You can now start eligible tasks and receive payment for
+                    approved work.
+                  </p>
+                </div>
+              </div>
+            ) : onboarding.reviewPending ? (
+              <div className="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50/80 p-4 text-sm text-amber-950">
+                <Lock className="h-5 w-5 shrink-0 text-amber-700" />
+                <div>
+                  <p className="font-semibold">Onboarding review in progress</p>
+                  <p className="text-xs text-amber-800">
+                    We will email you after the 15-minute review. Eligible tasks
+                    and candidate payouts unlock after approval.
                   </p>
                 </div>
               </div>
             ) : null}
 
-            <div className="mt-5 flex justify-start">
-              <button
-                className="inline-flex h-11 items-center justify-center rounded-xl border border-brand-sand bg-brand-ivory px-5 text-sm font-semibold text-brand-ink transition hover:border-brand-gold hover:bg-[#f2e8d7]"
-                onClick={() => goToStep("payments")}
-                type="button"
-              >
-                Back
-              </button>
-            </div>
-          </section>
-          ) : null}
+            {activeStep === "legal" ? (
+              <section>
+                <div>
+                  <h3 className="text-base font-bold text-brand-ink">
+                    Legal documents
+                  </h3>
+                  <p className="mt-1 text-sm text-brand-muted">
+                    Sign both agreements to finish onboarding.
+                  </p>
+                </div>
 
-          {activeStep === "phone" ? (
-          <form
-            className="space-y-4 border-t border-brand-sand pt-8"
-            onSubmit={handlePhoneSubmit}
-          >
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h3 className="text-base font-bold text-slate-900">
-                  Verify phone
-                </h3>
-                <p className="mt-1 text-sm text-slate-500">
-                  We will text a six-digit code to confirm this number.
-                </p>
-              </div>
-              {onboarding.phoneVerified ? (
-                <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                  Verified
-                </span>
-              ) : null}
-            </div>
-            <fieldset
-              className="grid grid-cols-1 gap-3 sm:grid-cols-[110px_1fr]"
-              disabled={saving}
-            >
-              <label className="block">
-                <span className="text-xs font-semibold text-slate-600">
-                  Code
-                </span>
-                <input
-                  autoComplete="tel-country-code"
-                  className="mt-1 h-11 w-full rounded-xl border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none transition focus:border-brand-gold focus:ring-1 focus:ring-brand-gold disabled:bg-brand-sand/50"
-                  inputMode="tel"
-                  onChange={(event) =>
-                    handlePhoneFieldChange("countryCode", event.target.value)
-                  }
-                  required
-                  value={phoneCountryCode}
-                />
-              </label>
-              <label className="block">
-                <span className="text-xs font-semibold text-slate-600">
-                  Phone number
-                </span>
-                <input
-                  autoComplete="tel-national"
-                  className="mt-1 h-11 w-full rounded-xl border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none transition focus:border-brand-gold focus:ring-1 focus:ring-brand-gold disabled:bg-brand-sand/50"
-                  inputMode="tel"
-                  onChange={(event) =>
-                    handlePhoneFieldChange("number", event.target.value)
-                  }
-                  placeholder="712 345 678"
-                  required
-                  value={phoneNumber}
-                />
-              </label>
-              {verificationRequested ? (
-              <label className="block sm:col-span-2">
-                <span className="text-xs font-semibold text-slate-600">
-                  Verification code
-                </span>
-                <input
-                  autoComplete="one-time-code"
-                  className="mt-1 h-11 w-full rounded-xl border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none transition focus:border-brand-gold focus:ring-1 focus:ring-brand-gold disabled:bg-brand-sand/50"
-                  inputMode="numeric"
-                  maxLength={6}
-                  onChange={(event) => setVerificationCode(event.target.value)}
-                  pattern="[0-9]{6}"
-                  placeholder="6-digit code"
-                  required
-                  value={verificationCode}
-                />
-                <span className="mt-1 block text-xs text-slate-500">
-                  The code expires after 10 minutes and can only be used once.
-                </span>
-              </label>
-              ) : null}
-            </fieldset>
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <button
-                  className="inline-flex h-11 items-center justify-center rounded-xl border border-brand-gold bg-[#f2e8d7] px-5 text-sm font-semibold text-brand-gold-strong transition hover:bg-brand-gold-light/50 disabled:cursor-not-allowed disabled:opacity-50"
-                  disabled={saving || matchesVerifiedPhone}
-                  onClick={handleSendVerificationCode}
-                  type="button"
-                >
-                  {matchesVerifiedPhone
-                    ? "Phone verified"
-                    : verificationRequested
-                      ? "Send another code"
-                      : "Send verification code"}
-                </button>
-                {verificationRequested ? (
-                  <button
-                    className="inline-flex h-11 items-center justify-center rounded-xl border border-brand-gold bg-brand-gold px-5 text-sm font-semibold text-brand-ink transition hover:bg-brand-gold-light disabled:cursor-not-allowed disabled:opacity-50"
-                    disabled={saving || verificationCode.length !== 6}
-                    type="submit"
-                  >
-                    Verify code
-                  </button>
+                <div className="mt-4 space-y-3.5">
+                  <div className="flex items-center justify-between rounded-xl border border-brand-sand bg-brand-canvas/50 p-4 transition hover:border-brand-gold">
+                    <div className="flex items-center gap-3.5">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-brand-sand bg-[#f2e8d7] text-brand-gold-strong">
+                        <Shield className="h-5 w-5" strokeWidth={1.8} />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-semibold text-brand-ink">
+                          Non-Disclosure Agreement
+                        </h4>
+                        {ndaSigned ? (
+                          <p className="mt-0.5 flex items-center gap-1 text-xs font-medium text-emerald-600">
+                            <CheckCircle2 className="h-3.5 w-3.5" /> Signed
+                          </p>
+                        ) : (
+                          <p className="mt-0.5 text-xs text-slate-500">
+                            Needs signature
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => openSignModal("nda")}
+                      className={
+                        ndaSigned
+                          ? "rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+                          : "rounded-xl bg-brand-ink px-5 py-2 text-sm font-semibold text-brand-ivory shadow-xs transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold/40"
+                      }
+                    >
+                      {ndaSigned ? "View Signed" : "Sign"}
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between rounded-xl border border-brand-sand bg-brand-canvas/50 p-4 transition hover:border-brand-gold">
+                    <div className="flex items-center gap-3.5">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-brand-sand bg-[#f2e8d7] text-brand-gold-strong">
+                        <FileText className="h-5 w-5" strokeWidth={1.8} />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-semibold text-brand-ink">
+                          Data Submission Form
+                        </h4>
+                        {dataSubmissionSigned ? (
+                          <p className="mt-0.5 flex items-center gap-1 text-xs font-medium text-emerald-600">
+                            <CheckCircle2 className="h-3.5 w-3.5" /> Signed
+                          </p>
+                        ) : (
+                          <p className="mt-0.5 text-xs text-slate-500">
+                            Needs signature
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => openSignModal("dataSubmission")}
+                      className={
+                        dataSubmissionSigned
+                          ? "rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100"
+                          : "rounded-xl bg-brand-ink px-5 py-2 text-sm font-semibold text-brand-ivory shadow-xs transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold/40"
+                      }
+                    >
+                      {dataSubmissionSigned ? "View Signed" : "Sign"}
+                    </button>
+                  </div>
+                </div>
+
+                {onboarding.legalComplete ? (
+                  <div className="mt-4 flex flex-col gap-4 rounded-xl border border-emerald-200 bg-emerald-50/80 p-4 text-sm text-emerald-900 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-center gap-3">
+                      <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" />
+                      <div>
+                        <p className="font-semibold">Legal documents saved</p>
+                        <p className="text-xs text-emerald-700">
+                          Your legal agreements were recorded in the database.
+                        </p>
+                      </div>
+                    </div>
+                    <Link
+                      className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-emerald-300 bg-white/70 px-4 text-xs font-semibold text-emerald-900 transition hover:bg-white"
+                      href="/home"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                      Close
+                    </Link>
+                  </div>
                 ) : null}
-                <button
-                  className="inline-flex h-11 items-center justify-center rounded-xl bg-brand-ink px-5 text-sm font-semibold text-brand-ivory shadow-xs transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold/40 disabled:cursor-not-allowed disabled:opacity-50"
-                  disabled={!onboarding.phoneVerified}
-                  onClick={() => goToStep("identity")}
-                  type="button"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          </form>
-          ) : null}
 
-          {activeStep === "identity" ? (
-          <form
-            className={`space-y-4 border-t border-slate-100 pt-8 ${
-              !onboarding.phoneVerified ? "opacity-60" : ""
-            }`}
-            onSubmit={handleIdentitySubmit}
-          >
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h3 className="text-base font-bold text-slate-900">
-                  Verify identity
-                </h3>
-                <p className="mt-1 text-sm text-slate-500">
-                  Confirm the legal identity attached to this account.
-                </p>
-              </div>
-              {onboarding.identityVerified ? (
-                <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                  Verified
-                </span>
-              ) : null}
-            </div>
-            <fieldset
-              className="grid grid-cols-1 gap-3 sm:grid-cols-2"
-              disabled={!onboarding.phoneVerified || saving}
-            >
-              <label className="block sm:col-span-2">
-                <span className="text-xs font-semibold text-slate-600">
-                  Legal name
-                </span>
-                <input
-                  className="mt-1 h-11 w-full rounded-xl border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none transition focus:border-brand-gold focus:ring-1 focus:ring-brand-gold disabled:bg-brand-sand/50"
-                  onChange={(event) => setIdentityLegalName(event.target.value)}
-                  required
-                  value={identityLegalName}
-                />
-              </label>
-              <label className="block">
-                <span className="text-xs font-semibold text-slate-600">
-                  Date of birth
-                </span>
-                <input
-                  className="mt-1 h-11 w-full rounded-xl border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none transition focus:border-brand-gold focus:ring-1 focus:ring-brand-gold disabled:bg-brand-sand/50"
-                  onChange={(event) =>
-                    setIdentityDateOfBirth(event.target.value)
-                  }
-                  required
-                  type="date"
-                  value={identityDateOfBirth}
-                />
-              </label>
-              <label className="block">
-                <span className="text-xs font-semibold text-slate-600">
-                  Document type
-                </span>
-                <select
-                  className="mt-1 h-11 w-full rounded-xl border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none transition focus:border-brand-gold focus:ring-1 focus:ring-brand-gold disabled:bg-brand-sand/50"
-                  onChange={handleIdentityDocumentTypeChange}
-                  value={identityDocumentType}
-                >
-                  <option value="national_id">National ID</option>
-                  <option value="passport">Passport</option>
-                  <option value="drivers_license">Driver license</option>
-                </select>
-              </label>
-              {(["front", "back"] as const).map((side) => {
-                const fileName =
-                  side === "front"
-                    ? identityFrontFileName
-                    : identityBackFileName;
-                const label =
-                  identityDocumentUploadLabels[identityDocumentType][side];
-
-                return (
-                  <label
-                    className="group block cursor-pointer rounded-xl border border-dashed border-brand-sand bg-brand-canvas/50 p-4 transition hover:border-brand-gold hover:bg-brand-gold-light/10 focus-within:border-brand-gold focus-within:ring-2 focus-within:ring-brand-gold/30"
-                    key={side}
+                <div className="mt-5 flex justify-start">
+                  <button
+                    className="inline-flex h-11 items-center justify-center rounded-xl border border-brand-sand bg-brand-ivory px-5 text-sm font-semibold text-brand-ink transition hover:border-brand-gold hover:bg-[#f2e8d7]"
+                    onClick={() => goToStep("payments")}
+                    type="button"
                   >
+                    Back
+                  </button>
+                </div>
+              </section>
+            ) : null}
+
+            {activeStep === "phone" ? (
+              <form
+                className="space-y-4 border-t border-brand-sand pt-8"
+                onSubmit={handlePhoneSubmit}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900">
+                      Verify phone
+                    </h3>
+                    <p className="mt-1 text-sm text-slate-500">
+                      We will text a six-digit code to confirm this number.
+                    </p>
+                  </div>
+                  {onboarding.phoneVerified ? (
+                    <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                      Verified
+                    </span>
+                  ) : null}
+                </div>
+                <fieldset
+                  className="grid grid-cols-1 gap-3 sm:grid-cols-[110px_1fr]"
+                  disabled={saving}
+                >
+                  <label className="block">
+                    <span className="text-xs font-semibold text-slate-600">
+                      Code
+                    </span>
                     <input
-                      accept="image/jpeg,image/png,application/pdf"
-                      className="sr-only"
+                      autoComplete="tel-country-code"
+                      className="mt-1 h-11 w-full rounded-xl border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none transition focus:border-brand-gold focus:ring-1 focus:ring-brand-gold disabled:bg-brand-sand/50"
+                      inputMode="tel"
                       onChange={(event) =>
-                        handleIdentityFileSelection(side, event)
+                        handlePhoneFieldChange(
+                          "countryCode",
+                          event.target.value,
+                        )
                       }
                       required
-                      type="file"
+                      value={phoneCountryCode}
                     />
-                    <span className="flex items-start gap-3">
-                      <span
-                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
-                          fileName
-                            ? "bg-emerald-50 text-emerald-700"
-                            : "bg-brand-ivory text-brand-gold-strong"
-                        }`}
-                      >
-                        {fileName ? (
-                          <CheckCircle2 className="h-5 w-5" />
-                        ) : (
-                          <Upload className="h-5 w-5" />
-                        )}
-                      </span>
-                      <span className="min-w-0">
-                        <span className="block text-xs font-semibold text-slate-700">
-                          {label}
-                        </span>
-                        <span className="mt-1 block truncate text-sm text-slate-500">
-                          {fileName || "Choose a JPG, PNG, or PDF"}
-                        </span>
-                        <span className="mt-1 block text-[11px] text-slate-400">
-                          Maximum 5 MB
-                        </span>
-                      </span>
-                    </span>
                   </label>
-                );
-              })}
-              <p className="text-xs leading-5 text-slate-500 sm:col-span-2">
-                Select both sides to continue. Files stay in this browser and
-                are not stored with your account.
-              </p>
-            </fieldset>
-            <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <button
-                className="inline-flex h-11 items-center justify-center rounded-xl border border-brand-sand bg-brand-ivory px-5 text-sm font-semibold text-brand-ink transition hover:border-brand-gold hover:bg-[#f2e8d7]"
-                onClick={() => goToStep("phone")}
-                type="button"
-              >
-                Back
-              </button>
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <button
-                  className="inline-flex h-11 items-center justify-center rounded-xl border border-brand-gold bg-[#f2e8d7] px-5 text-sm font-semibold text-brand-gold-strong transition hover:bg-brand-gold-light/50 disabled:cursor-not-allowed disabled:opacity-50"
-                  disabled={
-                    !onboarding.phoneVerified ||
-                    saving ||
-                    !identityFrontFileName ||
-                    !identityBackFileName
-                  }
-                  type="submit"
-                >
-                  {onboarding.identityVerified
-                    ? "Update Identity"
-                    : "Verify Identity"}
-                </button>
-                <button
-                  className="inline-flex h-11 items-center justify-center rounded-xl bg-brand-ink px-5 text-sm font-semibold text-brand-ivory shadow-xs transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold/40 disabled:cursor-not-allowed disabled:opacity-50"
-                  disabled={!onboarding.identityVerified}
-                  onClick={() => goToStep("payments")}
-                  type="button"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          </form>
-          ) : null}
+                  <label className="block">
+                    <span className="text-xs font-semibold text-slate-600">
+                      Phone number
+                    </span>
+                    <input
+                      autoComplete="tel-national"
+                      className="mt-1 h-11 w-full rounded-xl border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none transition focus:border-brand-gold focus:ring-1 focus:ring-brand-gold disabled:bg-brand-sand/50"
+                      inputMode="tel"
+                      onChange={(event) =>
+                        handlePhoneFieldChange("number", event.target.value)
+                      }
+                      placeholder="712 345 678"
+                      required
+                      value={phoneNumber}
+                    />
+                  </label>
+                  {verificationRequested ? (
+                    <label className="block sm:col-span-2">
+                      <span className="text-xs font-semibold text-slate-600">
+                        Verification code
+                      </span>
+                      <input
+                        autoComplete="one-time-code"
+                        className="mt-1 h-11 w-full rounded-xl border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none transition focus:border-brand-gold focus:ring-1 focus:ring-brand-gold disabled:bg-brand-sand/50"
+                        inputMode="numeric"
+                        maxLength={6}
+                        onChange={(event) =>
+                          setVerificationCode(event.target.value)
+                        }
+                        pattern="[0-9]{6}"
+                        placeholder="6-digit code"
+                        required
+                        value={verificationCode}
+                      />
+                      <span className="mt-1 block text-xs text-slate-500">
+                        The code expires after 10 minutes and can only be used
+                        once.
+                      </span>
+                    </label>
+                  ) : null}
+                </fieldset>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <button
+                      className="inline-flex h-11 items-center justify-center rounded-xl border border-brand-gold bg-[#f2e8d7] px-5 text-sm font-semibold text-brand-gold-strong transition hover:bg-brand-gold-light/50 disabled:cursor-not-allowed disabled:opacity-50"
+                      disabled={saving || matchesVerifiedPhone}
+                      onClick={handleSendVerificationCode}
+                      type="button"
+                    >
+                      {matchesVerifiedPhone
+                        ? "Phone verified"
+                        : verificationRequested
+                          ? "Send another code"
+                          : "Send verification code"}
+                    </button>
+                    {verificationRequested ? (
+                      <button
+                        className="inline-flex h-11 items-center justify-center rounded-xl border border-brand-gold bg-brand-gold px-5 text-sm font-semibold text-brand-ink transition hover:bg-brand-gold-light disabled:cursor-not-allowed disabled:opacity-50"
+                        disabled={saving || verificationCode.length !== 6}
+                        type="submit"
+                      >
+                        Verify code
+                      </button>
+                    ) : null}
+                    <button
+                      className="inline-flex h-11 items-center justify-center rounded-xl bg-brand-ink px-5 text-sm font-semibold text-brand-ivory shadow-xs transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold/40 disabled:cursor-not-allowed disabled:opacity-50"
+                      disabled={!onboarding.phoneVerified}
+                      onClick={() => goToStep("identity")}
+                      type="button"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              </form>
+            ) : null}
 
-          {activeStep === "payments" ? (
-          <form
-            className={`space-y-4 border-t border-slate-100 pt-8 ${
-              !onboarding.identityVerified ? "opacity-60" : ""
-            }`}
-            onSubmit={handlePaymentSubmit}
-          >
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h3 className="text-base font-bold text-slate-900">
-                  Set up payments
-                </h3>
-                <p className="mt-1 text-sm text-slate-500">
-                  Choose where approved payouts should be sent.
-                </p>
-              </div>
-              {onboarding.paymentsSetup ? (
-                <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                  Ready
-                </span>
-              ) : null}
-            </div>
-            <fieldset
-              className="grid grid-cols-1 gap-3 sm:grid-cols-2"
-              disabled={!onboarding.identityVerified || saving}
-            >
-              <label className="block">
-                <span className="text-xs font-semibold text-slate-600">
-                  Payout method
-                </span>
-                <select
-                  className="mt-1 h-11 w-full rounded-xl border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none transition focus:border-brand-gold focus:ring-1 focus:ring-brand-gold disabled:bg-brand-sand/50"
-                  onChange={(event) =>
-                    setPaymentMethod(event.target.value as PayoutMethod)
-                  }
-                  value={paymentMethod}
-                >
-                  {payoutMethods.map((method) => (
-                    <option key={method.value} value={method.value}>
-                      {method.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="block">
-                <span className="text-xs font-semibold text-slate-600">
-                  Destination
-                </span>
-                <input
-                  className="mt-1 h-11 w-full rounded-xl border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none transition focus:border-brand-gold focus:ring-1 focus:ring-brand-gold disabled:bg-brand-sand/50"
-                  onChange={(event) => setPaymentDestination(event.target.value)}
-                  placeholder={paymentPlaceholders[paymentMethod]}
-                  required
-                  value={paymentDestination}
-                />
-              </label>
-            </fieldset>
-            <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <button
-                className="inline-flex h-11 items-center justify-center rounded-xl border border-brand-sand bg-brand-ivory px-5 text-sm font-semibold text-brand-ink transition hover:border-brand-gold hover:bg-[#f2e8d7]"
-                onClick={() => goToStep("identity")}
-                type="button"
+            {activeStep === "identity" ? (
+              <form
+                className={`space-y-4 border-t border-slate-100 pt-8 ${
+                  !onboarding.phoneVerified ? "opacity-60" : ""
+                }`}
+                onSubmit={handleIdentitySubmit}
               >
-                Back
-              </button>
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <button
-                  className="inline-flex h-11 items-center justify-center rounded-xl border border-brand-gold bg-[#f2e8d7] px-5 text-sm font-semibold text-brand-gold-strong transition hover:bg-brand-gold-light/50 disabled:cursor-not-allowed disabled:opacity-50"
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900">
+                      Verify identity
+                    </h3>
+                    <p className="mt-1 text-sm text-slate-500">
+                      Confirm the legal identity attached to this account.
+                    </p>
+                  </div>
+                  {onboarding.identityVerified ? (
+                    <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                      Verified
+                    </span>
+                  ) : null}
+                </div>
+                <fieldset
+                  className="grid grid-cols-1 gap-3 sm:grid-cols-2"
+                  disabled={!onboarding.phoneVerified || saving}
+                >
+                  <label className="block sm:col-span-2">
+                    <span className="text-xs font-semibold text-slate-600">
+                      Legal name
+                    </span>
+                    <input
+                      className="mt-1 h-11 w-full rounded-xl border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none transition focus:border-brand-gold focus:ring-1 focus:ring-brand-gold disabled:bg-brand-sand/50"
+                      onChange={(event) =>
+                        setIdentityLegalName(event.target.value)
+                      }
+                      required
+                      value={identityLegalName}
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-xs font-semibold text-slate-600">
+                      Date of birth
+                    </span>
+                    <input
+                      className="mt-1 h-11 w-full rounded-xl border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none transition focus:border-brand-gold focus:ring-1 focus:ring-brand-gold disabled:bg-brand-sand/50"
+                      onChange={(event) =>
+                        setIdentityDateOfBirth(event.target.value)
+                      }
+                      required
+                      type="date"
+                      value={identityDateOfBirth}
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="text-xs font-semibold text-slate-600">
+                      Document type
+                    </span>
+                    <select
+                      className="mt-1 h-11 w-full rounded-xl border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none transition focus:border-brand-gold focus:ring-1 focus:ring-brand-gold disabled:bg-brand-sand/50"
+                      onChange={handleIdentityDocumentTypeChange}
+                      value={identityDocumentType}
+                    >
+                      <option value="national_id">National ID</option>
+                      <option value="passport">Passport</option>
+                      <option value="drivers_license">Driver license</option>
+                    </select>
+                  </label>
+                  {(["front", "back"] as const).map((side) => {
+                    const fileName =
+                      side === "front"
+                        ? identityFrontFileName
+                        : identityBackFileName;
+                    const label =
+                      identityDocumentUploadLabels[identityDocumentType][side];
+
+                    return (
+                      <label
+                        className="group block cursor-pointer rounded-xl border border-dashed border-brand-sand bg-brand-canvas/50 p-4 transition hover:border-brand-gold hover:bg-brand-gold-light/10 focus-within:border-brand-gold focus-within:ring-2 focus-within:ring-brand-gold/30"
+                        key={side}
+                      >
+                        <input
+                          accept="image/jpeg,image/png,application/pdf"
+                          className="sr-only"
+                          onChange={(event) =>
+                            handleIdentityFileSelection(side, event)
+                          }
+                          required
+                          type="file"
+                        />
+                        <span className="flex items-start gap-3">
+                          <span
+                            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+                              fileName
+                                ? "bg-emerald-50 text-emerald-700"
+                                : "bg-brand-ivory text-brand-gold-strong"
+                            }`}
+                          >
+                            {fileName ? (
+                              <CheckCircle2 className="h-5 w-5" />
+                            ) : (
+                              <Upload className="h-5 w-5" />
+                            )}
+                          </span>
+                          <span className="min-w-0">
+                            <span className="block text-xs font-semibold text-slate-700">
+                              {label}
+                            </span>
+                            <span className="mt-1 block truncate text-sm text-slate-500">
+                              {fileName || "Choose a JPG, PNG, or PDF"}
+                            </span>
+                            <span className="mt-1 block text-[11px] text-slate-400">
+                              Maximum 5 MB
+                            </span>
+                          </span>
+                        </span>
+                      </label>
+                    );
+                  })}
+                  <p className="text-xs leading-5 text-slate-500 sm:col-span-2">
+                    Select both sides to continue. Files stay in this browser
+                    and are not stored with your account.
+                  </p>
+                </fieldset>
+                <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <button
+                    className="inline-flex h-11 items-center justify-center rounded-xl border border-brand-sand bg-brand-ivory px-5 text-sm font-semibold text-brand-ink transition hover:border-brand-gold hover:bg-[#f2e8d7]"
+                    onClick={() => goToStep("phone")}
+                    type="button"
+                  >
+                    Back
+                  </button>
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <button
+                      className="inline-flex h-11 items-center justify-center rounded-xl border border-brand-gold bg-[#f2e8d7] px-5 text-sm font-semibold text-brand-gold-strong transition hover:bg-brand-gold-light/50 disabled:cursor-not-allowed disabled:opacity-50"
+                      disabled={
+                        !onboarding.phoneVerified ||
+                        saving ||
+                        !identityFrontFileName ||
+                        !identityBackFileName
+                      }
+                      type="submit"
+                    >
+                      {onboarding.identityVerified
+                        ? "Update Identity"
+                        : "Verify Identity"}
+                    </button>
+                    <button
+                      className="inline-flex h-11 items-center justify-center rounded-xl bg-brand-ink px-5 text-sm font-semibold text-brand-ivory shadow-xs transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold/40 disabled:cursor-not-allowed disabled:opacity-50"
+                      disabled={!onboarding.identityVerified}
+                      onClick={() => goToStep("payments")}
+                      type="button"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              </form>
+            ) : null}
+
+            {activeStep === "payments" ? (
+              <form
+                className={`space-y-4 border-t border-slate-100 pt-8 ${
+                  !onboarding.identityVerified ? "opacity-60" : ""
+                }`}
+                onSubmit={handlePaymentSubmit}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900">
+                      Set up payments
+                    </h3>
+                    <p className="mt-1 text-sm text-slate-500">
+                      Choose where approved payouts should be sent.
+                    </p>
+                  </div>
+                  {onboarding.paymentsSetup ? (
+                    <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                      Ready
+                    </span>
+                  ) : null}
+                </div>
+                <fieldset
+                  className="grid grid-cols-1 gap-3 sm:grid-cols-2"
                   disabled={!onboarding.identityVerified || saving}
-                  type="submit"
                 >
-                  {onboarding.paymentsSetup ? "Update Payments" : "Save Payments"}
-                </button>
-                <button
-                  className="inline-flex h-11 items-center justify-center rounded-xl bg-brand-ink px-5 text-sm font-semibold text-brand-ivory shadow-xs transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold/40 disabled:cursor-not-allowed disabled:opacity-50"
-                  disabled={!onboarding.paymentsSetup}
-                  onClick={() => goToStep("legal")}
-                  type="button"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          </form>
-          ) : null}
+                  <label className="block">
+                    <span className="text-xs font-semibold text-slate-600">
+                      Payout method
+                    </span>
+                    <select
+                      className="mt-1 h-11 w-full rounded-xl border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none transition focus:border-brand-gold focus:ring-1 focus:ring-brand-gold disabled:bg-brand-sand/50"
+                      onChange={(event) =>
+                        setPaymentMethod(event.target.value as PayoutMethod)
+                      }
+                      value={paymentMethod}
+                    >
+                      {payoutMethods.map((method) => (
+                        <option key={method.value} value={method.value}>
+                          {method.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="block">
+                    <span className="text-xs font-semibold text-slate-600">
+                      Destination
+                    </span>
+                    <input
+                      className="mt-1 h-11 w-full rounded-xl border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none transition focus:border-brand-gold focus:ring-1 focus:ring-brand-gold disabled:bg-brand-sand/50"
+                      onChange={(event) =>
+                        setPaymentDestination(event.target.value)
+                      }
+                      placeholder={paymentPlaceholders[paymentMethod]}
+                      required
+                      value={paymentDestination}
+                    />
+                  </label>
+                </fieldset>
+                <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <button
+                    className="inline-flex h-11 items-center justify-center rounded-xl border border-brand-sand bg-brand-ivory px-5 text-sm font-semibold text-brand-ink transition hover:border-brand-gold hover:bg-[#f2e8d7]"
+                    onClick={() => goToStep("identity")}
+                    type="button"
+                  >
+                    Back
+                  </button>
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <button
+                      className="inline-flex h-11 items-center justify-center rounded-xl border border-brand-gold bg-[#f2e8d7] px-5 text-sm font-semibold text-brand-gold-strong transition hover:bg-brand-gold-light/50 disabled:cursor-not-allowed disabled:opacity-50"
+                      disabled={!onboarding.identityVerified || saving}
+                      type="submit"
+                    >
+                      {onboarding.paymentsSetup
+                        ? "Update Payments"
+                        : "Save Payments"}
+                    </button>
+                    <button
+                      className="inline-flex h-11 items-center justify-center rounded-xl bg-brand-ink px-5 text-sm font-semibold text-brand-ivory shadow-xs transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold/40 disabled:cursor-not-allowed disabled:opacity-50"
+                      disabled={!onboarding.paymentsSetup}
+                      onClick={() => goToStep("legal")}
+                      type="button"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              </form>
+            ) : null}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Signing Modal */}
       {activeModal ? (
@@ -1095,11 +1202,11 @@ export function OnboardingFlowClient({
                       &ldquo;proprietary&rdquo; at the time of disclosure, or
                       (b) such that a reasonable person would understand it to
                       be confidential given the nature of the information and
-                      the circumstances surrounding its disclosure.
-                      Confidential Information includes, but is not limited to,
-                      business plans, technical data, product plans,
-                      strategies, financial information, customer lists, and
-                      other sensitive business information.
+                      the circumstances surrounding its disclosure. Confidential
+                      Information includes, but is not limited to, business
+                      plans, technical data, product plans, strategies,
+                      financial information, customer lists, and other sensitive
+                      business information.
                     </p>
                   </div>
 
@@ -1129,12 +1236,12 @@ export function OnboardingFlowClient({
                     <p className="mt-1">
                       (d) <strong>Permitted Disclosures.</strong> The Recipient
                       may disclose Confidential Information only to its
-                      employees, agents, or subcontractors who (i) have a need to
-                      know such information for the Purpose, and (ii) are bound
-                      by confidentiality obligations no less protective than
-                      those set forth in this Agreement. The Recipient shall
-                      remain fully responsible for any breach of this Agreement
-                      by any such persons.
+                      employees, agents, or subcontractors who (i) have a need
+                      to know such information for the Purpose, and (ii) are
+                      bound by confidentiality obligations no less protective
+                      than those set forth in this Agreement. The Recipient
+                      shall remain fully responsible for any breach of this
+                      Agreement by any such persons.
                     </p>
                   </div>
 
@@ -1144,8 +1251,8 @@ export function OnboardingFlowClient({
                       The obligations in Section 2 shall not apply to any
                       information that:
                       <br />
-                      (a) was known to the Recipient without restriction prior to
-                      disclosure by the Discloser;
+                      (a) was known to the Recipient without restriction prior
+                      to disclosure by the Discloser;
                       <br />
                       (b) becomes publicly available through no act or omission
                       of the Recipient;
@@ -1153,8 +1260,8 @@ export function OnboardingFlowClient({
                       (c) is received from a third party without breach of any
                       obligation of confidentiality; or
                       <br />
-                      (d) is independently developed by the Recipient without use
-                      of or reference to the Confidential Information.
+                      (d) is independently developed by the Recipient without
+                      use of or reference to the Confidential Information.
                     </p>
                     <p className="mt-1">
                       If the Recipient is required by law, regulation, or court
@@ -1181,11 +1288,11 @@ export function OnboardingFlowClient({
                     </h5>
                     <p className="mt-1">
                       All Confidential Information shall remain the exclusive
-                      property of the Discloser. Nothing in this Agreement grants
-                      the Recipient any rights, by license or otherwise, to any
-                      of the Discloser’s intellectual property or Confidential
-                      Information, except for the limited right to use such
-                      Confidential Information solely for the Purpose.
+                      property of the Discloser. Nothing in this Agreement
+                      grants the Recipient any rights, by license or otherwise,
+                      to any of the Discloser’s intellectual property or
+                      Confidential Information, except for the limited right to
+                      use such Confidential Information solely for the Purpose.
                     </p>
                   </div>
 
@@ -1194,9 +1301,9 @@ export function OnboardingFlowClient({
                       6. Term and Duration
                     </h5>
                     <p className="mt-1">
-                      This Agreement shall become effective on the Effective Date
-                      and remain in effect until terminated by either party upon
-                      thirty (30) days’ written notice. Notwithstanding any
+                      This Agreement shall become effective on the Effective
+                      Date and remain in effect until terminated by either party
+                      upon thirty (30) days’ written notice. Notwithstanding any
                       termination, the Recipient’s obligation to protect
                       Confidential Information disclosed prior to termination
                       shall survive for a period of five (5) years from the date
@@ -1227,14 +1334,16 @@ export function OnboardingFlowClient({
                       Agreement may cause the Discloser irreparable harm for
                       which monetary damages may be inadequate. Accordingly, the
                       Discloser shall be entitled to seek injunctive or other
-                      equitable relief to enforce the terms of this Agreement, in
-                      addition to any other rights or remedies available at law
-                      or in equity.
+                      equitable relief to enforce the terms of this Agreement,
+                      in addition to any other rights or remedies available at
+                      law or in equity.
                     </p>
                   </div>
 
                   <div>
-                    <h5 className="font-bold text-slate-900">9. No Assignment</h5>
+                    <h5 className="font-bold text-slate-900">
+                      9. No Assignment
+                    </h5>
                     <p className="mt-1">
                       This Agreement is personal to the Recipient and may not be
                       assigned or transferred, in whole or in part, without the
@@ -1250,8 +1359,8 @@ export function OnboardingFlowClient({
                       This Agreement shall be governed by and construed in
                       accordance with the laws of the State of California,
                       without regard to its conflict of law principles. The
-                      Recipient agrees to submit to the exclusive jurisdiction of
-                      the state and federal courts located in San Francisco,
+                      Recipient agrees to submit to the exclusive jurisdiction
+                      of the state and federal courts located in San Francisco,
                       California for any disputes arising out of or relating to
                       this Agreement.
                     </p>
@@ -1264,12 +1373,12 @@ export function OnboardingFlowClient({
                     <p className="mt-1">
                       This Agreement constitutes the entire understanding
                       between the parties with respect to the subject matter
-                      hereof and supersedes all prior discussions, agreements, or
-                      understandings of any kind. No amendment or modification
-                      of this Agreement shall be valid unless in writing and
-                      signed by both parties. The failure of the Discloser to
-                      enforce any provision of this Agreement shall not be
-                      construed as a waiver of that provision.
+                      hereof and supersedes all prior discussions, agreements,
+                      or understandings of any kind. No amendment or
+                      modification of this Agreement shall be valid unless in
+                      writing and signed by both parties. The failure of the
+                      Discloser to enforce any provision of this Agreement shall
+                      not be construed as a waiver of that provision.
                     </p>
                   </div>
 
@@ -1354,8 +1463,8 @@ export function OnboardingFlowClient({
                     <p className="mt-1">
                       1.2 Company shall have the unrestricted right to use,
                       modify, adapt, reproduce, distribute, publish, display,
-                      perform, sell, lease, transmit, or otherwise dispose of the
-                      Submitted Materials in any way and for any purpose,
+                      perform, sell, lease, transmit, or otherwise dispose of
+                      the Submitted Materials in any way and for any purpose,
                       commercial or non-commercial, through any means, media,
                       technology or processes, whether currently known or
                       developed in the future.
@@ -1373,10 +1482,11 @@ export function OnboardingFlowClient({
                       DATA HANDLING AND MONETIZATION
                     </h5>
                     <p className="mt-1">
-                      2.1 Company has complete discretion regarding the handling,
-                      storage, use, sale, licensing, distribution, aggregation,
-                      analysis, modification, combination, or other exploitation
-                      of Submitted Materials, including but not limited to:
+                      2.1 Company has complete discretion regarding the
+                      handling, storage, use, sale, licensing, distribution,
+                      aggregation, analysis, modification, combination, or other
+                      exploitation of Submitted Materials, including but not
+                      limited to:
                       <br />- Sale or licensing to third parties
                       <br />- Incorporation into products or services
                       <br />- Use for marketing, advertising or promotional
@@ -1394,10 +1504,10 @@ export function OnboardingFlowClient({
                       third parties.
                     </p>
                     <p className="mt-1">
-                      2.3 <strong>Perpetual Rights.</strong> Company&apos;s rights
-                      to Submitted Materials survive indefinitely regardless of
-                      any termination of User&apos;s account or relationship
-                      with Company.
+                      2.3 <strong>Perpetual Rights.</strong> Company&apos;s
+                      rights to Submitted Materials survive indefinitely
+                      regardless of any termination of User&apos;s account or
+                      relationship with Company.
                     </p>
                   </div>
 
@@ -1427,8 +1537,8 @@ export function OnboardingFlowClient({
                       provide such information
                       <br />- User has informed third parties of Company&apos;s
                       intended uses
-                      <br />- User will indemnify Company against any claims from
-                      such third parties
+                      <br />- User will indemnify Company against any claims
+                      from such third parties
                     </p>
                   </div>
 

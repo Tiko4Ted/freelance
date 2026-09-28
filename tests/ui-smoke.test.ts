@@ -72,6 +72,68 @@ test("identity onboarding asks for both document sides instead of last four", ()
   assert.doesNotMatch(markup, /Document last 4/i);
 });
 
+test("onboarding review state explains the email handoff and links home", () => {
+  const markup = renderToStaticMarkup(
+    createElement(OnboardingFlowClient, {
+      initialOnboarding: {
+        ...onboardingStatus,
+        ndaSignedAt: "2026-09-26T10:10:00.000Z",
+        dataSubmissionSignedAt: "2026-09-26T10:11:00.000Z",
+        identityVerifiedAt: "2026-09-26T10:05:00.000Z",
+        identityVerified: true,
+        paymentMethod: "PAYPAL",
+        paymentDestination: "ada@example.com",
+        paymentSetupAt: "2026-09-26T10:06:00.000Z",
+        payoutAccountReady: true,
+        completedAt: "2026-09-26T10:12:00.000Z",
+        reviewPending: true,
+        legalComplete: true,
+        paymentsSetup: true,
+        requirementsComplete: true,
+      },
+      isAuthenticated: true,
+      userName: "Ada",
+    }),
+  );
+
+  assert.match(markup, /We’re reviewing your details/);
+  assert.match(markup, /You’ll get an email once the review is complete/);
+  assert.match(markup, /href="\/home"/);
+  assert.match(markup, /Close and go to home/);
+  assert.doesNotMatch(markup, /Verify Identity/);
+});
+
+test("onboarding approved state confirms successful completion", () => {
+  const markup = renderToStaticMarkup(
+    createElement(OnboardingFlowClient, {
+      initialOnboarding: {
+        ...onboardingStatus,
+        ndaSignedAt: "2026-09-26T10:10:00.000Z",
+        dataSubmissionSignedAt: "2026-09-26T10:11:00.000Z",
+        identityVerifiedAt: "2026-09-26T10:05:00.000Z",
+        identityVerified: true,
+        paymentMethod: "PAYPAL",
+        paymentDestination: "ada@example.com",
+        paymentSetupAt: "2026-09-26T10:06:00.000Z",
+        payoutAccountReady: true,
+        completedAt: "2026-09-26T10:12:00.000Z",
+        reviewAvailableAt: "2026-09-26T10:27:00.000Z",
+        complete: true,
+        legalComplete: true,
+        paymentsSetup: true,
+        requirementsComplete: true,
+      },
+      isAuthenticated: true,
+      userName: "Ada",
+    }),
+  );
+
+  assert.match(markup, /Onboarding completed successfully/);
+  assert.match(markup, /Review approved/);
+  assert.match(markup, /Close and go to home/);
+  assert.doesNotMatch(markup, /Application status/);
+});
+
 test("payment onboarding displays payout options in reverse order", () => {
   const markup = renderToStaticMarkup(
     createElement(OnboardingFlowClient, {

@@ -24,6 +24,16 @@ function closeHref(referralCode?: string) {
   return `/referral/jobs?referralCode=${encodeURIComponent(referralCode)}`;
 }
 
+function applyHref(jobId: string, referralCode?: string) {
+  const href = `/jobs/${jobId}/apply`;
+
+  if (!referralCode) {
+    return href;
+  }
+
+  return `${href}?referralCode=${encodeURIComponent(referralCode)}`;
+}
+
 export default async function JobDetailPage({
   params,
   searchParams,
@@ -38,7 +48,7 @@ export default async function JobDetailPage({
 
   return (
     <JobDetailShell closeHref={closeHref(referralCode)}>
-      <JobDetailContent job={job} />
+      <JobDetailContent applyHref={applyHref(job.id, referralCode)} job={job} />
     </JobDetailShell>
   );
 }
