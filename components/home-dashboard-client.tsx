@@ -21,6 +21,12 @@ import {
   CheckCircle2,
 } from "lucide-react";
 
+import {
+  getSupportChatReply,
+  type SupportChatMessage,
+  type SupportTopic,
+} from "@/lib/support-chat";
+
 type DashboardProject = {
   id: string;
   applicationId?: string;
@@ -140,14 +146,13 @@ export function HomeDashboardClient({
   const [helpOpen, setHelpOpen] = useState(false);
   const [supportMessage, setSupportMessage] = useState("");
   const [referralCopied, setReferralCopied] = useState(false);
-  const [supportMessages, setSupportMessages] = useState<
-    Array<{ from: "support" | "user"; text: string }>
-  >([
+  const [supportMessages, setSupportMessages] = useState<SupportChatMessage[]>([
     {
       from: "support",
-      text: "Hi, I can help with onboarding, payments, tasks, and account questions.",
+      text: "Hi — what are you trying to sort out today? I can help with a task, application, payment, or account issue.",
     },
   ]);
+  const [supportTopic, setSupportTopic] = useState<SupportTopic>();
   const selectedProject = visibleProjects[0];
 
   const startProjectTask = () => {
@@ -220,14 +225,18 @@ export function HomeDashboardClient({
       return;
     }
 
+    const reply = getSupportChatReply(trimmedMessage, {
+      lastTopic: supportTopic,
+      projectTitle: selectedProject?.title,
+      userName,
+    });
+
     setSupportMessages((messages) => [
       ...messages,
       { from: "user", text: trimmedMessage },
-      {
-        from: "support",
-        text: "Thanks. A support teammate can pick this up from here once live chat is connected.",
-      },
+      { from: "support", ...reply },
     ]);
+    setSupportTopic(reply.topic);
     setSupportMessage("");
   };
 
@@ -1008,7 +1017,7 @@ export function HomeDashboardClient({
               <div>
                 <h2 className="text-sm font-semibold">Support</h2>
                 <p className="mt-1 text-xs text-slate-300">
-                  Chat with support about work, payments, or your account.
+                  Quick help for work, payments, and account questions.
                 </p>
               </div>
               <button
@@ -1037,6 +1046,14 @@ export function HomeDashboardClient({
                     }`}
                   >
                     {message.text}
+                    {message.action ? (
+                      <Link
+                        className="mt-2 block font-semibold text-brand-gold-strong underline-offset-2 hover:underline"
+                        href={message.action.href}
+                      >
+                        {message.action.label}
+                      </Link>
+                    ) : null}
                   </div>
                 </div>
               ))}
@@ -1044,7 +1061,7 @@ export function HomeDashboardClient({
 
             <div className="border-t border-brand-sand px-5 py-4">
               <div className="mb-3 flex flex-wrap gap-2">
-                {["Payment issue", "Onboarding help", "Task question"].map(
+                {["Payment status", "Can’t sign in", "Task question", "Safety concern"].map(
                   (topic) => (
                     <button
                       className="rounded-full border border-brand-sand bg-brand-ivory px-3 py-1.5 text-xs font-medium text-brand-muted transition hover:border-brand-gold hover:bg-[#f2e8d7] hover:text-brand-ink"
