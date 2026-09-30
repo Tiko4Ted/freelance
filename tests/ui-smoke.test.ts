@@ -231,6 +231,8 @@ test("referral page shows and copies the Trinity referral URL", () => {
     "https://freelance-nu-swart.vercel.app/referral/jobs?referralCode=TRINITY-123";
   const markup = renderToStaticMarkup(
     createElement(ReferralClient, {
+      joinedCount: 4,
+      qualifiedCount: 1,
       referralLink,
       userName: "Ada",
     }),
@@ -238,6 +240,8 @@ test("referral page shows and copies the Trinity referral URL", () => {
 
   assert.match(markup, /freelance-nu-swart\.vercel\.app\/referral\/jobs/);
   assert.match(markup, /referralCode=TRINITY-123/);
+  assert.match(markup, /People joined/);
+  assert.match(markup, /Qualified referrals/);
   assert.doesNotMatch(markup, /joinhandshake/i);
 });
 

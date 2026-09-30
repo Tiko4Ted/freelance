@@ -11,6 +11,7 @@ type RegisterState =
 
 type RegisterFormProps = {
   callbackUrl?: string;
+  referralCode?: string;
 };
 
 function getErrorMessage(payload: unknown) {
@@ -35,7 +36,10 @@ function verificationEmailWasSent(payload: unknown) {
   );
 }
 
-export function RegisterForm({ callbackUrl = "/home" }: RegisterFormProps) {
+export function RegisterForm({
+  callbackUrl = "/home",
+  referralCode,
+}: RegisterFormProps) {
   const [state, setState] = useState<RegisterState>({
     status: "idle",
     message: "",
@@ -52,7 +56,7 @@ export function RegisterForm({ callbackUrl = "/home" }: RegisterFormProps) {
     const response = await fetch("/api/v1/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify({ name, email, password, referralCode }),
     });
     const payload: unknown = await response.json();
 

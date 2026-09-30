@@ -47,6 +47,31 @@ test("registration sends a welcome verification email", async () => {
   });
 });
 
+test("registration preserves the referral code from the signup flow", async () => {
+  let capturedReferralCode: string | undefined;
+  const handler = createRegisterPostHandler({
+    register: async (input) => {
+      capturedReferralCode = input.referralCode;
+      return {
+        id: "user-1",
+        email: input.email,
+        name: input.name,
+      };
+    },
+    sendWelcomeVerification: async () => undefined,
+  });
+
+  const response = await handler(
+    jsonRequest("https://example.test/api/v1/auth/register", {
+      ...registrationInput,
+      referralCode: "REFERRER-123",
+    }),
+  );
+
+  assert.equal(response.status, 201);
+  assert.equal(capturedReferralCode, "REFERRER-123");
+});
+
 test("registration reports delivery failure without deleting the account", async () => {
   const handler = createRegisterPostHandler({
     register: async (input) => ({

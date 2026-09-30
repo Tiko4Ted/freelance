@@ -60,12 +60,19 @@ export const AuthService = {
     }
 
     const passwordHash = await hashPassword(input.password);
+    const referrer = input.referralCode
+      ? await UserRepository.findReferrerByCode(input.referralCode)
+      : null;
 
     return UserRepository.create({
       email,
       name: input.name.trim(),
       passwordHash,
       role: input.role ?? Role.REFERRER,
+      referredById:
+        referrer && referrer.role !== Role.CANDIDATE
+          ? referrer.id
+          : undefined,
     });
   },
 

@@ -10,11 +10,15 @@ import {
 } from "lucide-react";
 
 interface ReferralClientProps {
+  joinedCount: number;
+  qualifiedCount: number;
   referralLink: string;
   userName?: string;
 }
 
 export function ReferralClient({
+  joinedCount,
+  qualifiedCount,
   referralLink,
   userName = "Teddy",
 }: ReferralClientProps) {
@@ -96,8 +100,10 @@ export function ReferralClient({
                 <Users className="h-6 w-6" />
               </div>
               <div>
-                <div className="text-sm font-medium text-brand-muted">Total Referrals</div>
-                <div className="text-2xl font-bold text-brand-ink">0</div>
+                <div className="text-sm font-medium text-brand-muted">People joined</div>
+                <div className="text-2xl font-bold text-brand-ink">
+                  {joinedCount}
+                </div>
               </div>
             </div>
             <div className="h-px w-full bg-brand-sand" />
@@ -106,8 +112,10 @@ export function ReferralClient({
                 <DollarSign className="h-6 w-6" />
               </div>
               <div>
-                <div className="text-sm font-medium text-brand-muted">Total Earned</div>
-                <div className="text-2xl font-bold text-brand-ink">$0.00</div>
+                <div className="text-sm font-medium text-brand-muted">Qualified referrals</div>
+                <div className="text-2xl font-bold text-brand-ink">
+                  {qualifiedCount}
+                </div>
               </div>
             </div>
           </div>
