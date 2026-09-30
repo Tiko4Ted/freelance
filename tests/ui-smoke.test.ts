@@ -398,6 +398,8 @@ test("dashboard renders flagged database projects as summary cards", () => {
         formattedHoursWorked: "0",
       },
       projects: [],
+      referralLink:
+        "https://freelance-nu-swart.vercel.app/referral/jobs?referralCode=ADA-123",
       featuredProjects: [
         {
           id: "job-featured",
@@ -417,6 +419,10 @@ test("dashboard renders flagged database projects as summary cards", () => {
   assert.match(markup, /AI Quality Review/);
   assert.match(markup, /2 spots left/);
   assert.match(markup, /\/jobs\/job-featured/);
+  assert.match(markup, /View terms/);
+  assert.match(markup, /Copy referral link/);
+  assert.match(markup, /Try Versus/);
+  assert.match(markup, /href="\/apply"/);
   assert.doesNotMatch(markup, /Start task/);
 });
 

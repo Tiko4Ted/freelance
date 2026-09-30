@@ -1,7 +1,9 @@
 import { auth } from "@/auth";
 import { PortalSidebar } from "@/components/portal-sidebar";
 import { HomeDashboardClient } from "@/components/home-dashboard-client";
+import { getAppUrl } from "@/lib/app-url";
 import { prisma } from "@/lib/db/prisma";
+import { ReferralService } from "@/lib/services/referral-service";
 import { JobService } from "@/lib/services/job-service";
 import { LedgerService } from "@/lib/services/ledger-service";
 import {
@@ -160,12 +162,17 @@ export default async function HomePage() {
         )
     : Promise.resolve([]);
 
-  const [paymentSummary, projects, featuredProjects, onboarding] =
+  const referralPromise = userId
+    ? ReferralService.getMyLinks(userId, getAppUrl())
+    : Promise.resolve(null);
+
+  const [paymentSummary, projects, featuredProjects, onboarding, referral] =
     await Promise.all([
       paymentSummaryPromise,
       projectsPromise,
       JobService.listHomeProjects(),
       onboardingPromise,
+      referralPromise,
     ]);
   const featuredProjectCards = featuredProjects.map((project) => ({
     id: project.id,
@@ -205,6 +212,7 @@ export default async function HomePage() {
             onboardingComplete={onboarding.complete}
             paymentSummary={paymentSummary}
             projects={projects}
+            referralLink={referral?.url ?? null}
             userName={userName}
           />
         </div>
