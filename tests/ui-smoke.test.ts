@@ -224,6 +224,8 @@ test("public jobs UI renders a referral-preserving application link", () => {
   assert.match(markup, /Apply now/);
   assert.match(markup, /\/jobs\/job-1\/apply\?referralCode=REF%20CODE/);
   assert.match(markup, /Load more roles/);
+  assert.doesNotMatch(markup, /High demand/);
+  assert.doesNotMatch(markup, /openings/);
 });
 
 test("referral page shows and copies the Trinity referral URL", () => {
@@ -410,7 +412,6 @@ test("dashboard renders flagged database projects as summary cards", () => {
           title: "AI Quality Review",
           description: "Review model output for accuracy and clarity.",
           companyName: "Trinity-AI",
-          openings: 2,
           formattedPayout: "$300",
           formattedHourlyPay: null,
           skills: [{ id: "skill-review", label: "Review" }],
@@ -421,8 +422,9 @@ test("dashboard renders flagged database projects as summary cards", () => {
 
   assert.match(markup, /Featured projects/);
   assert.match(markup, /AI Quality Review/);
-  assert.match(markup, /2 spots left/);
   assert.match(markup, /\/jobs\/job-featured/);
+  assert.doesNotMatch(markup, /spots left/);
+  assert.doesNotMatch(markup, /High demand/);
   assert.match(markup, /View terms/);
   assert.match(markup, /Copy referral link/);
   assert.match(markup, /Try Versus/);
