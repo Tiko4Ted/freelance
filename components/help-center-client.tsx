@@ -509,7 +509,7 @@ export function HelpCenterClient({ categoryId }: HelpCenterClientProps) {
         Skip to help articles
       </a>
 
-      <header className="border-b border-brand-sand/80 bg-brand-canvas dark:border-[#363a30] dark:bg-[#171915]">
+      <header className="fixed inset-x-0 top-0 z-[1] border-b border-brand-sand/80 bg-brand-canvas dark:border-[#363a30] dark:bg-[#171915]">
         <nav
           aria-label="Main navigation"
           className="mx-auto flex h-[72px] max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8"
@@ -559,7 +559,7 @@ export function HelpCenterClient({ categoryId }: HelpCenterClientProps) {
         </nav>
       </header>
 
-      <section className="border-b border-brand-sand/80 dark:border-[#363a30]">
+      <section className="border-b border-brand-sand/80 pt-[72px] dark:border-[#363a30]">
         <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:py-20 lg:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)] lg:items-center lg:px-8">
           <div>
             <p className="text-sm font-bold text-brand-gold-strong dark:text-brand-gold-light">

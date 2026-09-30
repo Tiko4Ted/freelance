@@ -68,7 +68,8 @@ export function PortalSidebar({
   const initial = (userName.trim()[0] || "T").toUpperCase();
 
   return (
-    <aside className="sticky top-0 z-40 flex h-dvh w-[92px] shrink-0 select-none flex-col overflow-hidden border-r border-[#4b452f] bg-brand-ink text-brand-gold-light shadow-[8px_0_28px_rgba(38,41,31,0.12)] sm:w-[112px]">
+    <div className="h-dvh w-[92px] shrink-0 sm:w-[112px]">
+      <aside className="fixed left-0 top-0 z-[1] flex h-dvh w-[92px] select-none flex-col overflow-hidden border-r border-[#4b452f] bg-brand-ink text-brand-gold-light shadow-[8px_0_28px_rgba(38,41,31,0.12)] sm:w-[112px]">
       <div className="flex min-h-0 w-full flex-1 flex-col">
         <Link
           href="/home"
@@ -155,6 +156,7 @@ export function PortalSidebar({
           </button>
         ) : null}
       </div>
-    </aside>
+      </aside>
+    </div>
   );
 }

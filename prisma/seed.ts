@@ -1,6 +1,8 @@
 import { PayoutTrigger, PrismaClient, Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
+import { EmailNotificationService } from "../lib/services/email-notification-service";
+
 const prisma = new PrismaClient();
 
 type DemoJob = {
@@ -15,6 +17,7 @@ type DemoJob = {
   hourlyMaxCents: number;
   postedDaysAgo: number;
   isHighDemand?: boolean;
+  showOnHome?: boolean;
   skills: string[];
 };
 
@@ -397,6 +400,78 @@ const baseDemoJobs: DemoJob[] = [
     postedDaysAgo: 7,
     skills: ["Product design", "Prototyping", "Design systems", "UX research"],
   },
+  {
+    title: "Image Tagging & Classification Assistant",
+    description:
+      "Download an image packet and simple labeling guide, tag everyday objects and scenes offline, then upload the completed labels and quality notes for evaluation. No specialist background required.",
+    payoutAmountCents: 15000,
+    openings: 40,
+    hourlyMinCents: 1500,
+    hourlyMaxCents: 1800,
+    postedDaysAgo: 0,
+    isHighDemand: true,
+    showOnHome: true,
+    skills: [
+      "Image labeling",
+      "Object classification",
+      "Following instructions",
+      "Attention to detail",
+      "File-based deliverables",
+      "Quality control",
+    ],
+  },
+  {
+    title: "Audio Transcription & Timestamping Assistant",
+    description:
+      "Download short audio files and a transcription guide, type what you hear with timestamps and speaker labels, then upload the completed transcript for evaluation. Clear instructions and careful listening are provided.",
+    payoutAmountCents: 15000,
+    openings: 35,
+    hourlyMinCents: 1500,
+    hourlyMaxCents: 1800,
+    postedDaysAgo: 0,
+    isHighDemand: true,
+    showOnHome: true,
+    skills: [
+      "Audio transcription",
+      "Timestamping",
+      "Speaker labels",
+      "Typing accuracy",
+      "Following instructions",
+      "File-based deliverables",
+    ],
+  },
+  {
+    title: "Document Data Entry & Quality Check Assistant",
+    description:
+      "Download a document packet and spreadsheet template, copy key details into the correct fields, check entries against the source files, then upload the completed workbook for evaluation. Training instructions are included.",
+    payoutAmountCents: 15000,
+    openings: 30,
+    hourlyMinCents: 1500,
+    hourlyMaxCents: 1800,
+    postedDaysAgo: 0,
+    isHighDemand: true,
+    showOnHome: true,
+    skills: [
+      "Data entry",
+      "Document review",
+      "Spreadsheet basics",
+      "Quality checking",
+      "Following instructions",
+      "File-based deliverables",
+    ],
+  },
+];
+
+const legacyHomeProjectTitles = [
+  "Senior AI Safety Evaluator",
+  "Full-Stack Reliability Engineer",
+  "Financial Risk & Forecasting Analyst",
+  "Electrical Engineering Simulation Reviewer",
+  "Real Estate CRM Data Specialist",
+  "B2B SaaS Sales Development Representative",
+  "3D LiDAR & Road Scene Annotator",
+  "Search Relevance & Ad Quality Evaluator",
+  "AI Chatbot Response & Reasoning Evaluator",
 ];
 
 type DigitalJobFamily = {
@@ -996,7 +1071,7 @@ function normalizeBaseJob(job: DemoJob, index: number): DemoJob {
   return {
     ...job,
     openings: Math.max(30, job.openings),
-    postedDaysAgo: index % 28,
+    postedDaysAgo: job.showOnHome ? job.postedDaysAgo : index % 28,
     isHighDemand: job.isHighDemand ?? index % 3 === 0,
   };
 }
@@ -1148,6 +1223,11 @@ function chunkItems<T>(items: T[], size: number) {
 }
 
 async function seedJob(job: DemoJob) {
+  const previousJob = await prisma.job.findUnique({
+    where: { title: job.title },
+    select: { showOnHome: true },
+  });
+
   const createdJob = await prisma.job.upsert({
     where: { title: job.title },
     update: {
@@ -1161,6 +1241,9 @@ async function seedJob(job: DemoJob) {
       hourlyMaxCents: job.hourlyMaxCents,
       postedAt: postedAt(job.postedDaysAgo),
       isHighDemand: job.isHighDemand ?? false,
+      ...(job.showOnHome === undefined
+        ? {}
+        : { showOnHome: job.showOnHome }),
       isActive: true,
     },
     create: {
@@ -1175,6 +1258,7 @@ async function seedJob(job: DemoJob) {
       hourlyMaxCents: job.hourlyMaxCents,
       postedAt: postedAt(job.postedDaysAgo),
       isHighDemand: job.isHighDemand ?? false,
+      showOnHome: job.showOnHome ?? false,
       isActive: true,
     },
     select: { id: true },
@@ -1190,6 +1274,15 @@ async function seedJob(job: DemoJob) {
       label,
     })),
   });
+
+  if (job.showOnHome && (!previousJob || !previousJob.showOnHome)) {
+    const notificationJob = await prisma.job.findUniqueOrThrow({
+      where: { id: createdJob.id },
+      include: { skills: { select: { label: true } } },
+    });
+
+    await EmailNotificationService.notifyUsersOfNewJob(notificationJob);
+  }
 }
 
 async function main() {
@@ -1232,6 +1325,14 @@ async function main() {
       },
     });
   }
+
+  await prisma.job.updateMany({
+    where: {
+      title: { in: legacyHomeProjectTitles },
+      showOnHome: true,
+    },
+    data: { showOnHome: false },
+  });
 
   for (const jobBatch of chunkItems(demoJobs, JOB_SEED_BATCH_SIZE)) {
     await Promise.all(jobBatch.map(seedJob));

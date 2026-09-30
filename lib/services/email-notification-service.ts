@@ -615,6 +615,7 @@ export const EmailNotificationService = {
   async notifyUsersOfNewJob(job: NotificationJob) {
     const recipients = await prisma.user.findMany({
       where: {
+        emailVerifiedAt: { not: null },
         role: {
           not: Role.ADMIN,
         },

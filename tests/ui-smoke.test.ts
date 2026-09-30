@@ -168,6 +168,7 @@ test("authenticated portal sidebar renders a logout control", () => {
   assert.match(markup, />Log out</);
   assert.match(markup, /aria-label="Portal navigation"/);
   assert.match(markup, /aria-current="page"/);
+  assert.match(markup, /fixed left-0 top-0 z-\[1\]/);
   assert.match(markup, /text-brand-gold-light/);
   assert.doesNotMatch(markup, /text-brand-gold-light\/70/);
   assert.doesNotMatch(markup, /Informational notification dot/);

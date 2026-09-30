@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { ChevronDown, Upload } from "lucide-react";
+import { Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import {
@@ -16,64 +16,23 @@ import {
 type ApplicationFormProps = {
   aptitudeHref: string;
   applicantEmail: string;
+  applicantFirstName: string;
+  applicantLastName: string;
+  applicantPhoneCountryCode: string;
+  applicantPhoneNumber: string;
   jobId: string;
 };
 
-const phoneCountries = [
-  { country: "United States", code: "+1", label: "US" },
-  { country: "Canada", code: "+1", label: "CA" },
-  { country: "United Kingdom", code: "+44", label: "GB" },
-  { country: "Kenya", code: "+254", label: "KE" },
-  { country: "Nigeria", code: "+234", label: "NG" },
-  { country: "South Africa", code: "+27", label: "ZA" },
-  { country: "Ghana", code: "+233", label: "GH" },
-  { country: "Uganda", code: "+256", label: "UG" },
-  { country: "Tanzania", code: "+255", label: "TZ" },
-  { country: "Rwanda", code: "+250", label: "RW" },
-  { country: "India", code: "+91", label: "IN" },
-  { country: "Pakistan", code: "+92", label: "PK" },
-  { country: "Brazil", code: "+55", label: "BR" },
-  { country: "Mexico", code: "+52", label: "MX" },
-  { country: "Germany", code: "+49", label: "DE" },
-  { country: "France", code: "+33", label: "FR" },
-  { country: "Italy", code: "+39", label: "IT" },
-  { country: "Netherlands", code: "+31", label: "NL" },
-  { country: "Spain", code: "+34", label: "ES" },
-  { country: "China", code: "+86", label: "CN" },
-  { country: "Japan", code: "+81", label: "JP" },
-  { country: "South Korea", code: "+82", label: "KR" },
-  { country: "Australia", code: "+61", label: "AU" },
-].sort((first, second) => second.code.length - first.code.length);
-
-const defaultPhoneCountry = phoneCountries.find(
-  (country) => country.code === "+254",
-) ?? {
-  country: "Kenya",
-  code: "+254",
-  label: "KE",
-};
-
-function detectPhoneCountry(phoneNumber: string) {
-  const trimmedPhoneNumber = phoneNumber.trim();
-
-  if (!trimmedPhoneNumber.startsWith("+") && !trimmedPhoneNumber.startsWith("00")) {
-    return defaultPhoneCountry;
-  }
-
-  const normalizedPhoneCode = trimmedPhoneNumber.startsWith("00")
-    ? `+${trimmedPhoneNumber.slice(2).replace(/\D/g, "")}`
-    : `+${trimmedPhoneNumber.slice(1).replace(/\D/g, "")}`;
-
-  return (
-    phoneCountries.find((country) =>
-      normalizedPhoneCode.startsWith(country.code),
-    ) ?? defaultPhoneCountry
-  );
-}
+const linkedInProfilePattern =
+  "https://(www\\.)?linkedin\\.com/in/[A-Za-z0-9][A-Za-z0-9_%\\-]*/?";
 
 export function ApplicationForm({
   aptitudeHref,
   applicantEmail,
+  applicantFirstName,
+  applicantLastName,
+  applicantPhoneCountryCode,
+  applicantPhoneNumber,
   jobId,
 }: ApplicationFormProps) {
   const router = useRouter();
@@ -82,8 +41,6 @@ export function ApplicationForm({
     message: "",
   });
   const [resumeName, setResumeName] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [phoneCountry, setPhoneCountry] = useState(defaultPhoneCountry);
 
   function handleDetailsNext(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -94,18 +51,9 @@ export function ApplicationForm({
     }
 
     const formData = new FormData(form);
-    const firstName = String(formData.get("firstName") ?? "").trim();
-    const lastName = String(formData.get("lastName") ?? "").trim();
-    const detectedPhoneCountry = detectPhoneCountry(phoneNumber);
 
     const storedDraft: StoredApplicationDraft = {
       jobId,
-      candidateName: `${firstName} ${lastName}`.trim(),
-      candidateFirstName: firstName,
-      candidateLastName: lastName,
-      candidatePhoneCountry: detectedPhoneCountry.country,
-      candidatePhoneCountryCode: detectedPhoneCountry.code,
-      candidatePhoneNumber: phoneNumber,
       candidateLinkedinUrl: String(formData.get("linkedinUrl") ?? ""),
       resumeFileName: resumeName,
     };
@@ -115,7 +63,6 @@ export function ApplicationForm({
         applicationDraftStorageKey(jobId),
         JSON.stringify(storedDraft),
       );
-      setPhoneCountry(detectedPhoneCountry);
       setState({ status: "idle", message: "" });
       router.push(aptitudeHref);
     } catch {
@@ -156,9 +103,8 @@ export function ApplicationForm({
             className="mt-1.5 h-9 w-full rounded border border-brand-sand bg-brand-canvas/50 px-3 text-[13px] outline-none transition placeholder:text-brand-muted focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
             id="firstName"
             name="firstName"
-            placeholder="Enter your first name"
-            required
-            minLength={1}
+            readOnly
+            value={applicantFirstName}
           />
         </div>
         <div>
@@ -172,9 +118,8 @@ export function ApplicationForm({
             className="mt-1.5 h-9 w-full rounded border border-brand-sand bg-brand-canvas/50 px-3 text-[13px] outline-none transition placeholder:text-brand-muted focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
             id="lastName"
             name="lastName"
-            placeholder="Enter your last name"
-            required
-            minLength={1}
+            readOnly
+            value={applicantLastName}
           />
         </div>
       </div>
@@ -187,27 +132,16 @@ export function ApplicationForm({
           Phone number
         </label>
         <div className="mt-1.5 flex h-10 overflow-hidden rounded border border-brand-sand bg-brand-canvas/50 transition focus-within:border-brand-gold focus-within:ring-1 focus-within:ring-brand-gold">
-          <div className="flex min-w-[86px] items-center gap-2 border-r border-brand-sand px-3 text-[13px] text-brand-ink">
-            <span aria-hidden="true" className="text-base leading-none">
-              {phoneCountry.label}
-            </span>
-            <ChevronDown aria-hidden="true" className="h-3.5 w-3.5 text-brand-muted" />
-            <span className="sr-only">
-              Country: {phoneCountry.country} {phoneCountry.code}
-            </span>
+          <div className="flex min-w-[86px] items-center border-r border-brand-sand px-3 text-[13px] text-brand-ink">
+            <span>{applicantPhoneCountryCode}</span>
           </div>
           <input
             className="min-w-0 flex-1 bg-transparent px-3 text-[13px] outline-none placeholder:text-brand-muted"
             id="phoneNumber"
             name="phoneNumber"
-            onChange={(event) => {
-              const nextPhoneNumber = event.target.value;
-              setPhoneNumber(nextPhoneNumber);
-              setPhoneCountry(detectPhoneCountry(nextPhoneNumber));
-            }}
-            placeholder={`${phoneCountry.code} 712 345678`}
-            type="tel"
-            value={phoneNumber}
+            readOnly
+            type="text"
+            value={applicantPhoneNumber}
           />
         </div>
       </div>
@@ -223,7 +157,10 @@ export function ApplicationForm({
           className="mt-1.5 h-9 w-full rounded border border-brand-sand bg-brand-canvas/50 px-3 text-[13px] outline-none transition placeholder:text-brand-muted focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
           id="linkedinUrl"
           name="linkedinUrl"
-          placeholder="Enter your LinkedIn URL"
+          pattern={linkedInProfilePattern}
+          placeholder="https://www.linkedin.com/in/your-name"
+          required
+          title="Use your LinkedIn profile URL, for example https://www.linkedin.com/in/your-name"
           type="url"
         />
       </div>
@@ -243,6 +180,7 @@ export function ApplicationForm({
           onChange={(event) => {
             setResumeName(event.target.files?.[0]?.name ?? "");
           }}
+          required
           type="file"
         />
         <label
