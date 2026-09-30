@@ -72,6 +72,40 @@ test("registration preserves the referral code from the signup flow", async () =
   assert.equal(capturedReferralCode, "REFERRER-123");
 });
 
+test("registration recovers referral attribution from the server cookie", async () => {
+  let capturedReferralCode: string | undefined;
+  let capturedCallbackUrl: string | undefined;
+  const handler = createRegisterPostHandler({
+    readReferralCookie: async () => "REFERRER-456",
+    register: async (input) => {
+      capturedReferralCode = input.referralCode;
+      return {
+        id: "user-1",
+        email: input.email,
+        name: input.name,
+      };
+    },
+    sendWelcomeVerification: async (_user, callbackUrl) => {
+      capturedCallbackUrl = callbackUrl;
+    },
+  });
+
+  const response = await handler(
+    jsonRequest("https://example.test/api/v1/auth/register", {
+      ...registrationInput,
+      callbackUrl:
+        "/jobs/job-123/apply?referralCode=REFERRER-456",
+    }),
+  );
+
+  assert.equal(response.status, 201);
+  assert.equal(capturedReferralCode, "REFERRER-456");
+  assert.equal(
+    capturedCallbackUrl,
+    "/jobs/job-123/apply?referralCode=REFERRER-456",
+  );
+});
+
 test("registration reports delivery failure without deleting the account", async () => {
   const handler = createRegisterPostHandler({
     register: async (input) => ({
@@ -134,6 +168,49 @@ test("verification tokens are hashed and links use the configured app URL", () =
       buildEmailVerificationUrl(token),
       `https://example.test/verify-email?token=${token}`,
     );
+  } finally {
+    if (originalAppUrl === undefined) {
+      delete process.env.APP_URL;
+    } else {
+      process.env.APP_URL = originalAppUrl;
+    }
+  }
+});
+
+test("verification links preserve a safe application callback", () => {
+  const originalAppUrl = process.env.APP_URL;
+  process.env.APP_URL = "https://example.test/";
+
+  try {
+    const token = "b".repeat(43);
+    const url = buildEmailVerificationUrl(
+      token,
+      "/jobs/job-123/apply?referralCode=REFERRER-456",
+    );
+
+    assert.equal(
+      url,
+      "https://example.test/verify-email?token=" +
+        `${token}&callbackUrl=%2Fjobs%2Fjob-123%2Fapply%3FreferralCode%3DREFERRER-456`,
+    );
+  } finally {
+    if (originalAppUrl === undefined) {
+      delete process.env.APP_URL;
+    } else {
+      process.env.APP_URL = originalAppUrl;
+    }
+  }
+});
+
+test("verification links reject external callback URLs", () => {
+  const originalAppUrl = process.env.APP_URL;
+  process.env.APP_URL = "https://example.test";
+
+  try {
+    const token = "c".repeat(43);
+    const url = buildEmailVerificationUrl(token, "https://evil.example");
+
+    assert.equal(url, `https://example.test/verify-email?token=${token}`);
   } finally {
     if (originalAppUrl === undefined) {
       delete process.env.APP_URL;

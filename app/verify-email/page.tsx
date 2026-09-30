@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { VerifyEmailForm } from "@/components/auth/verify-email-form";
 import { BrandLogo } from "@/components/brand-logo";
+import { safeCallbackUrl } from "@/lib/auth/callback-url";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +14,7 @@ export const metadata: Metadata = {
 
 type VerifyEmailPageProps = {
   searchParams: Promise<{
+    callbackUrl?: string;
     token?: string | string[];
   }>;
 };
@@ -22,6 +24,7 @@ export default async function VerifyEmailPage({
 }: VerifyEmailPageProps) {
   const params = await searchParams;
   const token = typeof params.token === "string" ? params.token : null;
+  const callbackUrl = safeCallbackUrl(params.callbackUrl);
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_18%_22%,rgba(235,204,144,0.28),transparent_30%),linear-gradient(135deg,#f7f3ea,#fffdf8)] px-6 py-10 text-brand-ink">
@@ -41,7 +44,7 @@ export default async function VerifyEmailPage({
             Verify your email
           </h1>
           <div className="mt-6">
-            <VerifyEmailForm token={token} />
+            <VerifyEmailForm callbackUrl={callbackUrl} token={token} />
           </div>
         </div>
       </section>

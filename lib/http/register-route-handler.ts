@@ -11,7 +11,11 @@ type RegisteredUser = {
 
 type RegisterDependencies = {
   register: (input: RegisterInput) => Promise<RegisteredUser>;
-  sendWelcomeVerification: (user: RegisteredUser) => Promise<unknown>;
+  readReferralCookie?: () => Promise<string | undefined>;
+  sendWelcomeVerification: (
+    user: RegisteredUser,
+    callbackUrl?: string,
+  ) => Promise<unknown>;
 };
 
 export function createRegisterPostHandler(dependencies: RegisterDependencies) {
@@ -19,11 +23,15 @@ export function createRegisterPostHandler(dependencies: RegisterDependencies) {
     try {
       const body: unknown = await request.json();
       const input = registerSchema.parse(body);
-      const user = await dependencies.register(input);
+      const referralCookie = await dependencies.readReferralCookie?.();
+      const user = await dependencies.register({
+        ...input,
+        referralCode: referralCookie ?? input.referralCode,
+      });
       let verificationEmailSent = false;
 
       try {
-        await dependencies.sendWelcomeVerification(user);
+        await dependencies.sendWelcomeVerification(user, input.callbackUrl);
         verificationEmailSent = true;
       } catch (error) {
         console.error("Welcome verification email failed", {

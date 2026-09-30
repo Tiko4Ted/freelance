@@ -1,5 +1,6 @@
 import { AuthShell } from "@/components/auth/auth-shell";
 import { LoginForm } from "@/components/auth/login-form";
+import { safeCallbackUrl } from "@/lib/auth/callback-url";
 
 export const dynamic = "force-dynamic";
 
@@ -9,14 +10,6 @@ type LoginPageProps = {
     verified?: string;
   }>;
 };
-
-function safeCallbackUrl(value: string | undefined) {
-  if (!value || !value.startsWith("/") || value.startsWith("//")) {
-    return "/home";
-  }
-
-  return value;
-}
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;

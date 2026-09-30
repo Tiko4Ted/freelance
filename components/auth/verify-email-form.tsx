@@ -9,6 +9,7 @@ type VerificationState =
   | { status: "error"; message: string };
 
 type VerifyEmailFormProps = {
+  callbackUrl?: string;
   token: string | null;
 };
 
@@ -25,7 +26,7 @@ function responseError(payload: unknown) {
   return "Unable to verify this email address";
 }
 
-export function VerifyEmailForm({ token }: VerifyEmailFormProps) {
+export function VerifyEmailForm({ callbackUrl = "/home", token }: VerifyEmailFormProps) {
   const [state, setState] = useState<VerificationState>({
     status: token ? "idle" : "error",
     message: token ? "" : "This verification link is incomplete.",
@@ -63,7 +64,9 @@ export function VerifyEmailForm({ token }: VerifyEmailFormProps) {
         return;
       }
 
-      window.location.replace("/login?verified=1");
+      window.location.replace(
+        `/login?verified=1&callbackUrl=${encodeURIComponent(callbackUrl)}`,
+      );
     } catch {
       setState({
         status: "error",
@@ -94,7 +97,7 @@ export function VerifyEmailForm({ token }: VerifyEmailFormProps) {
       </button>
       <Link
         className="inline-block text-sm font-medium text-brand-gold-strong hover:text-brand-ink hover:underline"
-        href="/login"
+        href={`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`}
       >
         Return to sign in
       </Link>
