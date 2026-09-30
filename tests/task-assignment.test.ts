@@ -58,6 +58,47 @@ test("builds a role-matched software work sample", () => {
   assert.match(content, /test plan/);
 });
 
+test("builds downloadable and uploadable work samples for featured projects", () => {
+  const roles = [
+    {
+      title: "Image Tagging & Classification Assistant",
+      description: "Tag everyday objects in an image packet using a simple labeling guide.",
+      expected: /image packet/,
+    },
+    {
+      title: "Audio Transcription & Timestamping Assistant",
+      description: "Transcribe short recordings and add timestamps using a clear guide.",
+      expected: /audio packet/,
+    },
+    {
+      title: "Document Data Entry & Quality Check Assistant",
+      description: "Enter document details into a spreadsheet template and check the entries.",
+      expected: /document packet/,
+    },
+  ];
+
+  for (const role of roles) {
+    const assignment = buildTaskAssignment({
+      id: `application-${role.title}`,
+      candidateName: "Ada Candidate",
+      job: {
+        title: role.title,
+        description: role.description,
+        companyName: "Trinity-AI",
+        payoutType: PayoutTrigger.HOURS_10,
+        skills: [{ label: "Quality control" }],
+      },
+    });
+    const content = assignment.sections
+      .flatMap((section) => section.lines)
+      .join("\n");
+
+    assert.match(content, role.expected);
+    assert.match(content, /upload/i);
+    assert.match(content, /evaluation/i);
+  }
+});
+
 test("does not classify science engineering roles as software work", () => {
   const assignment = buildTaskAssignment({
     id: "application-science",

@@ -124,12 +124,107 @@ function buildTemplate(job: TaskAssignmentJob): TaskTemplate {
 
   if (
     hasAny(source, [
+      "image tagging",
+      "image classification",
+      "image labeling",
+      "object classification",
+    ])
+  ) {
+    return {
+      category: "Image labeling work sample",
+      complexity:
+        "Accessible: no specialist background is required, but careful reading and consistent labels matter throughout the packet.",
+      estimatedTime: "60 to 90 minutes including download, labeling, quality check, and upload.",
+      task: [
+        "Download the image packet, labeling guide, and submission template.",
+        "Tag the objects and scenes shown in each image using only the labels allowed by the guide.",
+        "Review uncertain images against the examples and flag anything the instructions do not cover.",
+        "Check that every image has a label and that the completed file is ready to upload for evaluation.",
+      ],
+      deliverables: [
+        "The completed image-label table or annotation file in the supplied format.",
+        "A short note listing any unclear examples or instruction questions.",
+        "The final filename or upload reference needed for reviewer evaluation.",
+      ],
+      reviewCriteria: [
+        "Labels match the written guide and examples.",
+        "No images or required fields are missing.",
+        "Unclear cases are flagged instead of guessed.",
+      ],
+    };
+  }
+
+  if (
+    hasAny(source, [
+      "transcription",
+      "timestamping",
+      "speaker labels",
+    ])
+  ) {
+    return {
+      category: "Audio transcription work sample",
+      complexity:
+        "Accessible: the task uses short recordings and a clear style guide; accuracy and careful listening are the main requirements.",
+      estimatedTime: "90 minutes to 2 hours including download, transcription, quality check, and upload.",
+      task: [
+        "Download the audio packet, transcription guide, and transcript template.",
+        "Type the spoken words accurately, add timestamps at the required intervals, and apply speaker labels from the guide.",
+        "Mark unclear words using the approved notation instead of inventing a guess.",
+        "Play back the recording while checking the completed transcript before uploading it for evaluation.",
+      ],
+      deliverables: [
+        "The completed transcript with timestamps and speaker labels.",
+        "A short quality note listing any unclear audio or sections that need reviewer attention.",
+        "The final filename or upload reference needed for evaluation.",
+      ],
+      reviewCriteria: [
+        "The transcript follows the supplied style and timestamp rules.",
+        "Speaker changes and unclear audio are marked consistently.",
+        "The uploaded file opens correctly and covers the full recording.",
+      ],
+    };
+  }
+
+  if (
+    hasAny(source, [
+      "data entry",
+      "document data",
+      "document review",
+      "spreadsheet basics",
+      "quality checking",
+    ])
+  ) {
+    return {
+      category: "Document data entry work sample",
+      complexity:
+        "Accessible: the work is guided by a template and examples, with accuracy and repeatable checking more important than specialist knowledge.",
+      estimatedTime: "60 to 90 minutes including download, entry, quality check, and upload.",
+      task: [
+        "Download the document packet, data-entry guide, and spreadsheet template.",
+        "Copy the requested fields from each source document into the matching template columns.",
+        "Compare each entry against the source, correct formatting issues, and flag missing or unreadable information.",
+        "Run a final row-by-row check before uploading the completed workbook for evaluation.",
+      ],
+      deliverables: [
+        "The completed spreadsheet or CSV in the supplied format.",
+        "A short quality note listing missing fields, unreadable documents, or corrected issues.",
+        "The final filename or upload reference needed for reviewer evaluation.",
+      ],
+      reviewCriteria: [
+        "Required fields are copied accurately from the source documents.",
+        "Formatting and missing-value rules are followed consistently.",
+        "The uploaded file opens correctly and includes all assigned rows.",
+      ],
+    };
+  }
+
+  if (
+    hasAny(source, [
       "audio",
       "voice",
       "recording",
       "podcast",
       "subtitle",
-      "transcription",
       "conversation",
       "localization producer",
     ])
@@ -193,13 +288,15 @@ function buildTemplate(job: TaskAssignmentJob): TaskTemplate {
       complexity: "Moderate: the task requires consistent judgment, not advanced research.",
       estimatedTime: "90 minutes to 2 hours.",
       task: [
+        "Download the task brief and supplied response packet before starting.",
         `Evaluate eight short model responses related to ${skills}.`,
         "Rank each response for accuracy, instruction following, clarity, and safety.",
         "Write a compact rubric with four scoring levels and apply it consistently.",
         "Flag ambiguous cases and explain what evidence would improve confidence.",
+        "Check the scorecard and rubric for completeness before uploading them for evaluation.",
       ],
       deliverables: [
-        "A completed scoring table for all eight responses.",
+        "An uploaded scoring table for all eight responses.",
         "A short rubric and a paragraph explaining the hardest judgment call.",
         "Any corrections or ideal-answer notes needed for low-quality responses.",
       ],

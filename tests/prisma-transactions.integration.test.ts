@@ -100,6 +100,15 @@ test(
           },
         ],
       });
+      await client.userOnboarding.create({
+        data: {
+          userId: candidateId,
+          identityLegalName: "Integration Candidate",
+          phoneCountryCode: "+254",
+          phoneNumber: "712345678",
+          phoneVerifiedAt: new Date("2026-09-22T00:00:00.000Z"),
+        },
+      });
       await client.job.createMany({
         data: [
           {
@@ -123,6 +132,8 @@ test(
         {
           jobId: firstJobId,
           candidateName: "Integration Candidate",
+          candidateLinkedinUrl: "https://www.linkedin.com/in/integration-candidate",
+          resumeFileName: "integration-candidate.pdf",
           strongestTools: ["TypeScript"],
           aptitudeAnswers,
         },
@@ -141,6 +152,8 @@ test(
         {
           jobId: secondJobId,
           candidateName: "Integration Candidate",
+          candidateLinkedinUrl: "https://www.linkedin.com/in/integration-candidate",
+          resumeFileName: "integration-candidate.pdf",
           strongestTools: ["TypeScript"],
           aptitudeAnswers,
         },

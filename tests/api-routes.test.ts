@@ -17,12 +17,33 @@ function jsonRequest(url: string, body: unknown) {
 const validApplication = {
   jobId: "11111111-1111-4111-8111-111111111111",
   candidateName: "Ada Candidate",
+  candidateLinkedinUrl: "https://www.linkedin.com/in/ada-candidate",
+  resumeFileName: "ada-candidate.pdf",
   strongestTools: ["TypeScript"],
   aptitudeAnswers: Array.from({ length: 15 }, (_, index) => ({
     questionId: `question-${index + 1}`,
     selectedOptionId: "a",
   })),
 };
+
+test("applications API rejects non-LinkedIn profile URLs", async () => {
+  const handler = createApplicationPostHandler({
+    requireSession: async () => ({
+      user: { id: "candidate-user", email: "candidate@example.test" },
+    }),
+    readReferralCookie: async () => undefined,
+    submitApplication: async () => ({}),
+  });
+
+  const response = await handler(
+    jsonRequest("https://example.test/api/v1/applications", {
+      ...validApplication,
+      candidateLinkedinUrl: "https://example.com/ada-candidate",
+    }),
+  );
+
+  assert.equal(response.status, 400);
+});
 
 test("applications API validates input and returns a created application", async () => {
   let submittedReferral: string | undefined;

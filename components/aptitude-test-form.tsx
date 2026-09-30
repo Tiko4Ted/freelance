@@ -102,7 +102,11 @@ function readStoredDraft(jobId: string): StoredApplicationDraft | null {
   try {
     const draft = JSON.parse(rawDraft) as Partial<StoredApplicationDraft>;
 
-    if (draft.jobId !== jobId || !draft.candidateName) {
+    if (
+      draft.jobId !== jobId ||
+      !draft.candidateLinkedinUrl ||
+      !draft.resumeFileName
+    ) {
       return null;
     }
 

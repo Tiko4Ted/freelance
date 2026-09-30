@@ -30,6 +30,8 @@ function applicationInput(jobId = job.id): ApplicationInput {
     candidateName: "Ada Candidate",
     candidateFirstName: "Ada",
     candidateLastName: "Candidate",
+    candidateLinkedinUrl: "https://www.linkedin.com/in/ada-candidate",
+    resumeFileName: "ada-candidate.pdf",
     strongestTools: ["TypeScript"],
     aptitudeAnswers: Array.from({ length: 15 }, (_, index) => ({
       questionId: [
@@ -98,10 +100,10 @@ async function withApplicationDatabase(
           candidateFirstName: data.candidateFirstName ?? null,
           candidateLastName: data.candidateLastName ?? null,
           candidatePhoneCountry: null,
-          candidatePhoneCountryCode: null,
-          candidatePhoneNumber: null,
-          candidateLinkedinUrl: null,
-          resumeFileName: null,
+          candidatePhoneCountryCode: data.candidatePhoneCountryCode ?? null,
+          candidatePhoneNumber: data.candidatePhoneNumber ?? null,
+          candidateLinkedinUrl: data.candidateLinkedinUrl ?? null,
+          resumeFileName: data.resumeFileName ?? null,
           startAvailabilityDays: null,
           expectedHourlyRateUsd: null,
           weeklyAvailabilityHours: null,
@@ -116,7 +118,18 @@ async function withApplicationDatabase(
       upsert: async () => ({}),
     },
     user: {
-      findUnique: async () => options.referrer ?? null,
+      findUnique: async ({ where }: { where: { id?: string } }) =>
+        where.id === applicant.id
+          ? {
+              name: "Verified Database Name",
+              onboarding: {
+                identityLegalName: "Verified Database Name",
+                phoneCountryCode: "+254",
+                phoneNumber: "712345678",
+                phoneVerifiedAt: new Date("2026-09-22T00:00:00.000Z"),
+              },
+            }
+          : options.referrer ?? null,
     },
     referral: {
       create: async () => ({ id: `referral-${captured.length + 1}` }),
@@ -188,6 +201,28 @@ test("application without a referral cookie creates no referral", async () => {
 
     assert.equal(application.referralId, null);
     assert.equal(captured[0]?.referralId, undefined);
+  });
+});
+
+test("application identity and phone come from verified onboarding data", async () => {
+  await withApplicationDatabase({}, async (captured) => {
+    await ApplicationService.submitApplication(
+      {
+        ...applicationInput(),
+        candidateName: "Spoofed Name",
+        candidateFirstName: "Spoofed",
+        candidateLastName: "Name",
+        candidatePhoneCountryCode: "+1",
+        candidatePhoneNumber: "5550000000",
+      },
+      applicant,
+    );
+
+    assert.equal(captured[0]?.candidateName, "Verified Database Name");
+    assert.equal(captured[0]?.candidateFirstName, "Verified");
+    assert.equal(captured[0]?.candidateLastName, "Database Name");
+    assert.equal(captured[0]?.candidatePhoneCountryCode, "+254");
+    assert.equal(captured[0]?.candidatePhoneNumber, "712345678");
   });
 });
 

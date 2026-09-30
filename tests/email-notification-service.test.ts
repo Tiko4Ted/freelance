@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { ApplicationStatus } from "@prisma/client";
+import { ApplicationStatus, Role } from "@prisma/client";
 
+import { prisma } from "../lib/db/prisma";
 import {
   buildEmailDeliveryTestEmail,
   buildApplicationStatusEmail,
@@ -204,6 +205,57 @@ test("builds a new project email with the job apply link", () => {
   assert.match(email.html, /invited to participate/i);
   assert.match(email.html, /https:\/\/example\.test\/jobs\/job-123\/apply/);
   assert.match(email.text, /Apply here: https:\/\/example\.test\/jobs\/job-123\/apply/);
+});
+
+test("new project invitations target verified non-admin participants", async () => {
+  const originalFindMany = prisma.user.findMany;
+  const originalFetch = globalThis.fetch;
+  const originalApiKey = process.env.RESEND_API_KEY;
+  let capturedWhere: unknown;
+  const sentTo: string[] = [];
+
+  process.env.RESEND_API_KEY = "test-key";
+  Object.defineProperty(prisma.user, "findMany", {
+    configurable: true,
+    value: async (query: { where: unknown }) => {
+      capturedWhere = query.where;
+      return [{ email: "verified@example.test", name: "Verified" }];
+    },
+  });
+  globalThis.fetch = async (_input, init) => {
+    const requestBody = JSON.parse(String(init?.body)) as { to: string };
+    sentTo.push(requestBody.to);
+    return Response.json({ id: "email-project-123" });
+  };
+
+  try {
+    await EmailNotificationService.notifyUsersOfNewJob({
+      companyName: "Trinity-AI",
+      currency: "USD",
+      description: "Review difficult AI outputs.",
+      id: "job-project-123",
+      payoutAmountCents: 15000,
+      skills: [{ label: "AI safety" }],
+      title: "Senior AI Safety Evaluator",
+    });
+  } finally {
+    Object.defineProperty(prisma.user, "findMany", {
+      configurable: true,
+      value: originalFindMany,
+    });
+    globalThis.fetch = originalFetch;
+    if (originalApiKey === undefined) {
+      delete process.env.RESEND_API_KEY;
+    } else {
+      process.env.RESEND_API_KEY = originalApiKey;
+    }
+  }
+
+  assert.deepEqual(capturedWhere, {
+    emailVerifiedAt: { not: null },
+    role: { not: Role.ADMIN },
+  });
+  assert.deepEqual(sentTo, ["verified@example.test"]);
 });
 
 test("builds an application status email with the previous and new status", () => {

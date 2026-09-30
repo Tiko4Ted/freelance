@@ -37,6 +37,16 @@ function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
 }
 
+function splitApplicantName(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+
+  return {
+    fullName: parts.join(" "),
+    firstName: parts.shift() ?? "",
+    lastName: parts.join(" "),
+  };
+}
+
 function isUniqueConstraintError(error: unknown) {
   return (
     error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -136,6 +146,36 @@ export const ApplicationService = {
           throw new Error("JOB_NOT_FOUND");
         }
 
+        const applicantProfile = await tx.user.findUnique({
+          where: { id: applicant.id },
+          select: {
+            name: true,
+            onboarding: {
+              select: {
+                identityLegalName: true,
+                phoneCountryCode: true,
+                phoneNumber: true,
+                phoneVerifiedAt: true,
+              },
+            },
+          },
+        });
+        const onboarding = applicantProfile?.onboarding;
+        const applicantName = splitApplicantName(
+          onboarding?.identityLegalName ?? applicantProfile?.name ?? "",
+        );
+
+        if (
+          !applicantProfile ||
+          !applicantName.fullName ||
+          !applicantName.firstName ||
+          !onboarding?.phoneCountryCode ||
+          !onboarding.phoneNumber ||
+          !onboarding.phoneVerifiedAt
+        ) {
+          throw new Error("ONBOARDING_DETAILS_REQUIRED");
+        }
+
         const aptitudeResult = scoreAptitudeTest(job, input.aptitudeAnswers);
 
         const activeApplication = await tx.application.findFirst({
@@ -217,14 +257,14 @@ export const ApplicationService = {
             applicantUserId: applicant.id,
             jobId: job.id,
             candidateEmail: normalizedEmail,
-            candidateName: input.candidateName.trim(),
-            candidateFirstName: input.candidateFirstName ?? null,
-            candidateLastName: input.candidateLastName ?? null,
-            candidatePhoneCountry: input.candidatePhoneCountry ?? null,
-            candidatePhoneCountryCode: input.candidatePhoneCountryCode ?? null,
-            candidatePhoneNumber: input.candidatePhoneNumber ?? null,
-            candidateLinkedinUrl: input.candidateLinkedinUrl ?? null,
-            resumeFileName: input.resumeFileName ?? null,
+            candidateName: applicantName.fullName,
+            candidateFirstName: applicantName.firstName,
+            candidateLastName: applicantName.lastName || null,
+            candidatePhoneCountry: null,
+            candidatePhoneCountryCode: onboarding.phoneCountryCode,
+            candidatePhoneNumber: onboarding.phoneNumber,
+            candidateLinkedinUrl: input.candidateLinkedinUrl,
+            resumeFileName: input.resumeFileName,
             startAvailabilityDays: input.startAvailabilityDays ?? null,
             expectedHourlyRateUsd: input.expectedHourlyRateUsd ?? null,
             weeklyAvailabilityHours: input.weeklyAvailabilityHours ?? null,

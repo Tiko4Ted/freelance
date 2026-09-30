@@ -71,6 +71,16 @@ export function createApplicationPostHandler(
         );
       }
 
+      if (
+        error instanceof Error &&
+        error.message === "ONBOARDING_DETAILS_REQUIRED"
+      ) {
+        return NextResponse.json(
+          { error: "Complete onboarding and verify your phone before applying" },
+          { status: 400 },
+        );
+      }
+
       if (error instanceof Error && error.message === "SELF_REFERRAL") {
         return NextResponse.json(
           { error: "Self-referrals are not eligible" },

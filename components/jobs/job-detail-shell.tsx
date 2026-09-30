@@ -88,7 +88,7 @@ export function JobDetailShell({
         }
       }}
     >
-      <div className="fixed inset-x-0 top-0 z-10 border-b border-brand-sand/80 bg-brand-ivory/95 backdrop-blur-md">
+      <div className="fixed inset-x-0 top-0 z-[1] border-b border-brand-sand/80 bg-brand-ivory/95 backdrop-blur-md">
         <div className="mx-auto flex h-14 max-w-[1040px] items-center justify-between px-1">
           <button
             className="inline-flex items-center gap-2 rounded-[10px] px-2 py-2 text-sm font-semibold text-brand-muted transition hover:bg-[var(--color-accent-soft)] hover:text-brand-ink focus:outline-none focus:ring-2 focus:ring-brand-gold/40"

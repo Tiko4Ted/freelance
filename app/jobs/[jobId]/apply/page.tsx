@@ -5,6 +5,7 @@ import { ApplicationForm } from "@/components/application-form";
 import { BrandLogo } from "@/components/brand-logo";
 import { buildJobDetailCopy } from "@/lib/job-detail-copy";
 import { JobService } from "@/lib/services/job-service";
+import { OnboardingService } from "@/lib/services/onboarding-service";
 
 export const dynamic = "force-dynamic";
 
@@ -59,6 +60,15 @@ function aptitudeHref(jobId: string, referralCode?: string) {
   return `${href}?referralCode=${encodeURIComponent(referralCode)}`;
 }
 
+function splitApplicantName(name: string | null | undefined) {
+  const parts = (name ?? "").trim().split(/\s+/).filter(Boolean);
+
+  return {
+    firstName: parts.shift() ?? "",
+    lastName: parts.join(" "),
+  };
+}
+
 export default async function ApplyPage({
   params,
   searchParams,
@@ -76,7 +86,10 @@ export default async function ApplyPage({
     );
   }
 
-  const job = await JobService.getActiveJob(jobId);
+  const [job, onboarding] = await Promise.all([
+    JobService.getActiveJob(jobId),
+    OnboardingService.getStatus(session.user.id),
+  ]);
 
   if (!job) {
     notFound();
@@ -84,6 +97,9 @@ export default async function ApplyPage({
 
   const detailCopy = buildJobDetailCopy(job);
   const payLabel = formatApplyPay(job.formattedHourlyPay);
+  const applicantName = splitApplicantName(
+    onboarding.identityLegalName ?? session.user.name,
+  );
 
   return (
     <main className="min-h-screen bg-brand-canvas text-brand-ink">
@@ -178,6 +194,10 @@ export default async function ApplyPage({
         <aside className="lg:sticky lg:top-6 lg:self-start">
           <ApplicationForm
             applicantEmail={session.user.email ?? ""}
+            applicantFirstName={applicantName.firstName}
+            applicantLastName={applicantName.lastName}
+            applicantPhoneCountryCode={onboarding.phoneCountryCode ?? ""}
+            applicantPhoneNumber={onboarding.phoneNumber ?? ""}
             aptitudeHref={aptitudeHref(job.id, referralCode)}
             jobId={job.id}
           />
