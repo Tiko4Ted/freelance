@@ -9,6 +9,15 @@ export const loginSchema = z.object({
 export const registerSchema = loginSchema.extend({
   name: z.string().trim().min(2).max(120),
   referralCode: z.string().trim().min(1).max(120).optional(),
+  callbackUrl: z
+    .string()
+    .trim()
+    .min(1)
+    .max(2_000)
+    .refine((value) => value.startsWith("/") && !value.startsWith("//"), {
+      message: "Callback URL must be a local path",
+    })
+    .optional(),
   role: z
     .enum([Role.REFERRER, Role.CANDIDATE])
     .optional()

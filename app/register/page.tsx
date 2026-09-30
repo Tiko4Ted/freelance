@@ -1,5 +1,6 @@
 import { AuthShell } from "@/components/auth/auth-shell";
 import { RegisterForm } from "@/components/auth/register-form";
+import { safeCallbackUrl } from "@/lib/auth/callback-url";
 
 export const dynamic = "force-dynamic";
 
@@ -9,14 +10,6 @@ type RegisterPageProps = {
     referralCode?: string;
   }>;
 };
-
-function safeCallbackUrl(value: string | undefined) {
-  if (!value || !value.startsWith("/") || value.startsWith("//")) {
-    return "/home";
-  }
-
-  return value;
-}
 
 function getReferralCode(callbackUrl: string, directReferralCode?: string) {
   if (directReferralCode) {

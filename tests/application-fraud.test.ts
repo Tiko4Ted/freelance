@@ -4,7 +4,11 @@ import test from "node:test";
 import { ApplicationStatus, PayoutTrigger, Role } from "@prisma/client";
 
 import { prisma } from "../lib/db/prisma";
-import { getReferralCookieValue } from "../lib/referral-cookie";
+import {
+  getReferralAttributionCookieValue,
+  getReferralCodeFromCookie,
+  getReferralCookieValue,
+} from "../lib/referral-cookie";
 import { ApplicationService } from "../lib/services/application-service";
 import { EmailNotificationService } from "../lib/services/email-notification-service";
 import type { ApplicationInput } from "../lib/validation/application";
@@ -179,6 +183,21 @@ test("first referral click wins and later clicks cannot overwrite the cookie", (
 
   assert.equal(first, `${job.id}:FIRST`);
   assert.equal(second, null);
+});
+
+test("referral attribution persists without requiring a job path", () => {
+  const first = getReferralAttributionCookieValue({
+    referralCode: "FIRST",
+  });
+  const second = getReferralAttributionCookieValue({
+    referralCode: "SECOND",
+    existingCookieValue: first ?? undefined,
+  });
+
+  assert.equal(first, "FIRST");
+  assert.equal(second, null);
+  assert.equal(getReferralCodeFromCookie("job-123:FIRST"), "FIRST");
+  assert.equal(getReferralCodeFromCookie("FIRST"), "FIRST");
 });
 
 test("self-referral is blocked transactionally", async () => {

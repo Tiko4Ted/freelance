@@ -1,5 +1,6 @@
 import { createHash, randomBytes } from "node:crypto";
 
+import { isSafeCallbackUrl } from "@/lib/auth/callback-url";
 import { prisma } from "@/lib/db/prisma";
 import { NotificationQueue } from "@/lib/queues/notification-queue";
 
@@ -28,12 +29,22 @@ export function hashEmailVerificationToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
 }
 
-export function buildEmailVerificationUrl(token: string) {
-  return `${appUrl()}/verify-email?token=${encodeURIComponent(token)}`;
+export function buildEmailVerificationUrl(
+  token: string,
+  callbackUrl?: string,
+) {
+  const url = new URL("/verify-email", appUrl());
+  url.searchParams.set("token", token);
+
+  if (isSafeCallbackUrl(callbackUrl)) {
+    url.searchParams.set("callbackUrl", callbackUrl);
+  }
+
+  return url.toString();
 }
 
 export const EmailVerificationService = {
-  async sendWelcomeVerification(user: VerificationUser) {
+  async sendWelcomeVerification(user: VerificationUser, callbackUrl?: string) {
     const token = randomBytes(32).toString("base64url");
     const tokenHash = hashEmailVerificationToken(token);
     const expiresAt = new Date(Date.now() + TOKEN_TTL_MS);
@@ -51,7 +62,7 @@ export const EmailVerificationService = {
         tokenHash,
         name: user.name,
         to: user.email,
-        verificationUrl: buildEmailVerificationUrl(token),
+        verificationUrl: buildEmailVerificationUrl(token, callbackUrl),
       });
     } catch (error) {
       await prisma.emailVerificationToken.deleteMany({
