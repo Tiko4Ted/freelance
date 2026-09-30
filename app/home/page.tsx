@@ -179,7 +179,6 @@ export default async function HomePage() {
     title: project.title,
     description: project.description,
     companyName: project.companyName,
-    openings: project.openings,
     formattedPayout: project.formattedPayout,
     formattedHourlyPay: project.formattedHourlyPay,
     skills: project.skills,

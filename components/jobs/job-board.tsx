@@ -23,10 +23,6 @@ function withReferral(href: string, referralCode?: string) {
   return `${href}?referralCode=${encodeURIComponent(referralCode)}`;
 }
 
-function openingLabel(openings: number) {
-  return `${openings} ${openings === 1 ? "opening" : "openings"}`;
-}
-
 function visibleSkills(job: PublicJobListView) {
   return {
     visible: job.skills.slice(0, 3),
@@ -55,20 +51,12 @@ function JobCard({
               New
             </span>
           ) : null}
-          {job.isHighDemand ? (
-            <span className="rounded bg-[#d7f7f0] px-2 py-0.5 text-[#047a66]">
-              High demand
-            </span>
-          ) : null}
         </div>
 
         <h2 className="mt-3 text-[17px] font-medium leading-snug text-brand-ink">
           {job.title}
         </h2>
-        <p className="mt-2 text-xs font-medium text-brand-muted">
-          Trinity-AI <span className="px-2 text-brand-sand">|</span>
-          {openingLabel(job.openings)}
-        </p>
+        <p className="mt-2 text-xs font-medium text-brand-muted">Trinity-AI</p>
 
         <div className="mt-3">
           <p className="text-[11px] font-medium text-brand-muted">

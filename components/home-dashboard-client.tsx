@@ -50,7 +50,6 @@ type FeaturedProject = {
   title: string;
   description: string;
   companyName: string;
-  openings: number;
   formattedPayout: string;
   formattedHourlyPay: string | null;
   skills: Array<{
@@ -382,11 +381,7 @@ export function HomeDashboardClient({
                       </span>
                     ))}
                   </div>
-                  <div className="flex items-center justify-between gap-3 border-t border-brand-sand pt-3 text-xs">
-                    <span className="font-semibold text-emerald-700">
-                      {project.openings}{" "}
-                      {project.openings === 1 ? "spot" : "spots"} left
-                    </span>
+                  <div className="flex items-center justify-end gap-3 border-t border-brand-sand pt-3 text-xs">
                     <span className="font-bold text-brand-ink">
                       {project.formattedHourlyPay ?? project.formattedPayout}
                     </span>
