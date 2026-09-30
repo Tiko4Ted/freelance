@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { PayoutTrigger, Role } from "@prisma/client";
+import { ApplicationStatus, PayoutTrigger, Role } from "@prisma/client";
 
 import { prisma } from "../lib/db/prisma";
 import { getReferralCookieValue } from "../lib/referral-cookie";
@@ -20,6 +20,7 @@ const job = {
   description: "Review TypeScript changes and document test evidence.",
   payoutAmountCents: 2500,
   payoutType: PayoutTrigger.TASK_1,
+  showOnHome: true,
   openings: 1,
   skills: [{ label: "TypeScript" }, { label: "Testing" }],
 };
@@ -66,6 +67,7 @@ async function withApplicationDatabase(
     referrer?: { id: string; email: string; role: Role } | null;
     jobs?: typeof job[];
     remainingOpenings?: number;
+    existingApplicationStatus?: ApplicationStatus;
   },
   run: (captured: CapturedApplication[]) => Promise<void>,
 ) {
@@ -90,7 +92,15 @@ async function withApplicationDatabase(
       },
     },
     application: {
-      findFirst: async () => null,
+      findFirst: async ({
+        where,
+      }: {
+        where: { status?: { in?: ApplicationStatus[] } };
+      }) =>
+        options.existingApplicationStatus &&
+        where.status?.in?.includes(options.existingApplicationStatus)
+          ? { id: "existing-application", job: { title: "Pending Task" } }
+          : null,
       create: async ({ data }: { data: CapturedApplication }) => {
         captured.push({ ...data });
         return {
@@ -224,6 +234,40 @@ test("application identity and phone come from verified onboarding data", async 
     assert.equal(captured[0]?.candidatePhoneCountryCode, "+254");
     assert.equal(captured[0]?.candidatePhoneNumber, "712345678");
   });
+});
+
+test("non-home applications stay pending for manual admin approval", async () => {
+  const manualJob = {
+    ...job,
+    id: "33333333-3333-4333-8333-333333333333",
+    title: "Manual Approval Role",
+    showOnHome: false,
+  };
+
+  await withApplicationDatabase({ jobs: [manualJob] }, async (captured) => {
+    const application = await ApplicationService.submitApplication(
+      applicationInput(manualJob.id),
+      applicant,
+    );
+
+    assert.equal(application.status, "APPLIED");
+    assert.equal(captured.length, 1);
+  });
+});
+
+test("pending task applications do not block home project applications", async () => {
+  await withApplicationDatabase(
+    { existingApplicationStatus: ApplicationStatus.APPLIED },
+    async (captured) => {
+      const application = await ApplicationService.submitApplication(
+        applicationInput(),
+        applicant,
+      );
+
+      assert.equal(application.status, "CERTIFIED");
+      assert.equal(captured.length, 1);
+    },
+  );
 });
 
 test("participant capacity is reserved before a certified application is created", async () => {

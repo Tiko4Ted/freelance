@@ -83,6 +83,7 @@ function toPublicJobValues(job: PublicJobValueSource) {
     postedAtLabel: describePostedAt(job.postedAt),
     isNew: isNew(job.postedAt),
     isHighDemand: job.isHighDemand,
+    showOnHome: job.showOnHome,
     skills: job.skills.map((skill) => ({
       id: skill.id,
       label: skill.label,

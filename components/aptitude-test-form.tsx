@@ -19,6 +19,7 @@ import type { AptitudeQuestion } from "@/lib/aptitude-test";
 
 type AptitudeTestFormProps = {
   applicationHref: string;
+  automaticApproval: boolean;
   aptitudeTest: AptitudeQuestion[];
   jobId: string;
 };
@@ -118,6 +119,7 @@ function readStoredDraft(jobId: string): StoredApplicationDraft | null {
 
 export function AptitudeTestForm({
   applicationHref,
+  automaticApproval,
   aptitudeTest,
   jobId,
 }: AptitudeTestFormProps) {
@@ -271,7 +273,10 @@ export function AptitudeTestForm({
               </h1>
               <p className="mt-1 max-w-[620px] text-[13px] leading-[1.55] text-brand-muted">
                 Answer all 15 role-related questions. A minimum score of 12 out
-                of 15 automatically approves you for this task.
+                of 15{" "}
+                {automaticApproval
+                  ? "automatically approves you for this task."
+                  : "submits your application for manual admin approval."}
               </p>
             </div>
           </div>

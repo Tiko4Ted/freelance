@@ -16,6 +16,7 @@ const publicJobSelect = {
   hourlyMaxCents: true,
   postedAt: true,
   isHighDemand: true,
+  showOnHome: true,
   createdAt: true,
   updatedAt: true,
   skills: {
