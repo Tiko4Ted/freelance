@@ -9,6 +9,7 @@ import {
   ChevronRight,
   Info,
   ChevronDown,
+  Copy,
   Wallet,
   MessageCircle,
   Send,
@@ -66,6 +67,7 @@ interface HomeDashboardClientProps {
   featuredProjects?: FeaturedProject[];
   onboardingComplete?: boolean;
   projects?: DashboardProject[];
+  referralLink?: string | null;
   userName?: string;
 }
 
@@ -121,6 +123,7 @@ export function HomeDashboardClient({
   featuredProjects = [],
   onboardingComplete = false,
   projects = [],
+  referralLink = null,
   userName = "Teddy",
 }: HomeDashboardClientProps) {
   const visibleProjects = projects;
@@ -137,6 +140,7 @@ export function HomeDashboardClient({
   const taskInputRef = useRef<HTMLInputElement | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
   const [supportMessage, setSupportMessage] = useState("");
+  const [referralCopied, setReferralCopied] = useState(false);
   const [supportMessages, setSupportMessages] = useState<
     Array<{ from: "support" | "user"; text: string }>
   >([
@@ -226,6 +230,20 @@ export function HomeDashboardClient({
       },
     ]);
     setSupportMessage("");
+  };
+
+  const copyReferralLink = async () => {
+    if (!referralLink) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(referralLink);
+      setReferralCopied(true);
+      window.setTimeout(() => setReferralCopied(false), 2000);
+    } catch {
+      setReferralCopied(false);
+    }
   };
 
   return (
@@ -935,15 +953,29 @@ export function HomeDashboardClient({
               <p className="mt-1 text-xs leading-relaxed text-slate-500">
                 Earn money by inviting others to the platform.{" "}
                 <Link
-                  href="#"
+                  href="/help-center/policies"
                   className="font-medium text-slate-700 hover:underline"
                 >
                   View terms
                 </Link>
               </p>
-              <button className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-brand-sand bg-brand-ivory py-2 text-xs font-semibold text-brand-ink shadow-sm transition hover:border-brand-gold/60 hover:bg-[#f2e8d7]">
-                <ClipboardList className="h-3.5 w-3.5" />
-                Copy referral link
+              <button
+                type="button"
+                onClick={copyReferralLink}
+                disabled={!referralLink}
+                className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-brand-sand bg-brand-ivory py-2 text-xs font-semibold text-brand-ink shadow-sm transition hover:border-brand-gold/60 hover:bg-[#f2e8d7] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {referralCopied ? (
+                  <>
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-3.5 w-3.5" />
+                    Copy referral link
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -962,10 +994,13 @@ export function HomeDashboardClient({
               <p className="mt-1 text-xs leading-relaxed text-slate-500">
                 Get free access to premium AI models and compare which responses work best for you
               </p>
-              <button className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-xl border border-brand-sand bg-brand-ivory py-2 text-xs font-semibold text-brand-ink shadow-sm transition hover:border-brand-gold/60 hover:bg-[#f2e8d7]">
+              <Link
+                href="/apply"
+                className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-xl border border-brand-sand bg-brand-ivory py-2 text-xs font-semibold text-brand-ink shadow-sm transition hover:border-brand-gold/60 hover:bg-[#f2e8d7]"
+              >
                 Try now
                 <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
-              </button>
+              </Link>
             </div>
           </div>
         </div>
