@@ -55,7 +55,6 @@ function isUniqueConstraintError(error: unknown) {
 }
 
 const blockingApplicationStatuses = [
-  ApplicationStatus.APPLIED,
   ApplicationStatus.CERTIFIED,
   ApplicationStatus.MATCHED,
   ApplicationStatus.ACTIVE,
@@ -134,6 +133,7 @@ export const ApplicationService = {
             description: true,
             payoutAmountCents: true,
             payoutType: true,
+            showOnHome: true,
             skills: {
               select: {
                 label: true,
@@ -200,7 +200,7 @@ export const ApplicationService = {
           );
         }
 
-        const applicationStatus = aptitudeResult.passed
+        const applicationStatus = job.showOnHome && aptitudeResult.passed
           ? ApplicationStatus.CERTIFIED
           : ApplicationStatus.APPLIED;
 

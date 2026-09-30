@@ -103,6 +103,7 @@ export default async function AptitudePage({
         <section className="py-8">
           <AptitudeTestForm
             applicationHref={applyHref(job.id, referralCode)}
+            automaticApproval={job.showOnHome}
             aptitudeTest={aptitudeTest}
             jobId={job.id}
           />

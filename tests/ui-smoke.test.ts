@@ -207,6 +207,7 @@ test("public jobs UI renders a referral-preserving application link", () => {
           formattedHourlyPay: null,
           formattedPayout: "$300",
           payoutTriggerLabel: "after 1 completed task",
+          showOnHome: false,
           postedAt: "2026-09-22T00:00:00.000Z",
           postedAtLabel: "Posted Today",
           isNew: true,

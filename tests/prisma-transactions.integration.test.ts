@@ -117,6 +117,7 @@ test(
             description: "Review TypeScript changes and test the final output.",
             payoutAmountCents: 2500,
             payoutType: PayoutTrigger.HOURS_10,
+            showOnHome: true,
           },
           {
             id: secondJobId,
@@ -124,6 +125,7 @@ test(
             description: "Review TypeScript changes and test the final output.",
             payoutAmountCents: 9000,
             payoutType: PayoutTrigger.HOURS_10,
+            showOnHome: true,
           },
         ],
       });
