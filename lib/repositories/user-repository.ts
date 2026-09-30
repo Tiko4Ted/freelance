@@ -58,11 +58,19 @@ export const UserRepository = {
     });
   },
 
+  findReferrerByCode(referralCode: string) {
+    return prisma.user.findUnique({
+      where: { referralCode },
+      select: { id: true, role: true },
+    });
+  },
+
   create(input: {
     email: string;
     name: string;
     passwordHash: string;
     role?: Role;
+    referredById?: string;
   }) {
     return prisma.user.create({
       data: input,

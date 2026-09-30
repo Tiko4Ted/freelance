@@ -1,4 +1,4 @@
-import { ApplicationStatus } from "@prisma/client";
+import { ApplicationStatus, LedgerAccount } from "@prisma/client";
 
 import { prisma } from "@/lib/db/prisma";
 
@@ -66,9 +66,30 @@ export const ReferralService = {
       throw new Error("USER_NOT_FOUND");
     }
 
+    const [joinedCount, qualifiedCount] = await Promise.all([
+      prisma.user.count({
+        where: { referredById: userId },
+      }),
+      prisma.user.count({
+        where: {
+          referredById: userId,
+          ledgerEntries: {
+            some: {
+              account: LedgerAccount.HOLDING,
+              amountCents: { gt: 0 },
+              applicationId: { not: null },
+              reason: "JOB_PAYOUT_HOLDING",
+            },
+          },
+        },
+      }),
+    ]);
+
     return {
       referralCode: user.referralCode,
       url: toShareUrl(origin, user.referralCode),
+      joinedCount,
+      qualifiedCount,
     };
   },
 

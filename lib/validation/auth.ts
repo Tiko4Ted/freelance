@@ -8,6 +8,7 @@ export const loginSchema = z.object({
 
 export const registerSchema = loginSchema.extend({
   name: z.string().trim().min(2).max(120),
+  referralCode: z.string().trim().min(1).max(120).optional(),
   role: z
     .enum([Role.REFERRER, Role.CANDIDATE])
     .optional()

@@ -66,6 +66,7 @@ model User {
   name                String
   role                Role      @default(REFERRER)
   referralCode        String    @unique @default(uuid())
+  referredById        String?
   walletBalanceCents  Int       @default(0)
   holdingBalanceCents Int       @default(0)
   fundingBalanceCents Int       @default(0)
@@ -77,6 +78,8 @@ model User {
   updatedAt           DateTime  @updatedAt
 
   referrals                   Referral[]
+  referredBy                  User?     @relation("UserReferrals", fields: [referredById], references: [id], onDelete: SetNull)
+  referredUsers               User[]    @relation("UserReferrals")
   ledgerEntries               LedgerEntry[]
   withdrawals                 Withdrawal[]
   walletTransfers             WalletTransfer[]
@@ -87,6 +90,7 @@ model User {
   emailVerificationToken      EmailVerificationToken?
 
   @@index([role])
+  @@index([referredById])
 }
 
 model EmailVerificationToken {

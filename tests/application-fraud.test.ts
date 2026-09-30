@@ -68,6 +68,7 @@ async function withApplicationDatabase(
     jobs?: typeof job[];
     remainingOpenings?: number;
     existingApplicationStatus?: ApplicationStatus;
+    applicantReferredById?: string;
   },
   run: (captured: CapturedApplication[]) => Promise<void>,
 ) {
@@ -132,6 +133,7 @@ async function withApplicationDatabase(
         where.id === applicant.id
           ? {
               name: "Verified Database Name",
+              referredById: options.applicantReferredById ?? null,
               onboarding: {
                 identityLegalName: "Verified Database Name",
                 phoneCountryCode: "+254",
@@ -266,6 +268,30 @@ test("pending task applications do not block home project applications", async (
 
       assert.equal(application.status, "CERTIFIED");
       assert.equal(captured.length, 1);
+    },
+  );
+});
+
+test("signup attribution is used when the application has no referral cookie", async () => {
+  const referrer = {
+    id: "referrer-user",
+    email: "referrer@example.test",
+    role: Role.REFERRER,
+  };
+
+  await withApplicationDatabase(
+    {
+      referrer,
+      applicantReferredById: referrer.id,
+    },
+    async (captured) => {
+      const application = await ApplicationService.submitApplication(
+        applicationInput(),
+        applicant,
+      );
+
+      assert.ok(application.referralId);
+      assert.equal(captured[0]?.referralId, application.referralId);
     },
   );
 });

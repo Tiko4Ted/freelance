@@ -150,6 +150,7 @@ export const ApplicationService = {
           where: { id: applicant.id },
           select: {
             name: true,
+            referredById: true,
             onboarding: {
               select: {
                 identityLegalName: true,
@@ -229,11 +230,19 @@ export const ApplicationService = {
 
         let referralId: string | undefined;
 
-        if (parsedReferral?.jobId === job.id) {
-          const referrer = await tx.user.findUnique({
-            where: { referralCode: parsedReferral.referralCode },
-            select: { id: true, email: true, role: true },
-          });
+        const referrer = parsedReferral?.jobId === job.id
+          ? await tx.user.findUnique({
+              where: { referralCode: parsedReferral.referralCode },
+              select: { id: true, email: true, role: true },
+            })
+          : applicantProfile.referredById
+            ? await tx.user.findUnique({
+                where: { id: applicantProfile.referredById },
+                select: { id: true, email: true, role: true },
+              })
+            : null;
+
+        if (referrer) {
 
           if (referrer?.id === applicant.id || referrer?.email === normalizedEmail) {
             throw new Error("SELF_REFERRAL");

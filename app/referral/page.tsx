@@ -30,6 +30,8 @@ export default async function ReferralPage() {
       <main className="flex-1 overflow-y-auto px-6 py-8 md:px-12 md:py-10">
         <div className="mx-auto max-w-[1040px]">
           <ReferralClient
+            joinedCount={referral.joinedCount}
+            qualifiedCount={referral.qualifiedCount}
             referralLink={referral.url}
             userName={userName}
           />

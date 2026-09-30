@@ -6,6 +6,7 @@ export const dynamic = "force-dynamic";
 type RegisterPageProps = {
   searchParams: Promise<{
     callbackUrl?: string;
+    referralCode?: string;
   }>;
 };
 
@@ -17,9 +18,24 @@ function safeCallbackUrl(value: string | undefined) {
   return value;
 }
 
+function getReferralCode(callbackUrl: string, directReferralCode?: string) {
+  if (directReferralCode) {
+    return directReferralCode;
+  }
+
+  try {
+    return new URL(callbackUrl, "https://trinity-ai.invalid").searchParams.get(
+      "referralCode",
+    ) ?? undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export default async function RegisterPage({ searchParams }: RegisterPageProps) {
   const params = await searchParams;
   const callbackUrl = safeCallbackUrl(params.callbackUrl);
+  const referralCode = getReferralCode(callbackUrl, params.referralCode);
 
   return (
     <AuthShell
@@ -27,7 +43,7 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
       eyebrow="Join Trinity-AI"
       title="Create account"
     >
-      <RegisterForm callbackUrl={callbackUrl} />
+      <RegisterForm callbackUrl={callbackUrl} referralCode={referralCode} />
     </AuthShell>
   );
 }
