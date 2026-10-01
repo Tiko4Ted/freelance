@@ -9,7 +9,10 @@ import {
 
 import { prisma } from "../lib/db/prisma";
 import { EmailNotificationService } from "../lib/services/email-notification-service";
-import { reconcileLedgerBalances } from "../lib/services/ledger-service";
+import {
+  reconcileLedgerBalances,
+  sumEarnedPayouts,
+} from "../lib/services/ledger-service";
 import { PayoutEligibilityService } from "../lib/services/payout-eligibility-service";
 
 type EligibilityApplication = {
@@ -310,4 +313,31 @@ test("wallet reconciliation is derived from append-only ledger entries", () => {
     holdingBalanceCents: 3500,
     fundingBalanceCents: 500,
   });
+});
+
+test("amount earned includes approved job payouts only", () => {
+  const earned = sumEarnedPayouts([
+    {
+      account: LedgerAccount.HOLDING,
+      amountCents: 2500,
+      reason: "JOB_PAYOUT_HOLDING",
+    },
+    {
+      account: LedgerAccount.HOLDING,
+      amountCents: -2500,
+      reason: "HOLDING_TO_FUNDING_TRANSFER",
+    },
+    {
+      account: LedgerAccount.FUNDING,
+      amountCents: 2500,
+      reason: "HOLDING_TO_FUNDING_TRANSFER",
+    },
+    {
+      account: LedgerAccount.HOLDING,
+      amountCents: 0,
+      reason: "JOB_PAYOUT_HOLDING",
+    },
+  ]);
+
+  assert.equal(earned, 2500);
 });

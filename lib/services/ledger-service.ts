@@ -34,6 +34,26 @@ export function reconcileLedgerBalances(
   );
 }
 
+export function sumEarnedPayouts(
+  ledgerEntries: Array<{
+    account: LedgerAccount;
+    amountCents: number;
+    reason: string;
+  }>,
+) {
+  return ledgerEntries.reduce((total, entry) => {
+    if (
+      entry.account === LedgerAccount.HOLDING &&
+      entry.reason === "JOB_PAYOUT_HOLDING" &&
+      entry.amountCents > 0
+    ) {
+      return total + entry.amountCents;
+    }
+
+    return total;
+  }, 0);
+}
+
 async function claimEligibleCandidatePayouts(userId: string, email: string) {
   await prisma.$transaction(async (tx) => {
     const eligibleApplications = await tx.application.findMany({
@@ -204,9 +224,11 @@ export const LedgerService = {
     ]);
 
     const reconciledBalances = reconcileLedgerBalances(ledgerEntries);
+    const earnedAmountCents = sumEarnedPayouts(ledgerEntries);
 
     return {
       balanceCents: updatedUser.fundingBalanceCents,
+      earnedAmountCents,
       holdingBalanceCents: updatedUser.holdingBalanceCents,
       fundingBalanceCents: updatedUser.fundingBalanceCents,
       legacyBalanceCents: updatedUser.walletBalanceCents,
@@ -215,6 +237,7 @@ export const LedgerService = {
       reconciledFundingBalanceCents:
         reconciledBalances.fundingBalanceCents,
       formattedBalance: formatCurrency(updatedUser.fundingBalanceCents),
+      formattedEarnedAmount: formatCurrency(earnedAmountCents),
       formattedHoldingBalance: formatCurrency(updatedUser.holdingBalanceCents),
       formattedFundingBalance: formatCurrency(updatedUser.fundingBalanceCents),
       freelanceVerification: updatedUser.freelanceVerification

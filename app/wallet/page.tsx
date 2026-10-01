@@ -41,7 +41,18 @@ export default async function WalletPage() {
             </h1>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="rounded-2xl border border-brand-gold/50 bg-[#f2e8d7] p-6 shadow-brand-card">
+              <p className="text-sm font-medium text-brand-muted">
+                Amount earned
+              </p>
+              <p className="mt-2 text-[32px] font-bold tracking-tight text-brand-gold-strong">
+                {wallet.formattedEarnedAmount}
+              </p>
+              <p className="mt-2 text-xs leading-relaxed text-brand-muted">
+                Total approved project payouts recorded in your wallet.
+              </p>
+            </div>
             <div className="rounded-2xl border border-brand-sand bg-brand-ivory p-6 shadow-brand-card">
               <p className="text-sm font-medium text-brand-muted">Holding</p>
               <p className="mt-2 text-[32px] font-bold tracking-tight text-brand-ink">

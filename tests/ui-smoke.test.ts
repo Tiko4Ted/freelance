@@ -412,8 +412,6 @@ test("dashboard renders flagged database projects as summary cards", () => {
           title: "AI Quality Review",
           description: "Review model output for accuracy and clarity.",
           companyName: "Trinity-AI",
-          formattedPayout: "$300",
-          formattedHourlyPay: null,
           skills: [{ id: "skill-review", label: "Review" }],
         },
       ],
@@ -423,6 +421,12 @@ test("dashboard renders flagged database projects as summary cards", () => {
   assert.match(markup, /Featured projects/);
   assert.match(markup, /AI Quality Review/);
   assert.match(markup, /\/jobs\/job-featured/);
+  const featuredCardStart = markup.indexOf("AI Quality Review");
+  const featuredCardEnd = markup.indexOf("</a>", featuredCardStart);
+  assert.doesNotMatch(
+    markup.slice(featuredCardStart, featuredCardEnd),
+    /\$300|\/hr|\/hour/,
+  );
   assert.doesNotMatch(markup, /spots left/);
   assert.doesNotMatch(markup, /High demand/);
   assert.match(markup, /View terms/);
