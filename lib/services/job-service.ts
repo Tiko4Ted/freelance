@@ -109,7 +109,9 @@ export type PublicJobListView = Omit<PublicJobView, "description"> & {
   description?: string;
 };
 
-const JOB_CARD_PAGE_SIZE = 48;
+// Keep the first navigation light; additional roles are loaded on demand by
+// the existing "Load more" control.
+const JOB_CARD_PAGE_SIZE = 12;
 
 export const JobService = {
   async listActiveJobs() {

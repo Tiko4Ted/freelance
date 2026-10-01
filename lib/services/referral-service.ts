@@ -57,16 +57,11 @@ function isInstructionOnlyJob(job: { title: string; skills: { label: string }[] 
 
 export const ReferralService = {
   async getMyLinks(userId: string, origin: string) {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { referralCode: true },
-    });
-
-    if (!user) {
-      throw new Error("USER_NOT_FOUND");
-    }
-
-    const [joinedCount, qualifiedCount] = await Promise.all([
+    const [user, joinedCount, qualifiedCount] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: userId },
+        select: { referralCode: true },
+      }),
       prisma.user.count({
         where: { referredById: userId },
       }),
@@ -84,6 +79,10 @@ export const ReferralService = {
         },
       }),
     ]);
+
+    if (!user) {
+      throw new Error("USER_NOT_FOUND");
+    }
 
     return {
       referralCode: user.referralCode,

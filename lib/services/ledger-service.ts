@@ -176,26 +176,39 @@ export const LedgerService = {
       throw new Error("USER_NOT_FOUND");
     }
 
-    if (isOnboardingReviewApproved(user.onboarding?.completedAt)) {
+    const shouldClaimPayouts = isOnboardingReviewApproved(
+      user.onboarding?.completedAt,
+    );
+
+    if (shouldClaimPayouts) {
       await claimEligibleCandidatePayouts(userId, user.email);
     }
 
-    const [updatedUser, ledgerEntries, transfers] = await Promise.all([
-      prisma.user.findUniqueOrThrow({
-        where: { id: userId },
-        select: {
-          walletBalanceCents: true,
-          holdingBalanceCents: true,
-          fundingBalanceCents: true,
-          freelanceVerification: {
-            select: {
-              freelanceIdCode: true,
-              legalName: true,
-              verifiedAt: true,
+    const updatedUserPromise = shouldClaimPayouts
+      ? prisma.user.findUniqueOrThrow({
+          where: { id: userId },
+          select: {
+            walletBalanceCents: true,
+            holdingBalanceCents: true,
+            fundingBalanceCents: true,
+            freelanceVerification: {
+              select: {
+                freelanceIdCode: true,
+                legalName: true,
+                verifiedAt: true,
+              },
             },
           },
-        },
-      }),
+        })
+      : Promise.resolve({
+          walletBalanceCents: user.walletBalanceCents,
+          holdingBalanceCents: user.holdingBalanceCents,
+          fundingBalanceCents: user.fundingBalanceCents,
+          freelanceVerification: user.freelanceVerification,
+        });
+
+    const [updatedUser, ledgerEntries, transfers] = await Promise.all([
+      updatedUserPromise,
       prisma.ledgerEntry.findMany({
         where: { userId },
         orderBy: { createdAt: "desc" },
