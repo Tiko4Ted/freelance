@@ -18,12 +18,14 @@ type DemoJob = {
   postedDaysAgo: number;
   isHighDemand?: boolean;
   showOnHome?: boolean;
+  isAiTask?: boolean;
   skills: string[];
 };
 
 const DIGITAL_JOB_DATA_RULES = [
   "Each seeded job must be deliverable online or remotely.",
   "Each seeded job must include a title, description, hourly pay range, openings, posted-date spread, demand flag, and skill tags.",
+  "Every seeded project uses the AI task packet structure and is marked with the AI task flag.",
   "Each seeded job must have at least 30 openings.",
   "Posted dates are spread across the last 28 days so the New flag appears naturally for recent roles.",
   "High-demand flags are assigned to AI, software, data, security, cloud, healthcare, legal, and revenue roles plus a deterministic share of the remaining catalog.",
@@ -1201,6 +1203,10 @@ function validateJobCatalog(jobs: DemoJob[]) {
     if (job.skills.length === 0) {
       throw new Error(`Missing skills for ${job.title}`);
     }
+
+    if (job.isAiTask === false) {
+      throw new Error(`${job.title} must use the AI task structure.`);
+    }
   }
 }
 
@@ -1241,6 +1247,7 @@ async function seedJob(job: DemoJob) {
       hourlyMaxCents: job.hourlyMaxCents,
       postedAt: postedAt(job.postedDaysAgo),
       isHighDemand: job.isHighDemand ?? false,
+      isAiTask: job.isAiTask ?? true,
       ...(job.showOnHome === undefined
         ? {}
         : { showOnHome: job.showOnHome }),
@@ -1259,6 +1266,7 @@ async function seedJob(job: DemoJob) {
       postedAt: postedAt(job.postedDaysAgo),
       isHighDemand: job.isHighDemand ?? false,
       showOnHome: job.showOnHome ?? false,
+      isAiTask: job.isAiTask ?? true,
       isActive: true,
     },
     select: { id: true },

@@ -134,6 +134,7 @@ export const ApplicationService = {
             payoutAmountCents: true,
             payoutType: true,
             showOnHome: true,
+            isAiTask: true,
             skills: {
               select: {
                 label: true,
@@ -358,6 +359,7 @@ export const ApplicationService = {
             companyName: true,
             payoutType: true,
             showOnHome: true,
+            isAiTask: true,
             skills: {
               select: {
                 label: true,

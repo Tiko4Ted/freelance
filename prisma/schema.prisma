@@ -167,6 +167,7 @@ model Job {
   postedAt          DateTime      @default(now())
   isHighDemand      Boolean       @default(false)
   showOnHome        Boolean       @default(false)
+  isAiTask          Boolean       @default(true)
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 

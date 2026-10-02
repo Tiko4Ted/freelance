@@ -16,6 +16,9 @@ export const adminCreateJobSchema = z.object({
   postedAt: z.coerce.date().optional(),
   isHighDemand: z.boolean().optional().default(false),
   showOnHome: z.boolean().optional().default(false),
+  // Every project must use the AI-data task structure. Keep this as a literal
+  // so future admin writes cannot silently create a legacy task format.
+  isAiTask: z.literal(true).optional().default(true),
   skills: z.array(z.string().trim().min(1).max(80)).optional().default([]),
   isActive: z.boolean().optional().default(true),
 });

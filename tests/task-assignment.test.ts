@@ -103,6 +103,29 @@ test("builds downloadable and uploadable work samples for featured projects", ()
   }
 });
 
+test("uses the AI evaluation structure for flagged projects", () => {
+  const assignment = buildTaskAssignment({
+    id: "application-ai",
+    candidateName: "Ada Candidate",
+    job: {
+      title: "Customer Support Quality Project",
+      description: "Review customer support outputs for accuracy and quality.",
+      companyName: "Trinity-AI",
+      payoutType: PayoutTrigger.TASK_1,
+      isAiTask: true,
+      skills: [{ label: "Quality control" }],
+    },
+  });
+  const content = assignment.sections
+    .flatMap((section) => section.lines)
+    .join("\n");
+
+  assert.match(content, /AI data quality and evaluation task/);
+  assert.match(content, /model outputs/i);
+  assert.match(content, /corrected_output/);
+  assert.match(content, /AI-008/);
+});
+
 test("does not classify science engineering roles as software work", () => {
   const assignment = buildTaskAssignment({
     id: "application-science",
