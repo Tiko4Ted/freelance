@@ -93,6 +93,7 @@ export default async function HomePage() {
                 companyName: true,
                 payoutAmountCents: true,
                 payoutType: true,
+                showOnHome: true,
                 skills: {
                   select: {
                     label: true,
@@ -108,10 +109,10 @@ export default async function HomePage() {
             const hasTaskAccess = ["ACTIVE", "MATCHED", "CERTIFIED"].includes(
               application.status,
             );
+            const taskAvailable = onboarding.complete && hasTaskAccess;
             const canSubmit =
-              onboarding.complete &&
-              !application.taskSubmittedAt &&
-              hasTaskAccess;
+              taskAvailable &&
+              !application.taskSubmittedAt;
             const taskAssignment = buildTaskAssignment({
               id: application.id,
               candidateName: userName,
@@ -149,10 +150,10 @@ export default async function HomePage() {
               canSubmit,
               isSubmitted: Boolean(application.taskSubmittedAt),
               submittedFileName: application.taskSubmissionFileName,
-              briefHref: onboarding.complete
+              briefHref: taskAvailable
                 ? `/api/v1/applications/${application.id}/task-material`
                 : undefined,
-              taskBrief: onboarding.complete
+              taskBrief: taskAvailable
                 ? taskAssignment.sections.filter(
                     (section) => section.heading !== "Candidate and role",
                   )

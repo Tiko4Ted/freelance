@@ -5,6 +5,7 @@ export type TaskAssignmentJob = {
   description: string;
   companyName: string;
   payoutType: PayoutTrigger;
+  showOnHome?: boolean;
   skills: { label: string }[];
 };
 
@@ -30,6 +31,7 @@ type TaskTemplate = {
   complexity: string;
   estimatedTime: string;
   task: string[];
+  taskPacket?: string[];
   deliverables: string[];
   reviewCriteria: string[];
   partnerPaymentNote?: string;
@@ -118,7 +120,132 @@ function buildAudioConversationTask(job: TaskAssignmentJob): TaskTemplate {
   };
 }
 
+function buildHomeProjectTask(job: TaskAssignmentJob): TaskTemplate | null {
+  if (!job.showOnHome) {
+    return null;
+  }
+
+  if (job.title === "Image Tagging & Classification Assistant") {
+    return {
+      category: "Image labeling task packet",
+      complexity:
+        "Accessible: the packet is text-based and uses a fixed label set, so careful observation and consistent decisions matter more than specialist knowledge.",
+      estimatedTime: "60 to 90 minutes including labeling, quality check, and upload.",
+      task: [
+        "Complete every item in the image packet below. Create one output row per item and do not skip uncertain cases.",
+        "Choose exactly one primary label from the allowed list. Add secondary labels only when the description clearly supports them.",
+        "Use confidence High, Medium, or Low and explain every Low-confidence decision in the notes column.",
+      ],
+      taskPacket: [
+        "Allowed primary labels: person, vehicle, animal, food, furniture, electronics, document, sign, building, outdoor scene.",
+        "IMG-001: A red bicycle leans against a brick wall beside a sidewalk; no person is visible.",
+        "IMG-002: One person holds a paper map beside a parked blue car at a roadside pull-off.",
+        "IMG-003: A dining table has a bowl of oranges, a ceramic mug, and a folded newspaper.",
+        "IMG-004: A laptop is open on a wooden desk beside a phone and a pair of headphones.",
+        "IMG-005: A dog is sitting on a rug next to a low fabric sofa in a living room.",
+        "IMG-006: A storefront has a large green sign reading 'MART' above its entrance.",
+        "IMG-007: A delivery van is stopped in front of a warehouse with a loading bay.",
+        "IMG-008: A stack of printed forms and an identity card sits on a white office desk.",
+        "IMG-009: Two people stand under umbrellas on a paved city square after rain.",
+        "IMG-010: A microwave, kettle, and toaster are arranged on a kitchen counter.",
+        "IMG-011: A red apple is on a plate beside a knife and a folded napkin.",
+        "IMG-012: A small concrete building is surrounded by grass, trees, and a gravel path.",
+      ],
+      deliverables: [
+        "A CSV or spreadsheet with columns: item_id, primary_label, secondary_labels, confidence, notes.",
+        "A short quality note naming any item where the description supported more than one reasonable label.",
+        "The final filename or upload reference needed for reviewer evaluation.",
+      ],
+      reviewCriteria: [
+        "Every packet item has exactly one primary label.",
+        "Labels follow the allowed list and secondary labels are supported by the source description.",
+        "Confidence and uncertainty notes are used consistently.",
+      ],
+    };
+  }
+
+  if (job.title === "Audio Transcription & Timestamping Assistant") {
+    return {
+      category: "Audio transcription task packet",
+      complexity:
+        "Accessible: the packet contains a short two-speaker recording script, and the main requirements are accurate wording, timestamps, and speaker changes.",
+      estimatedTime: "90 minutes to 2 hours including transcription, quality check, and upload.",
+      task: [
+        "Create a timestamped transcript from the audio packet below. Use timestamps at the start of every speaker turn.",
+        "Use Speaker 1 and Speaker 2 consistently, preserve meaningful words and numbers, and mark an unclear word as [inaudible] instead of guessing.",
+        "Add a final quality note with the total number of speaker turns and any wording that needs reviewer confirmation.",
+      ],
+      taskPacket: [
+        "Recording A-01 source, duration 00:54. Use the source turns below to produce the transcript deliverable.",
+        "[00:00] Speaker 1: I moved the delivery review to Thursday morning so the team has one more day to check the files.",
+        "[00:07] Speaker 2: That works for me. Should the checklist include the missing invoice numbers from last week?",
+        "[00:14] Speaker 1: Yes, include them in a separate column and mark the three records that still need confirmation.",
+        "[00:21] Speaker 2: I found two duplicate customer names, but the order numbers are different.",
+        "[00:28] Speaker 1: Keep both rows for now and add a note explaining why they were not merged.",
+        "[00:35] Speaker 2: Understood. I will finish the first pass today and upload the spreadsheet before five.",
+        "[00:43] Speaker 1: Please include the file version in the submission note so the reviewer can compare changes.",
+        "[00:50] Speaker 2: I will. I am starting with the records that have the clearest source documents.",
+      ],
+      deliverables: [
+        "A TXT, DOCX, or CSV transcript with columns or lines for timestamp, speaker, and transcript text.",
+        "A quality note with total speaker turns, any unclear wording, and the final duration recorded as 00:54.",
+        "The final filename or upload reference needed for evaluation.",
+      ],
+      reviewCriteria: [
+        "All eight speaker turns are present and ordered correctly.",
+        "Timestamps appear at the start of each turn and speaker labels do not change mid-conversation.",
+        "Numbers, punctuation, and the required quality note are accurate.",
+      ],
+    };
+  }
+
+  if (job.title === "Document Data Entry & Quality Check Assistant") {
+    return {
+      category: "Document data-entry task packet",
+      complexity:
+        "Accessible: the packet uses a fixed schema and short source records; accuracy, formatting, and clearly flagged exceptions are the main requirements.",
+      estimatedTime: "60 to 90 minutes including entry, quality check, and upload.",
+      task: [
+        "Transfer every source record from the document packet below into the required output columns without changing the source values.",
+        "Use ISO dates (YYYY-MM-DD), numbers without currency symbols in the amount column, and the status values Paid, Pending, or Review.",
+        "Do not invent missing information. Leave the field blank and explain the exception in the notes column.",
+      ],
+      taskPacket: [
+        "Output columns: record_id, supplier, invoice_date, amount_usd, status, source_issue, notes.",
+        "DOC-001 | Kijani Office Supply | 2026-08-04 | 248.50 | Paid",
+        "DOC-002 | Northstar Couriers | 2026-08-07 | 91.00 | Pending",
+        "DOC-003 | Mwezi Foods | 2026-08-08 | 1,420.75 | Paid",
+        "DOC-004 | Blue Harbor Printing | 2026-08-11 | 365.00 | Review | invoice date is partially unreadable in the source",
+        "DOC-005 | Atlas Safety Services | 2026-08-13 | 780.00 | Pending",
+        "DOC-006 | Greenline Internet | 2026-08-15 | 129.99 | Paid",
+        "DOC-007 | Kipepeo Cleaning | 2026-08-18 | 210.00 | Review | supplier name appears as 'Kipepeo Clean.' on the source",
+        "DOC-008 | Umoja Furniture | 2026-08-20 | 1,050.00 | Paid",
+        "DOC-009 | East Ridge Repairs | 2026-08-22 | 64.25 | Pending",
+        "DOC-010 | Sunrise Water | 2026-08-25 | 87.50 | Review | amount is shown as '87.5' and must be normalized to two decimals",
+      ],
+      deliverables: [
+        "A CSV or spreadsheet containing all ten records and the required output columns.",
+        "A quality note identifying DOC-004, DOC-007, and DOC-010 and explaining how each exception was handled.",
+        "The final filename or upload reference needed for reviewer evaluation.",
+      ],
+      reviewCriteria: [
+        "All ten records are present and amounts are copied without arithmetic changes.",
+        "Dates, status values, and output columns follow the required format.",
+        "Unreadable or inconsistent source details are flagged rather than silently corrected.",
+      ],
+    };
+  }
+
+  return null;
+}
+
 function buildTemplate(job: TaskAssignmentJob): TaskTemplate {
+  const homeProjectTask = buildHomeProjectTask(job);
+
+  if (homeProjectTask) {
+    return homeProjectTask;
+  }
+
   const source = searchableText(job);
   const skills = sentenceList(skillLabels(job).slice(0, 4));
 
@@ -776,6 +903,9 @@ export function buildTaskAssignment(
         heading: "Task to complete",
         lines: template.task,
       },
+      ...(template.taskPacket?.length
+        ? [{ heading: "Task packet", lines: template.taskPacket }]
+        : []),
       {
         heading: "What to submit",
         lines: template.deliverables,

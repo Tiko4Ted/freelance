@@ -357,6 +357,7 @@ export const ApplicationService = {
             description: true,
             companyName: true,
             payoutType: true,
+            showOnHome: true,
             skills: {
               select: {
                 label: true,

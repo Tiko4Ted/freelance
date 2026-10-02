@@ -86,6 +86,7 @@ test("builds downloadable and uploadable work samples for featured projects", ()
         description: role.description,
         companyName: "Trinity-AI",
         payoutType: PayoutTrigger.HOURS_10,
+        showOnHome: true,
         skills: [{ label: "Quality control" }],
       },
     });
@@ -94,6 +95,9 @@ test("builds downloadable and uploadable work samples for featured projects", ()
       .join("\n");
 
     assert.match(content, role.expected);
+    assert.ok(
+      assignment.sections.some((section) => section.heading === "Task packet"),
+    );
     assert.match(content, /upload/i);
     assert.match(content, /evaluation/i);
   }
