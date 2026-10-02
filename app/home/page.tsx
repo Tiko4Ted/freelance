@@ -94,6 +94,7 @@ export default async function HomePage() {
                 payoutAmountCents: true,
                 payoutType: true,
                 showOnHome: true,
+                isAiTask: true,
                 skills: {
                   select: {
                     label: true,

@@ -24,6 +24,7 @@ function toJobResponse(job: {
   postedAt: Date;
   isHighDemand: boolean;
   showOnHome: boolean;
+  isAiTask: boolean;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -52,6 +53,7 @@ export const AdminJobService = {
     const job = await prisma.job.create({
       data: {
         ...jobInput,
+        isAiTask: true,
         skills: {
           create: skills.map((label) => ({ label })),
         },
@@ -71,7 +73,10 @@ export const AdminJobService = {
       });
       const updatedJob = await tx.job.update({
         where: { id },
-        data: jobInput,
+        data: {
+          ...jobInput,
+          isAiTask: true,
+        },
         include: adminJobInclude,
       });
 

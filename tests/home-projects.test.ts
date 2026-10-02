@@ -46,4 +46,18 @@ test("admin job input accepts home placement and participant capacity", () => {
 
   assert.equal(parsed.showOnHome, true);
   assert.equal(parsed.openings, 4);
+  assert.equal(parsed.isAiTask, true);
+});
+
+test("admin job input rejects projects outside the AI task structure", () => {
+  assert.throws(
+    () =>
+      adminCreateJobSchema.parse({
+        title: "Legacy Project",
+        description: "This project should not use the legacy task structure.",
+        payoutAmountCents: 30000,
+        isAiTask: false,
+      }),
+    /Invalid literal value|Invalid input/,
+  );
 });

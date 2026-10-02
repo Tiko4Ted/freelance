@@ -6,6 +6,7 @@ export type TaskAssignmentJob = {
   companyName: string;
   payoutType: PayoutTrigger;
   showOnHome?: boolean;
+  isAiTask?: boolean;
   skills: { label: string }[];
 };
 
@@ -132,24 +133,24 @@ function buildHomeProjectTask(job: TaskAssignmentJob): TaskTemplate | null {
         "Accessible: the packet is text-based and uses a fixed label set, so careful observation and consistent decisions matter more than specialist knowledge.",
       estimatedTime: "60 to 90 minutes including labeling, quality check, and upload.",
       task: [
-        "Complete every item in the image packet below. Create one output row per item and do not skip uncertain cases.",
-        "Choose exactly one primary label from the allowed list. Add secondary labels only when the description clearly supports them.",
-        "Use confidence High, Medium, or Low and explain every Low-confidence decision in the notes column.",
+        "Review the AI model prediction for every item in the image packet below against the source description. Do not skip uncertain cases.",
+        "Correct the model's primary label when it is wrong, and add secondary labels only when the source description clearly supports them.",
+        "Use confidence High, Medium, or Low for your corrected decision and explain every Low-confidence decision in the notes column.",
       ],
       taskPacket: [
-        "Allowed primary labels: person, vehicle, animal, food, furniture, electronics, document, sign, building, outdoor scene.",
-        "IMG-001: A red bicycle leans against a brick wall beside a sidewalk; no person is visible.",
-        "IMG-002: One person holds a paper map beside a parked blue car at a roadside pull-off.",
-        "IMG-003: A dining table has a bowl of oranges, a ceramic mug, and a folded newspaper.",
-        "IMG-004: A laptop is open on a wooden desk beside a phone and a pair of headphones.",
-        "IMG-005: A dog is sitting on a rug next to a low fabric sofa in a living room.",
-        "IMG-006: A storefront has a large green sign reading 'MART' above its entrance.",
-        "IMG-007: A delivery van is stopped in front of a warehouse with a loading bay.",
-        "IMG-008: A stack of printed forms and an identity card sits on a white office desk.",
-        "IMG-009: Two people stand under umbrellas on a paved city square after rain.",
-        "IMG-010: A microwave, kettle, and toaster are arranged on a kitchen counter.",
-        "IMG-011: A red apple is on a plate beside a knife and a folded napkin.",
-        "IMG-012: A small concrete building is surrounded by grass, trees, and a gravel path.",
+        "AI image-evaluation packet. Allowed primary labels: person, vehicle, animal, food, furniture, electronics, document, sign, building, outdoor scene.",
+        "IMG-001 | Model: vehicle | Source: A red bicycle leans against a brick wall beside a sidewalk; no person is visible.",
+        "IMG-002 | Model: vehicle | Source: One person holds a paper map beside a parked blue car at a roadside pull-off.",
+        "IMG-003 | Model: furniture | Source: A dining table has a bowl of oranges, a ceramic mug, and a folded newspaper.",
+        "IMG-004 | Model: electronics | Source: A laptop is open on a wooden desk beside a phone and a pair of headphones.",
+        "IMG-005 | Model: animal | Source: A dog is sitting on a rug next to a low fabric sofa in a living room.",
+        "IMG-006 | Model: building | Source: A storefront has a large green sign reading 'MART' above its entrance.",
+        "IMG-007 | Model: vehicle | Source: A delivery van is stopped in front of a warehouse with a loading bay.",
+        "IMG-008 | Model: document | Source: A stack of printed forms and an identity card sits on a white office desk.",
+        "IMG-009 | Model: outdoor scene | Source: Two people stand under umbrellas on a paved city square after rain.",
+        "IMG-010 | Model: electronics | Source: A microwave, kettle, and toaster are arranged on a kitchen counter.",
+        "IMG-011 | Model: food | Source: A red apple is on a plate beside a knife and a folded napkin.",
+        "IMG-012 | Model: outdoor scene | Source: A small concrete building is surrounded by grass, trees, and a gravel path.",
       ],
       deliverables: [
         "A CSV or spreadsheet with columns: item_id, primary_label, secondary_labels, confidence, notes.",
@@ -171,20 +172,20 @@ function buildHomeProjectTask(job: TaskAssignmentJob): TaskTemplate | null {
         "Accessible: the packet contains a short two-speaker recording script, and the main requirements are accurate wording, timestamps, and speaker changes.",
       estimatedTime: "90 minutes to 2 hours including transcription, quality check, and upload.",
       task: [
-        "Create a timestamped transcript from the audio packet below. Use timestamps at the start of every speaker turn.",
-        "Use Speaker 1 and Speaker 2 consistently, preserve meaningful words and numbers, and mark an unclear word as [inaudible] instead of guessing.",
-        "Add a final quality note with the total number of speaker turns and any wording that needs reviewer confirmation.",
+        "Review the AI-generated transcript in the audio packet below against the source turns. Use timestamps at the start of every speaker turn.",
+        "Correct wording, speaker labels, and timestamps; preserve meaningful words and numbers, and mark an unclear word as [inaudible] instead of guessing.",
+        "Add a final quality note with the total number of speaker turns and any correction that needs reviewer confirmation.",
       ],
       taskPacket: [
-        "Recording A-01 source, duration 00:54. Use the source turns below to produce the transcript deliverable.",
-        "[00:00] Speaker 1: I moved the delivery review to Thursday morning so the team has one more day to check the files.",
-        "[00:07] Speaker 2: That works for me. Should the checklist include the missing invoice numbers from last week?",
-        "[00:14] Speaker 1: Yes, include them in a separate column and mark the three records that still need confirmation.",
-        "[00:21] Speaker 2: I found two duplicate customer names, but the order numbers are different.",
-        "[00:28] Speaker 1: Keep both rows for now and add a note explaining why they were not merged.",
-        "[00:35] Speaker 2: Understood. I will finish the first pass today and upload the spreadsheet before five.",
-        "[00:43] Speaker 1: Please include the file version in the submission note so the reviewer can compare changes.",
-        "[00:50] Speaker 2: I will. I am starting with the records that have the clearest source documents.",
+        "AI transcript-evaluation packet, Recording A-01, duration 00:54. Compare each AI line with the source turn below.",
+        "[00:00] Speaker 1 | AI: I moved the delivery review to Thursday morning so the team has one more day to check the files. | Source: I moved the delivery review to Thursday morning so the team has one more day to check the files.",
+        "[00:07] Speaker 2 | AI: That works for me. Should the checklist include the missing invoice numbers from last week? | Source: That works for me. Should the checklist include the missing invoice numbers from last week?",
+        "[00:14] Speaker 1 | AI: Yes, include them in a separate column and mark the three records that still need confirmation. | Source: Yes, include them in a separate column and mark the three records that still need confirmation.",
+        "[00:21] Speaker 2 | AI: I found two duplicate customer names, but the order numbers are different. | Source: I found two duplicate customer names, but the order numbers are different.",
+        "[00:28] Speaker 1 | AI: Keep both rows for now and add a note explaining why they were not merged. | Source: Keep both rows for now and add a note explaining why they were not merged.",
+        "[00:35] Speaker 2 | AI: Understood. I will finish the first pass today and upload the spreadsheet before five. | Source: Understood. I will finish the first pass today and upload the spreadsheet before five.",
+        "[00:43] Speaker 1 | AI: Please include the file version in the submission note so the reviewer can compare changes. | Source: Please include the file version in the submission note so the reviewer can compare changes.",
+        "[00:50] Speaker 2 | AI: I will. I am starting with the records that have the clearest source documents. | Source: I will. I am starting with the records that have the clearest source documents.",
       ],
       deliverables: [
         "A TXT, DOCX, or CSV transcript with columns or lines for timestamp, speaker, and transcript text.",
@@ -206,22 +207,22 @@ function buildHomeProjectTask(job: TaskAssignmentJob): TaskTemplate | null {
         "Accessible: the packet uses a fixed schema and short source records; accuracy, formatting, and clearly flagged exceptions are the main requirements.",
       estimatedTime: "60 to 90 minutes including entry, quality check, and upload.",
       task: [
-        "Transfer every source record from the document packet below into the required output columns without changing the source values.",
+        "Audit the AI-extracted fields in the document packet below against each source record and correct every error or omission.",
         "Use ISO dates (YYYY-MM-DD), numbers without currency symbols in the amount column, and the status values Paid, Pending, or Review.",
-        "Do not invent missing information. Leave the field blank and explain the exception in the notes column.",
+        "Do not invent missing information. Leave the field blank, mark the correction, and explain the exception in the notes column.",
       ],
       taskPacket: [
-        "Output columns: record_id, supplier, invoice_date, amount_usd, status, source_issue, notes.",
-        "DOC-001 | Kijani Office Supply | 2026-08-04 | 248.50 | Paid",
-        "DOC-002 | Northstar Couriers | 2026-08-07 | 91.00 | Pending",
-        "DOC-003 | Mwezi Foods | 2026-08-08 | 1,420.75 | Paid",
-        "DOC-004 | Blue Harbor Printing | 2026-08-11 | 365.00 | Review | invoice date is partially unreadable in the source",
-        "DOC-005 | Atlas Safety Services | 2026-08-13 | 780.00 | Pending",
-        "DOC-006 | Greenline Internet | 2026-08-15 | 129.99 | Paid",
-        "DOC-007 | Kipepeo Cleaning | 2026-08-18 | 210.00 | Review | supplier name appears as 'Kipepeo Clean.' on the source",
-        "DOC-008 | Umoja Furniture | 2026-08-20 | 1,050.00 | Paid",
-        "DOC-009 | East Ridge Repairs | 2026-08-22 | 64.25 | Pending",
-        "DOC-010 | Sunrise Water | 2026-08-25 | 87.50 | Review | amount is shown as '87.5' and must be normalized to two decimals",
+        "AI extraction-evaluation packet. Output columns: record_id, field, AI value, corrected value, action, source_issue, notes.",
+        "DOC-001 | Source: Kijani Office Supply | 2026-08-04 | 248.50 | Paid | AI extraction: supplier=Kijani Office Supply, date=2026-08-04, amount=248.50, status=Paid",
+        "DOC-002 | Source: Northstar Couriers | 2026-08-07 | 91.00 | Pending | AI extraction: supplier=Northstar Couriers, date=2026-08-07, amount=91.00, status=Pending",
+        "DOC-003 | Source: Mwezi Foods | 2026-08-08 | 1,420.75 | Paid | AI extraction: supplier=Mwezi Foods, date=2026-08-08, amount=1420.75, status=Paid",
+        "DOC-004 | Source: Blue Harbor Printing | 2026-08-11 | 365.00 | Review | AI extraction: supplier=Blue Harbor Printing, date=2026-08-11, amount=365.00, status=Paid; invoice date is partially unreadable in the source",
+        "DOC-005 | Source: Atlas Safety Services | 2026-08-13 | 780.00 | Pending | AI extraction: supplier=Atlas Safety Services, date=2026-08-13, amount=780.00, status=Pending",
+        "DOC-006 | Source: Greenline Internet | 2026-08-15 | 129.99 | Paid | AI extraction: supplier=Greenline Internet, date=2026-08-15, amount=129.99, status=Paid",
+        "DOC-007 | Source: Kipepeo Cleaning | 2026-08-18 | 210.00 | Review | AI extraction: supplier=Kipepeo Clean., date=2026-08-18, amount=210.00, status=Review; supplier name is abbreviated in the source",
+        "DOC-008 | Source: Umoja Furniture | 2026-08-20 | 1,050.00 | Paid | AI extraction: supplier=Umoja Furniture, date=2026-08-20, amount=1050.00, status=Paid",
+        "DOC-009 | Source: East Ridge Repairs | 2026-08-22 | 64.25 | Pending | AI extraction: supplier=East Ridge Repairs, date=2026-08-22, amount=64.25, status=Pending",
+        "DOC-010 | Source: Sunrise Water | 2026-08-25 | 87.50 | Review | AI extraction: supplier=Sunrise Water, date=2026-08-25, amount=87.5, status=Review; amount must be normalized to two decimals",
       ],
       deliverables: [
         "A CSV or spreadsheet containing all ten records and the required output columns.",
@@ -239,11 +240,56 @@ function buildHomeProjectTask(job: TaskAssignmentJob): TaskTemplate | null {
   return null;
 }
 
+function buildAiEvaluationTask(job: TaskAssignmentJob): TaskTemplate {
+  const skills = sentenceList(skillLabels(job).slice(0, 4));
+
+  return {
+    category: "AI data quality and evaluation task",
+    complexity:
+      "Moderate: no specialist software is required, but every model output must be checked carefully against the supplied source and task rules.",
+    estimatedTime: "90 minutes to 2 hours including download, review, correction, and upload.",
+    task: [
+      `Download the source packet and AI model outputs for the ${job.title.toLowerCase()} project. The packet is designed around ${skills}.`,
+      "Review every model output against the source material and the project instructions. Check accuracy, completeness, formatting, instruction-following, and unsafe or unsupported claims where relevant.",
+      "Correct incorrect outputs instead of copying them. When the source does not support a decision, mark it as uncertain and explain what evidence is missing.",
+      "Record one decision per case with a confidence level and a short evidence-based rationale. Do not skip cases or silently invent source information.",
+      "Validate the completed file against the required columns, then upload it for evaluation with a short quality summary.",
+    ],
+    taskPacket: [
+      "AI evaluation packet: review all eight model outputs below.",
+      "Required output columns: case_id, input_summary, model_output, decision, corrected_output, confidence, rationale.",
+      "AI-001 | Input: follow the project instructions | Model output: follows the instructions and cites the supplied source | Review focus: verify source support.",
+      "AI-002 | Input: identify an uncertain detail | Model output: states the detail as a fact without evidence | Review focus: flag unsupported certainty.",
+      "AI-003 | Input: preserve an important number or name | Model output: changes one source value | Review focus: compare every value with the source.",
+      "AI-004 | Input: return the requested format | Model output: omits one required field | Review focus: check completeness and schema.",
+      "AI-005 | Input: handle an ambiguous case | Model output: chooses an answer without noting ambiguity | Review focus: record uncertainty and rationale.",
+      "AI-006 | Input: produce a clear result | Model output: is difficult to understand but factually supported | Review focus: correct clarity and formatting issues.",
+      "AI-007 | Input: apply the role instructions consistently | Model output: conflicts with one instruction | Review focus: identify the exact conflict.",
+      "AI-008 | Input: make a safe, evidence-based decision | Model output: includes an unsupported or risky claim | Review focus: flag the claim and provide a safer correction.",
+    ],
+    deliverables: [
+      "A CSV, spreadsheet, or JSON file with one completed row for every packet case and all required output columns.",
+      "A short quality summary listing the most important corrections, uncertain cases, and any instruction gap discovered.",
+      "The final filename or upload reference needed for reviewer evaluation.",
+    ],
+    reviewCriteria: [
+      "Every model output is reviewed and the decision is supported by the supplied source or instructions.",
+      "Corrections preserve source facts, follow the requested schema, and clearly separate evidence from assumptions.",
+      "Confidence, rationale, uncertainty, and safety concerns are recorded consistently.",
+      "The uploaded file opens correctly and contains no missing cases or required columns.",
+    ],
+  };
+}
+
 function buildTemplate(job: TaskAssignmentJob): TaskTemplate {
   const homeProjectTask = buildHomeProjectTask(job);
 
   if (homeProjectTask) {
     return homeProjectTask;
+  }
+
+  if (job.isAiTask) {
+    return buildAiEvaluationTask(job);
   }
 
   const source = searchableText(job);
