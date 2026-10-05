@@ -64,9 +64,10 @@ npm install
 cp .env.example .env
 ```
 
-3. Set `DATABASE_URL`, `RESEND_API_KEY`, and `EMAIL_FROM` in `.env`. Production
-   senders must use a domain verified in Resend; the Resend test sender can only
-   deliver to the Resend account owner.
+3. Set `DATABASE_URL`, `RESEND_API_KEY`, `EMAIL_FROM`, `MOBILESASA_TOKEN`, and
+   `MOBILESASA_SENDER_ID` in `.env`. Production senders must use a domain
+   verified in Resend; the Resend test sender can only deliver to the Resend
+   account owner. Mobile Sasa tokens and sender IDs are server-only values.
 
 4. Generate Prisma client:
 
