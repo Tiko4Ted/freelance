@@ -6,8 +6,8 @@ import {
   type EmailNotificationMessage,
   type PhoneVerificationMessage,
 } from "@/lib/queues/notification-queue";
-import { AfricasTalkingSmsService } from "@/lib/services/africas-talking-sms-service";
 import { EmailNotificationService } from "@/lib/services/email-notification-service";
+import { MobileSasaSmsService } from "@/lib/services/mobile-sasa-sms-service";
 
 const MAX_JOB_ATTEMPTS = 5;
 const STALE_LOCK_MS = 4 * 60 * 1_000;
@@ -255,9 +255,10 @@ export async function processPhoneVerificationMessage(payload: unknown) {
       );
     }
 
-    await AfricasTalkingSmsService.sendVerificationCode({
+    return MobileSasaSmsService.sendVerificationCode({
       code: message.code,
       to: message.to,
+      trackingId: message.jobId,
     });
   });
 }

@@ -38,3 +38,33 @@ test("support chat avoids the old generic live-chat response", () => {
   assert.doesNotMatch(reply.text, /once live chat is connected/i);
   assert.match(reply.text, /what were you trying to do/i);
 });
+
+test("support chat continues a topic with a new, more detailed follow-up", () => {
+  const firstReply = getSupportChatReply("My payment is missing");
+  const firstFollowUp = getSupportChatReply("yes", {
+    lastTopic: firstReply.topic,
+    recentMessages: [{ from: "support", text: firstReply.text }],
+  });
+  const secondFollowUp = getSupportChatReply("yes", {
+    lastTopic: firstFollowUp.topic,
+    recentMessages: [
+      { from: "support", text: firstReply.text },
+      { from: "user", text: "yes" },
+      { from: "support", text: firstFollowUp.text },
+    ],
+  });
+
+  assert.notEqual(firstFollowUp.text, firstReply.text);
+  assert.notEqual(secondFollowUp.text, firstFollowUp.text);
+  assert.match(secondFollowUp.text, /wallet|withdrawal|status/i);
+});
+
+test("support chat avoids repeating an earlier generic reply", () => {
+  const previousReply = getSupportChatReply("I am not sure what to do");
+  const nextReply = getSupportChatReply("I am still confused", {
+    recentMessages: [{ from: "support", text: previousReply.text }],
+  });
+
+  assert.notEqual(nextReply.text, previousReply.text);
+  assert.match(nextReply.text, /page|action|status|feature/i);
+});

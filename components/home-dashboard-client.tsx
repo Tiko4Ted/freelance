@@ -226,6 +226,7 @@ export function HomeDashboardClient({
     const reply = getSupportChatReply(trimmedMessage, {
       lastTopic: supportTopic,
       projectTitle: selectedProject?.title,
+      recentMessages: supportMessages,
       userName,
     });
 

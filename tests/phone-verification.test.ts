@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { createAfricasTalkingSmsService } from "../lib/services/africas-talking-sms-service";
+import { createMobileSasaSmsService } from "../lib/services/mobile-sasa-sms-service";
 import {
   PhoneVerificationError,
   generatePhoneVerificationCode,
@@ -103,7 +103,7 @@ test("onboarding validation requires exactly six OTP digits", () => {
   );
 });
 
-test("sends the OTP through the Africa's Talking production messaging API", async () => {
+test("sends the OTP through the Mobile Sasa v2 messaging API", async () => {
   let requestUrl = "";
   let requestBody = "";
   let requestHeaders: Headers | undefined;
@@ -113,69 +113,55 @@ test("sends the OTP through the Africa's Talking production messaging API", asyn
     requestHeaders = new Headers(init?.headers);
     return new Response(
       JSON.stringify({
-        SMSMessageData: {
-          Recipients: [
-            {
-              number: "+254712345678",
-              statusCode: 101,
-              status: "Success",
-            },
-          ],
-        },
+        status: true,
+        responseCode: "0200",
+        message: "Accepted",
+        messageId: "mobile-sasa-message-1",
       }),
-      { status: 201, headers: { "Content-Type": "application/json" } },
+      { status: 200, headers: { "Content-Type": "application/json" } },
     );
   }) as typeof fetch;
-  const service = createAfricasTalkingSmsService(
+  const service = createMobileSasaSmsService(
     {
-      apiKey: "test-api-key",
-      environment: "production",
-      senderId: "AFTKNG",
-      username: "test-user",
+      senderId: "TRINITY",
+      token: "mbs_test-token",
     },
     fakeFetch,
   );
 
-  await service.sendVerificationCode({
+  const result = await service.sendVerificationCode({
     code: "381204",
     to: "+254712345678",
+    trackingId: "job-1",
   });
 
-  const fields = new URLSearchParams(requestBody);
+  const body = JSON.parse(requestBody) as Record<string, string>;
+  assert.deepEqual(result, { id: "mobile-sasa-message-1" });
   assert.equal(
     requestUrl,
-    "https://api.africastalking.com/version1/messaging",
+    "https://api.mobilesasa.com/v2/send/message",
   );
-  assert.equal(fields.get("username"), "test-user");
-  assert.equal(fields.get("to"), "+254712345678");
-  assert.equal(fields.get("from"), "AFTKNG");
-  assert.equal(fields.get("bulkSMSMode"), "1");
-  assert.match(fields.get("message") ?? "", /381204/);
-  assert.equal(requestHeaders?.get("apikey"), "test-api-key");
+  assert.equal(body.phone, "+254712345678");
+  assert.equal(body.senderID, "TRINITY");
+  assert.equal(body.trackingId, "job-1");
+  assert.match(body.message, /381204/);
+  assert.equal(requestHeaders?.get("authorization"), "Bearer mbs_test-token");
 });
 
-test("rejects an OTP send when Africa's Talking does not accept the recipient", async () => {
+test("rejects an OTP send when Mobile Sasa does not accept the recipient", async () => {
   const fakeFetch = (async () =>
     new Response(
       JSON.stringify({
-        SMSMessageData: {
-          Recipients: [
-            {
-              number: "+254712345678",
-              statusCode: 402,
-              status: "InvalidSenderId",
-            },
-          ],
-        },
+        status: false,
+        responseCode: "0422",
+        message: "The phone is not a valid phone number.",
       }),
-      { status: 201, headers: { "Content-Type": "application/json" } },
+      { status: 422, headers: { "Content-Type": "application/json" } },
     )) as typeof fetch;
-  const service = createAfricasTalkingSmsService(
+  const service = createMobileSasaSmsService(
     {
-      apiKey: "test-api-key",
-      environment: "production",
-      senderId: "AFTKNG",
-      username: "test-user",
+      senderId: "TRINITY",
+      token: "mbs_test-token",
     },
     fakeFetch,
   );
@@ -185,6 +171,7 @@ test("rejects an OTP send when Africa's Talking does not accept the recipient", 
       service.sendVerificationCode({
         code: "381204",
         to: "+254712345678",
+        trackingId: "job-1",
       }),
     (error: unknown) =>
       error instanceof PhoneVerificationError &&
