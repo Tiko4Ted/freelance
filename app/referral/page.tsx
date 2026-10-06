@@ -1,18 +1,13 @@
-import { auth } from "@/auth";
 import { PortalSidebar } from "@/components/portal-sidebar";
 import { ReferralClient } from "@/components/referral-client";
+import { requirePageSession } from "@/lib/auth/session";
 import { getAppUrl } from "@/lib/app-url";
 import { ReferralService } from "@/lib/services/referral-service";
-import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
 export default async function ReferralPage() {
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    redirect("/login?callbackUrl=%2Freferral");
-  }
+  const session = await requirePageSession("/referral");
 
   const userName = session.user.name || "Member";
   const referral = await ReferralService.getMyLinks(

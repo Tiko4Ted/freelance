@@ -14,7 +14,7 @@ import {
   Wallet,
 } from "lucide-react";
 
-import { auth } from "@/auth";
+import { requirePageSession } from "@/lib/auth/session";
 import { PortalSidebar } from "@/components/portal-sidebar";
 import { StatusBadge } from "@/components/status-badge";
 import { prisma } from "@/lib/db/prisma";
@@ -67,7 +67,7 @@ function identityDocumentLabel(value?: string | null) {
 }
 
 export default async function ProfilePage() {
-  const session = await auth();
+  const session = await requirePageSession("/profile");
   const userId = session?.user?.id;
   const isAuthenticated = Boolean(userId);
 
