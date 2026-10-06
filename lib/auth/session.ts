@@ -1,4 +1,5 @@
 import { Role } from "@prisma/client";
+import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 
@@ -32,4 +33,20 @@ export async function requireRole(role: Role) {
   }
 
   return session;
+}
+
+export function loginRedirectUrl(callbackUrl: string) {
+  return `/login?callbackUrl=${encodeURIComponent(callbackUrl)}`;
+}
+
+export async function requirePageSession(callbackUrl: string) {
+  try {
+    return await requireSession();
+  } catch (error) {
+    if (error instanceof UnauthorizedError) {
+      redirect(loginRedirectUrl(callbackUrl));
+    }
+
+    throw error;
+  }
 }

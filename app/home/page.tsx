@@ -1,7 +1,7 @@
-import { auth } from "@/auth";
 import { PortalSidebar } from "@/components/portal-sidebar";
 import { HomeDashboardClient } from "@/components/home-dashboard-client";
 import { getAppUrl } from "@/lib/app-url";
+import { requirePageSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/prisma";
 import { ReferralService } from "@/lib/services/referral-service";
 import { JobService } from "@/lib/services/job-service";
@@ -48,7 +48,7 @@ function projectStatusLabel(status: string, submittedAt?: Date | null) {
 }
 
 export default async function HomePage() {
-  const session = await auth();
+  const session = await requirePageSession("/home");
   const userName = session?.user?.name || "Teddy";
   const userId = session?.user?.id;
   const onboardingPromise = userId

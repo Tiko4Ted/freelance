@@ -3,6 +3,7 @@ import test from "node:test";
 
 import { ApplicationStatus, PayoutTrigger, Role } from "@prisma/client";
 
+import { loginRedirectUrl } from "../lib/auth/session";
 import { prisma } from "../lib/db/prisma";
 import {
   getReferralAttributionCookieValue,
@@ -198,6 +199,13 @@ test("referral attribution persists without requiring a job path", () => {
   assert.equal(second, null);
   assert.equal(getReferralCodeFromCookie("job-123:FIRST"), "FIRST");
   assert.equal(getReferralCodeFromCookie("FIRST"), "FIRST");
+});
+
+test("protected-page login redirects preserve the requested destination", () => {
+  assert.equal(
+    loginRedirectUrl("/jobs/job-1/apply?referralCode=TRAVOR-123"),
+    "/login?callbackUrl=%2Fjobs%2Fjob-1%2Fapply%3FreferralCode%3DTRAVOR-123",
+  );
 });
 
 test("self-referral is blocked transactionally", async () => {

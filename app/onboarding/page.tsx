@@ -1,6 +1,6 @@
-import { auth } from "@/auth";
 import { PortalSidebar } from "@/components/portal-sidebar";
 import { OnboardingFlowClient } from "@/components/onboarding-flow-client";
+import { requirePageSession } from "@/lib/auth/session";
 import {
   OnboardingService,
   emptyOnboardingStatus,
@@ -9,7 +9,7 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function OnboardingPage() {
-  const session = await auth();
+  const session = await requirePageSession("/onboarding");
   const userName = session?.user?.name || "Teddy";
   const onboarding = session?.user?.id
     ? await OnboardingService.getStatus(session.user.id)
