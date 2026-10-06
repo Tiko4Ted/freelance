@@ -328,7 +328,7 @@ test("participant capacity is reserved before a certified application is created
   );
 });
 
-test("job-specific attribution remains isolated and payout amounts are snapshotted", async () => {
+test("users can apply to multiple projects with isolated referral and payout data", async () => {
   const secondJob = {
     ...job,
     id: "22222222-2222-4222-8222-222222222222",
@@ -358,6 +358,9 @@ test("job-specific attribution remains isolated and payout amounts are snapshott
 
       assert.equal(first.referralId, "referral-1");
       assert.equal(second.referralId, null);
+      assert.equal(first.status, "CERTIFIED");
+      assert.equal(second.status, "CERTIFIED");
+      assert.equal(captured.length, 2);
       assert.equal(captured[0]?.lockedPayoutCents, 2500);
       assert.equal(captured[1]?.lockedPayoutCents, 9000);
 

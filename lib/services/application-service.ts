@@ -54,12 +54,6 @@ function isUniqueConstraintError(error: unknown) {
   );
 }
 
-const blockingApplicationStatuses = [
-  ApplicationStatus.CERTIFIED,
-  ApplicationStatus.MATCHED,
-  ApplicationStatus.ACTIVE,
-];
-
 function toApplicationResponse(application: {
   id: string;
   jobId: string;
@@ -179,28 +173,6 @@ export const ApplicationService = {
         }
 
         const aptitudeResult = scoreAptitudeTest(job, input.aptitudeAnswers);
-
-        const activeApplication = await tx.application.findFirst({
-          where: {
-            applicantUserId: applicant.id,
-            status: { in: blockingApplicationStatuses },
-            taskSubmittedAt: null,
-          },
-          select: {
-            id: true,
-            job: {
-              select: {
-                title: true,
-              },
-            },
-          },
-        });
-
-        if (activeApplication) {
-          throw new Error(
-            `ACTIVE_APPLICATION:${activeApplication.job.title}`,
-          );
-        }
 
         const applicationStatus = job.showOnHome && aptitudeResult.passed
           ? ApplicationStatus.CERTIFIED

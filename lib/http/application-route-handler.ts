@@ -98,20 +98,6 @@ export function createApplicationPostHandler(
         );
       }
 
-      if (
-        error instanceof Error &&
-        error.message.startsWith("ACTIVE_APPLICATION:")
-      ) {
-        const activeJobTitle = error.message.split(":").slice(1).join(":");
-
-        return NextResponse.json(
-          {
-            error: `You already have an active application for ${activeJobTitle}. Open your home page, finish and submit that task, then apply to another job.`,
-          },
-          { status: 409 },
-        );
-      }
-
       return NextResponse.json(
         { error: "Unable to submit application" },
         { status: 500 },
