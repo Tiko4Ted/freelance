@@ -5,6 +5,7 @@ import { AptitudeTestForm } from "@/components/aptitude-test-form";
 import { BrandLogo } from "@/components/brand-logo";
 import { buildAptitudeTest } from "@/lib/aptitude-test";
 import { JobService } from "@/lib/services/job-service";
+import { OnboardingService } from "@/lib/services/onboarding-service";
 
 export const dynamic = "force-dynamic";
 
@@ -63,10 +64,17 @@ export default async function AptitudePage({
     );
   }
 
-  const job = await JobService.getActiveJob(jobId);
+  const [job, onboarding] = await Promise.all([
+    JobService.getActiveJob(jobId),
+    OnboardingService.getStatus(session.user.id),
+  ]);
 
   if (!job) {
     notFound();
+  }
+
+  if (!onboarding.complete) {
+    redirect("/onboarding");
   }
 
   const aptitudeTest = buildAptitudeTest(job);

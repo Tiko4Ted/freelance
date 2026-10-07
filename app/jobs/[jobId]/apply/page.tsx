@@ -95,6 +95,10 @@ export default async function ApplyPage({
     notFound();
   }
 
+  if (!onboarding.complete) {
+    redirect("/onboarding");
+  }
+
   const detailCopy = buildJobDetailCopy(job);
   const payLabel = formatApplyPay(job.formattedHourlyPay);
   const applicantName = splitApplicantName(
