@@ -443,10 +443,11 @@ const baseDemoJobs: DemoJob[] = [
     ],
   },
   {
-    title: "Document Data Entry & Quality Check Assistant",
+    title: "AI Document Extraction & Quality Evaluator",
     description:
-      "Download a document packet and spreadsheet template, copy key details into the correct fields, check entries against the source files, then upload the completed workbook for evaluation. Training instructions are included.",
+      "Review AI-extracted fields from a document packet against the source records, correct errors and omissions using a fixed schema, then upload the completed evaluation file. No specialist background required; careful comparison and clear exception notes are the focus.",
     payoutAmountCents: 15000,
+    payoutType: PayoutTrigger.TASK_1,
     openings: 30,
     hourlyMinCents: 1500,
     hourlyMaxCents: 1800,
@@ -454,9 +455,10 @@ const baseDemoJobs: DemoJob[] = [
     isHighDemand: true,
     showOnHome: true,
     skills: [
-      "Data entry",
-      "Document review",
-      "Spreadsheet basics",
+      "AI output review",
+      "Data annotation",
+      "Document comparison",
+      "Structured data",
       "Quality checking",
       "Following instructions",
       "File-based deliverables",

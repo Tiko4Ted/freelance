@@ -71,9 +71,9 @@ test("builds downloadable and uploadable work samples for featured projects", ()
       expected: /audio packet/,
     },
     {
-      title: "Document Data Entry & Quality Check Assistant",
-      description: "Enter document details into a spreadsheet template and check the entries.",
-      expected: /document packet/,
+      title: "AI Document Extraction & Quality Evaluator",
+      description: "Review AI-extracted document fields against source records and flag exceptions.",
+      expected: /AI extraction-evaluation packet/,
     },
   ];
 

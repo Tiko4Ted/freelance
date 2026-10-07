@@ -200,11 +200,11 @@ function buildHomeProjectTask(job: TaskAssignmentJob): TaskTemplate | null {
     };
   }
 
-  if (job.title === "Document Data Entry & Quality Check Assistant") {
+  if (job.title === "AI Document Extraction & Quality Evaluator") {
     return {
-      category: "Document data-entry task packet",
+      category: "AI document extraction evaluation packet",
       complexity:
-        "Accessible: the packet uses a fixed schema and short source records; accuracy, formatting, and clearly flagged exceptions are the main requirements.",
+        "Accessible: the packet uses a fixed schema and short source records; comparing model output with evidence and clearly flagging exceptions are the main requirements.",
       estimatedTime: "60 to 90 minutes including entry, quality check, and upload.",
       task: [
         "Audit the AI-extracted fields in the document packet below against each source record and correct every error or omission.",
