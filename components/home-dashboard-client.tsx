@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import {
   Clock,
@@ -14,10 +14,6 @@ import {
   MessageCircle,
   Send,
   X,
-  Download,
-  FileText,
-  PlayCircle,
-  Upload,
   CheckCircle2,
 } from "lucide-react";
 
@@ -29,7 +25,7 @@ import {
 
 type DashboardProject = {
   id: string;
-  applicationId?: string;
+  jobId?: string;
   applyHref?: string;
   jobHref?: string;
   appliedAt?: string;
@@ -41,14 +37,7 @@ type DashboardProject = {
   payoutLabel: string;
   payoutType: string;
   skills: string[];
-  canSubmit: boolean;
-  isSubmitted: boolean;
-  submittedFileName?: string | null;
-  briefHref?: string;
-  taskBrief: Array<{
-    heading: string;
-    lines: string[];
-  }>;
+  isApplied?: boolean;
 };
 
 type FeaturedProject = {
@@ -56,6 +45,7 @@ type FeaturedProject = {
   title: string;
   description: string;
   companyName: string;
+  isApplied?: boolean;
   skills: Array<{
     id: string;
     label: string;
@@ -133,14 +123,6 @@ export function HomeDashboardClient({
   const [activeTab, setActiveTab] = useState<"projects" | "applications">(
     "projects",
   );
-  const [workspaceMode, setWorkspaceMode] = useState<"brief" | "work">("brief");
-  const [taskFileName, setTaskFileName] = useState("");
-  const [taskNotes, setTaskNotes] = useState("");
-  const [submissionStatus, setSubmissionStatus] = useState<
-    "idle" | "submitting" | "submitted" | "error"
-  >("idle");
-  const taskWorkspaceRef = useRef<HTMLDivElement | null>(null);
-  const taskInputRef = useRef<HTMLInputElement | null>(null);
   const [helpOpen, setHelpOpen] = useState(false);
   const [supportMessage, setSupportMessage] = useState("");
   const [referralCopied, setReferralCopied] = useState(false);
@@ -151,71 +133,6 @@ export function HomeDashboardClient({
     },
   ]);
   const [supportTopic, setSupportTopic] = useState<SupportTopic>();
-  const selectedProject = visibleProjects[0];
-
-  const startProjectTask = () => {
-    if (!selectedProject?.canSubmit) {
-      return;
-    }
-
-    setWorkspaceMode("work");
-    setSubmissionStatus("idle");
-  };
-
-  useEffect(() => {
-    if (workspaceMode !== "work") {
-      return;
-    }
-
-    taskWorkspaceRef.current?.scrollIntoView({
-      behavior: "smooth",
-      block: "center",
-    });
-    taskInputRef.current?.focus({ preventScroll: true });
-  }, [workspaceMode, selectedProject?.id]);
-
-  const submitProjectTask = async () => {
-    if (!selectedProject?.canSubmit) {
-      return;
-    }
-
-    setSubmissionStatus("submitting");
-
-    if (!selectedProject.applicationId) {
-      setSubmissionStatus("submitted");
-      setTaskFileName("");
-      setTaskNotes("");
-      return;
-    }
-
-    try {
-      const response = await fetch(
-        `/api/v1/applications/${selectedProject.applicationId}/task-submission`,
-        {
-          body: JSON.stringify({
-            fileName: taskFileName,
-            notes: taskNotes,
-          }),
-          headers: {
-            "Content-Type": "application/json",
-          },
-          method: "POST",
-        },
-      );
-
-      if (response.ok) {
-        setSubmissionStatus("submitted");
-        setTaskFileName("");
-        setTaskNotes("");
-        return;
-      }
-
-      setSubmissionStatus("error");
-    } catch {
-      setSubmissionStatus("error");
-    }
-  };
-
   const sendSupportMessage = (message: string) => {
     const trimmedMessage = message.trim();
 
@@ -225,7 +142,7 @@ export function HomeDashboardClient({
 
     const reply = getSupportChatReply(trimmedMessage, {
       lastTopic: supportTopic,
-      projectTitle: selectedProject?.title,
+      projectTitle: visibleProjects[0]?.title,
       recentMessages: supportMessages,
       userName,
     });
@@ -354,32 +271,35 @@ export function HomeDashboardClient({
             </Link>
           </div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {featuredProjects.map((project) => (
-              <Link
-                className={`group flex min-h-[190px] flex-col justify-between rounded-[18px] border border-brand-sand bg-brand-ivory p-5 shadow-brand-card transition hover:-translate-y-0.5 hover:border-brand-gold/60 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-brand-gold ${
-                  project.id === featuredProjects[0]?.id ? "md:col-span-2" : ""
-                }`}
-                href={`/jobs/${project.id}`}
-                key={project.id}
-              >
-                <div>
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-wide text-brand-gold-strong">
-                        {project.companyName}
-                      </p>
-                      <h3 className="mt-1 text-base font-bold text-brand-ink transition group-hover:text-brand-gold-strong">
-                        {project.title}
-                      </h3>
+            {featuredProjects.map((project) => {
+              const cardClassName = `flex min-h-[190px] flex-col justify-between rounded-[18px] border bg-brand-ivory p-5 text-left shadow-brand-card ${
+                project.isApplied
+                  ? "border-brand-gold/50"
+                  : "group border-brand-sand transition hover:-translate-y-0.5 hover:border-brand-gold/60 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-brand-gold"
+              } ${project.id === featuredProjects[0]?.id ? "md:col-span-2" : ""}`;
+              const cardContent = (
+                <>
+                  <div>
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-brand-gold-strong">
+                          {project.companyName}
+                        </p>
+                        <h3 className="mt-1 text-base font-bold text-brand-ink transition group-hover:text-brand-gold-strong">
+                          {project.title}
+                        </h3>
+                      </div>
+                      {project.isApplied ? (
+                        <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" />
+                      ) : (
+                        <ChevronRight className="h-5 w-5 shrink-0 text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-brand-gold-strong" />
+                      )}
                     </div>
-                    <ChevronRight className="h-5 w-5 shrink-0 text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-brand-gold-strong" />
+                    <p className="mt-2 line-clamp-3 text-sm leading-6 text-brand-muted">
+                      {project.description}
+                    </p>
                   </div>
-                  <p className="mt-2 line-clamp-3 text-sm leading-6 text-brand-muted">
-                    {project.description}
-                  </p>
-                </div>
-                <div className="mt-5 space-y-3">
-                  <div className="flex flex-wrap gap-1.5">
+                  <div className="mt-5 flex flex-wrap items-center gap-1.5">
                     {project.skills.slice(0, 2).map((skill) => (
                       <span
                         className="rounded-full bg-[var(--color-accent-soft)] px-2.5 py-1 text-[11px] font-semibold text-brand-gold-strong"
@@ -388,10 +308,30 @@ export function HomeDashboardClient({
                         {skill.label}
                       </span>
                     ))}
+                    {project.isApplied ? (
+                      <span className="ml-auto inline-flex items-center gap-1 text-xs font-semibold text-emerald-700">
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        Applied
+                      </span>
+                    ) : null}
                   </div>
-                </div>
-              </Link>
-            ))}
+                </>
+              );
+
+              return project.isApplied ? (
+                <article className={cardClassName} key={project.id}>
+                  {cardContent}
+                </article>
+              ) : (
+                <Link
+                  className={cardClassName}
+                  href={`/jobs/${project.id}`}
+                  key={project.id}
+                >
+                  {cardContent}
+                </Link>
+              );
+            })}
           </div>
         </section>
       ) : null}
@@ -447,16 +387,15 @@ export function HomeDashboardClient({
             {/* Project Cards Grid */}
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {visibleProjects.map((project) => {
-                const isSelected = selectedProject?.id === project.id;
+                const isApplied = project.isApplied !== false;
 
                 return (
-                  <Link
+                  <article
                     className={`flex min-h-[160px] flex-col justify-between rounded-[18px] border bg-brand-ivory p-5 text-left shadow-brand-card transition hover:shadow-md focus:outline-none focus:ring-2 focus:ring-brand-gold ${
-                      isSelected
-                        ? "border-brand-gold ring-1 ring-brand-gold/25"
+                      isApplied
+                        ? "border-brand-gold/50"
                         : "border-brand-sand hover:border-brand-gold/60"
                     }`}
-                    href={project.applyHref ?? "/apply"}
                     key={project.id}
                   >
                     <div>
@@ -464,7 +403,7 @@ export function HomeDashboardClient({
                         <h3 className="text-base font-semibold text-slate-900">
                           {project.title}
                         </h3>
-                        {isSelected ? (
+                        {isApplied ? (
                           <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
                         ) : (
                           <ChevronRight className="h-4 w-4 shrink-0 text-slate-400" />
@@ -481,285 +420,17 @@ export function HomeDashboardClient({
                       <span className="font-medium text-slate-600">
                         {project.payoutLabel}
                       </span>
+                      {isApplied ? (
+                        <span className="ml-auto inline-flex items-center gap-1 font-semibold text-emerald-700">
+                          <CheckCircle2 className="h-3.5 w-3.5" />
+                          Applied
+                        </span>
+                      ) : null}
                     </div>
-                  </Link>
+                  </article>
                 );
               })}
             </div>
-
-            {selectedProject ? (
-              <section className="rounded-[20px] border border-brand-sand bg-brand-ivory shadow-brand-card">
-                <div className="flex flex-col gap-4 border-b border-slate-100 p-5 md:flex-row md:items-start md:justify-between">
-                  <div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">
-                        {selectedProject.statusLabel}
-                      </span>
-                      <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
-                        {selectedProject.payoutLabel}
-                      </span>
-                    </div>
-                    <h3 className="mt-3 text-xl font-bold text-slate-950">
-                      {selectedProject.title}
-                    </h3>
-                    <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-                      {selectedProject.description}
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedProject.briefHref ? (
-                      <a
-                        className="inline-flex h-10 items-center gap-2 rounded-xl border border-brand-sand bg-brand-ivory px-3 text-sm font-semibold text-brand-ink transition hover:border-brand-gold/60 hover:bg-[#f2e8d7]"
-                        href={selectedProject.briefHref}
-                      >
-                        <Download className="h-4 w-4" />
-                        Download brief
-                      </a>
-                    ) : null}
-                    <button
-                      className={`inline-flex h-10 items-center gap-2 rounded-xl px-3 text-sm font-semibold transition ${
-                        !selectedProject.canSubmit
-                          ? "cursor-not-allowed bg-slate-200 text-slate-500"
-                          : workspaceMode === "work"
-                          ? "bg-brand-gold text-brand-ink hover:bg-[#a57846]"
-                          : "bg-brand-ink text-brand-ivory hover:bg-[#35392c]"
-                      }`}
-                      disabled={!selectedProject.canSubmit}
-                      onClick={startProjectTask}
-                      type="button"
-                    >
-                      {workspaceMode === "work" ? (
-                        <CheckCircle2 className="h-4 w-4" />
-                      ) : (
-                        <PlayCircle className="h-4 w-4" />
-                      )}
-                      {workspaceMode === "work" ? "Task form open" : "Start task"}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="grid gap-6 p-5 lg:grid-cols-[1fr_280px]">
-                  <div className="space-y-5">
-                    <div className="grid gap-3 sm:grid-cols-3">
-                      {[
-                        [
-                          "Review brief",
-                          "Open the task material and confirm the required deliverables.",
-                        ],
-                        [
-                          "Do the work",
-                          "Complete the task outside the dashboard using the client instructions.",
-                        ],
-                        [
-                          "Submit proof",
-                          "Upload the file name and notes so reviewers can process it.",
-                        ],
-                      ].map(([title, text], index) => (
-                        <div
-                          className="rounded-xl border border-brand-sand bg-[#f1ebdf] p-4"
-                          key={title}
-                        >
-                          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-ivory text-xs font-bold text-brand-ink shadow-sm">
-                            {index + 1}
-                          </div>
-                          <h4 className="mt-3 text-sm font-bold text-slate-900">
-                            {title}
-                          </h4>
-                          <p className="mt-1 text-xs leading-5 text-slate-500">
-                            {text}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="rounded-xl border border-brand-sand bg-brand-ivory p-4">
-                      <div className="flex items-start gap-3">
-                        <FileText className="mt-0.5 h-5 w-5 shrink-0 text-brand-gold-strong" />
-                        <div>
-                          <h4 className="text-sm font-bold text-slate-950">
-                            Task details
-                          </h4>
-                          <p className="mt-1 text-sm leading-6 text-slate-600">
-                            Review these instructions before preparing your
-                            file or share link.
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="mt-4 grid gap-3">
-                        {selectedProject.taskBrief.map((section) => (
-                          <section
-                            className="rounded-xl border border-brand-sand bg-[#f1ebdf] p-4"
-                            key={section.heading}
-                          >
-                            <h5 className="text-sm font-bold text-slate-900">
-                              {section.heading}
-                            </h5>
-                            <ul className="mt-2 space-y-2 text-sm leading-6 text-slate-600">
-                              {section.lines.map((line) => (
-                                <li className="flex gap-2" key={line}>
-                                  <CheckCircle2 className="mt-1 h-3.5 w-3.5 shrink-0 text-emerald-600" />
-                                  <span>{line}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          </section>
-                        ))}
-                      </div>
-                    </div>
-
-                    {workspaceMode === "brief" ? (
-                      <div className="rounded-xl border border-brand-gold/35 bg-[#f2e8d7] p-4">
-                        <div className="flex items-start gap-3">
-                          <PlayCircle className="mt-0.5 h-5 w-5 shrink-0 text-brand-gold-strong" />
-                          <div>
-                            <h4 className="text-sm font-bold text-brand-ink">
-                              Ready to work?
-                            </h4>
-                            <p className="mt-1 text-sm leading-6 text-brand-muted">
-                              Use Start task when you have read the details and
-                              are ready to enter the completed file or share
-                              link for review.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div
-                        className="rounded-xl border border-brand-gold/45 bg-brand-ivory p-4 shadow-[0_0_0_3px_rgba(182,138,85,0.10)]"
-                        ref={taskWorkspaceRef}
-                      >
-                        <div className="flex items-center gap-2">
-                          <Upload className="h-5 w-5 text-slate-700" />
-                          <h4 className="text-sm font-bold text-slate-950">
-                            Submit completed work
-                          </h4>
-                        </div>
-                        <div className="mt-4 grid gap-3">
-                          <label className="block">
-                            <span className="text-xs font-semibold text-slate-600">
-                              File name or share link
-                            </span>
-                            <input
-                              className="mt-1 h-11 w-full rounded-xl border border-brand-sand bg-brand-ivory px-3 text-sm outline-none transition placeholder:text-slate-400 focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
-                              onChange={(event) =>
-                                setTaskFileName(event.target.value)
-                              }
-                              placeholder="completed-work.pdf"
-                              ref={taskInputRef}
-                              value={taskFileName}
-                            />
-                          </label>
-                          <label className="block">
-                            <span className="text-xs font-semibold text-slate-600">
-                              Notes for reviewers
-                            </span>
-                            <textarea
-                              className="mt-1 min-h-24 w-full rounded-xl border border-brand-sand bg-brand-ivory px-3 py-2 text-sm outline-none transition placeholder:text-slate-400 focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
-                              onChange={(event) =>
-                                setTaskNotes(event.target.value)
-                              }
-                              placeholder="Mention what you completed, any assumptions, and anything reviewers should know."
-                              value={taskNotes}
-                            />
-                          </label>
-                          <div className="flex flex-wrap items-center gap-3">
-                            <button
-                              className="inline-flex h-11 items-center gap-2 rounded-xl bg-brand-ink px-4 text-sm font-semibold text-brand-ivory transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold disabled:cursor-not-allowed disabled:opacity-50"
-                              disabled={
-                                !selectedProject.canSubmit ||
-                                !taskFileName.trim() ||
-                                submissionStatus === "submitting"
-                              }
-                              onClick={() => {
-                                void submitProjectTask();
-                              }}
-                              type="button"
-                            >
-                              <Upload className="h-4 w-4" />
-                              {submissionStatus === "submitting"
-                                ? "Submitting"
-                                : "Submit work"}
-                            </button>
-                            {!selectedProject.canSubmit ? (
-                              <span className="text-xs font-medium text-slate-500">
-                                This project is not ready for submission yet.
-                              </span>
-                            ) : null}
-                            {submissionStatus === "submitted" ? (
-                              <span className="text-xs font-semibold text-emerald-700">
-                                Submitted for review.
-                              </span>
-                            ) : null}
-                            {submissionStatus === "error" ? (
-                              <span className="text-xs font-semibold text-red-600">
-                                Submission failed. Check the project status and
-                                try again.
-                              </span>
-                            ) : null}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <aside className="rounded-xl border border-brand-sand bg-[#f1ebdf] p-4">
-                    <h4 className="text-sm font-bold text-slate-900">
-                      Project details
-                    </h4>
-                    <dl className="mt-4 space-y-3 text-sm">
-                      <div>
-                        <dt className="text-xs font-semibold text-slate-500">
-                          Payment
-                        </dt>
-                        <dd className="mt-1 font-semibold text-slate-900">
-                          {selectedProject.payoutLabel}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-xs font-semibold text-slate-500">
-                          Payment rule
-                        </dt>
-                        <dd className="mt-1 text-slate-700">
-                          {selectedProject.payoutType}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-xs font-semibold text-slate-500">
-                          Skills
-                        </dt>
-                        <dd className="mt-2 flex flex-wrap gap-2">
-                          {selectedProject.skills.length ? (
-                            selectedProject.skills.slice(0, 5).map((skill) => (
-                              <span
-                                className="rounded-full bg-brand-ivory px-2.5 py-1 text-xs font-semibold text-brand-muted"
-                                key={skill}
-                              >
-                                {skill}
-                              </span>
-                            ))
-                          ) : (
-                            <span className="text-slate-500">
-                              Role-specific review
-                            </span>
-                          )}
-                        </dd>
-                      </div>
-                      {selectedProject.isSubmitted ? (
-                        <div>
-                          <dt className="text-xs font-semibold text-slate-500">
-                            Submitted file
-                          </dt>
-                          <dd className="mt-1 text-slate-700">
-                            {selectedProject.submittedFileName ?? "Submitted"}
-                          </dd>
-                        </div>
-                      ) : null}
-                    </dl>
-                  </aside>
-                </div>
-              </section>
-            ) : null}
           </section>
         </>
       ) : (

@@ -2,10 +2,8 @@ import { NextResponse } from "next/server";
 
 import { JobService } from "@/lib/services/job-service";
 
-export async function GET(request?: Request) {
-  const searchParams = request
-    ? new URL(request.url).searchParams
-    : new URLSearchParams();
+export async function GET(request: Request) {
+  const searchParams = new URL(request.url).searchParams;
 
   if (searchParams.get("view") === "cards") {
     const parsedSkip = Number(searchParams.get("skip") ?? "0");

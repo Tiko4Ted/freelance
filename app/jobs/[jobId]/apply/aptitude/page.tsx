@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 import { AptitudeTestForm } from "@/components/aptitude-test-form";
-import { BrandLogo } from "@/components/brand-logo";
+import { PortalSidebar } from "@/components/portal-sidebar";
 import { buildAptitudeTest } from "@/lib/aptitude-test";
 import { JobService } from "@/lib/services/job-service";
 import { OnboardingService } from "@/lib/services/onboarding-service";
@@ -80,15 +80,14 @@ export default async function AptitudePage({
   const aptitudeTest = buildAptitudeTest(job);
 
   return (
-    <main className="min-h-screen bg-brand-canvas px-5 py-6 text-brand-ink sm:px-8">
-      <div className="mx-auto max-w-[960px]">
-        <BrandLogo
-          imageClassName="h-12 w-12 shadow-sm"
-          nameClassName="text-[24px] font-black leading-none tracking-normal text-brand-ink"
-          showName
-          size={48}
-        />
-
+    <>
+      <PortalSidebar
+        activeTab="apply"
+        isAuthenticated
+        userName={session.user.name ?? "Teddy"}
+      />
+      <main className="min-h-screen bg-brand-canvas px-5 pb-6 pt-[96px] text-brand-ink sm:px-8">
+        <div className="mx-auto max-w-[960px]">
         <header className="mt-7 border-b border-brand-sand pb-6">
           <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-brand-gold-strong">
             Application aptitude
@@ -116,7 +115,8 @@ export default async function AptitudePage({
             jobId={job.id}
           />
         </section>
-      </div>
-    </main>
+        </div>
+      </main>
+    </>
   );
 }

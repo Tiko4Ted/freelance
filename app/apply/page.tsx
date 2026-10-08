@@ -58,7 +58,7 @@ export default async function ApplyPage({ searchParams }: ApplyPageProps) {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-x-hidden">
+      <main className="flex-1 overflow-x-hidden pt-[72px]">
         <JobBoard
           headerCopy={getHeaderCopy(referralContext?.firstName)}
           hasMore={jobPage.hasMore}

@@ -10,7 +10,6 @@ import {
   emptyOnboardingStatus,
   OnboardingService,
 } from "@/lib/services/onboarding-service";
-import { buildTaskAssignment } from "@/lib/task-assignment";
 
 export const dynamic = "force-dynamic";
 
@@ -85,7 +84,6 @@ export default async function HomePage() {
             status: true,
             lockedPayoutCents: true,
             taskSubmittedAt: true,
-            taskSubmissionFileName: true,
             job: {
               select: {
                 title: true,
@@ -110,19 +108,10 @@ export default async function HomePage() {
             const hasTaskAccess = ["ACTIVE", "MATCHED", "CERTIFIED"].includes(
               application.status,
             );
-            const taskAvailable = onboarding.complete && hasTaskAccess;
-            const canSubmit =
-              taskAvailable &&
-              !application.taskSubmittedAt;
-            const taskAssignment = buildTaskAssignment({
-              id: application.id,
-              candidateName: userName,
-              job: application.job,
-            });
 
             return {
               id: application.id,
-              applicationId: application.id,
+              jobId: application.jobId,
               applyHref: `/jobs/${application.jobId}/apply`,
               jobHref: `/jobs/${application.jobId}`,
               appliedAt: application.createdAt.toISOString(),
@@ -148,17 +137,7 @@ export default async function HomePage() {
                   ? "Per approved task"
                   : "After approved hours",
               skills,
-              canSubmit,
-              isSubmitted: Boolean(application.taskSubmittedAt),
-              submittedFileName: application.taskSubmissionFileName,
-              briefHref: taskAvailable
-                ? `/api/v1/applications/${application.id}/task-material`
-                : undefined,
-              taskBrief: taskAvailable
-                ? taskAssignment.sections.filter(
-                    (section) => section.heading !== "Candidate and role",
-                  )
-                : [],
+              isApplied: true,
             };
           }),
         )
@@ -176,11 +155,15 @@ export default async function HomePage() {
       onboardingPromise,
       referralPromise,
     ]);
+  const appliedJobIds = new Set(
+    projects.flatMap((project) => (project.jobId ? [project.jobId] : [])),
+  );
   const featuredProjectCards = featuredProjects.map((project) => ({
     id: project.id,
     title: project.title,
     description: project.description,
     companyName: project.companyName,
+    isApplied: appliedJobIds.has(project.id),
     skills: project.skills,
   }));
 
@@ -191,7 +174,7 @@ export default async function HomePage() {
         isAuthenticated={Boolean(userId)}
         userName={userName}
       />
-      <main className="flex-1 overflow-y-auto px-5 py-6 md:px-10 md:py-8">
+      <main className="flex-1 overflow-y-auto px-5 pb-6 pt-24 md:px-10 md:pb-8 md:pt-28">
         <div className="mx-auto max-w-[1180px]">
           <div className="mb-7 flex items-center justify-between gap-4 border-b border-brand-sand/70 pb-4">
             <div>

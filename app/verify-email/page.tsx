@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { VerifyEmailForm } from "@/components/auth/verify-email-form";
 import { BrandLogo } from "@/components/brand-logo";
+import { PortalSidebar } from "@/components/portal-sidebar";
 import { safeCallbackUrl } from "@/lib/auth/callback-url";
 
 export const dynamic = "force-dynamic";
@@ -27,7 +28,9 @@ export default async function VerifyEmailPage({
   const callbackUrl = safeCallbackUrl(params.callbackUrl);
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_18%_22%,rgba(235,204,144,0.28),transparent_30%),linear-gradient(135deg,#f7f3ea,#fffdf8)] px-6 py-10 text-brand-ink">
+    <>
+      <PortalSidebar activeTab="home" userName="Welcome" />
+      <main className="min-h-screen bg-[radial-gradient(circle_at_18%_22%,rgba(235,204,144,0.28),transparent_30%),linear-gradient(135deg,#f7f3ea,#fffdf8)] px-6 pb-10 pt-[112px] text-brand-ink">
       <section className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-md flex-col justify-center">
         <Link aria-label="Trinity-AI home" className="mx-auto" href="/">
           <BrandLogo
@@ -48,6 +51,7 @@ export default async function VerifyEmailPage({
           </div>
         </div>
       </section>
-    </main>
+      </main>
+    </>
   );
 }
