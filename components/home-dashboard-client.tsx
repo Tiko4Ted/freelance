@@ -132,14 +132,16 @@ export function HomeDashboardClient({
   const [activeTab, setActiveTab] = useState<"projects" | "applications">(
     "projects",
   );
-  const [expandedProjectId, setExpandedProjectId] = useState<string | null>(
-    null,
-  );
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [taskNotes, setTaskNotes] = useState("");
   const [submissionStatus, setSubmissionStatus] = useState<
     "idle" | "submitting" | "submitted" | "error"
   >("idle");
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadFeedbackProjectId, setUploadFeedbackProjectId] = useState<
+    string | null
+  >(null);
+  const [draggingProjectId, setDraggingProjectId] = useState<string | null>(
+    null,
+  );
   const [submittedProjectIds, setSubmittedProjectIds] = useState<string[]>([]);
   const [helpOpen, setHelpOpen] = useState(false);
   const [supportMessage, setSupportMessage] = useState("");
@@ -152,17 +154,25 @@ export function HomeDashboardClient({
   ]);
   const [supportTopic, setSupportTopic] = useState<SupportTopic>();
 
-  const submitProjectWork = async (project: DashboardProject) => {
-    if (!project.canSubmit || !project.applicationId || !selectedFile) {
+  const submitProjectWork = async (project: DashboardProject, file: File) => {
+    if (!project.canSubmit || !project.applicationId) {
+      return;
+    }
+
+    setUploadFeedbackProjectId(project.id);
+
+    if (file.size > MAX_TASK_SUBMISSION_BYTES) {
+      setSubmissionStatus("error");
+      setUploadError("This file is larger than the 4 MB upload limit.");
       return;
     }
 
     setSubmissionStatus("submitting");
+    setUploadError(null);
 
     try {
       const formData = new FormData();
-      formData.append("file", selectedFile);
-      formData.append("notes", taskNotes);
+      formData.append("file", file);
 
       const response = await fetch(
         `/api/v1/applications/${project.applicationId}/task-submission`,
@@ -174,18 +184,27 @@ export function HomeDashboardClient({
 
       if (!response.ok) {
         setSubmissionStatus("error");
+        setUploadError("Upload failed. Check the file and try again.");
         return;
       }
 
       setSubmittedProjectIds((current) =>
         current.includes(project.id) ? current : [...current, project.id],
       );
-      setSelectedFile(null);
-      setTaskNotes("");
       setSubmissionStatus("submitted");
+      setUploadError(null);
     } catch {
       setSubmissionStatus("error");
+      setUploadError("Upload failed. Check your connection and try again.");
     }
+  };
+
+  const handleProjectFile = (project: DashboardProject, file: File | null) => {
+    if (!file) {
+      return;
+    }
+
+    void submitProjectWork(project, file);
   };
 
   const sendSupportMessage = (message: string) => {
@@ -446,7 +465,11 @@ export function HomeDashboardClient({
                 const hasSubmitted =
                   project.isSubmitted || submittedProjectIds.includes(project.id);
                 const canUpload = Boolean(project.canSubmit) && !hasSubmitted;
-                const isExpanded = expandedProjectId === project.id;
+                const isUploading =
+                  uploadFeedbackProjectId === project.id &&
+                  submissionStatus === "submitting";
+                const projectUploadError =
+                  uploadFeedbackProjectId === project.id ? uploadError : null;
 
                 return (
                   <article
@@ -505,13 +528,41 @@ export function HomeDashboardClient({
                           )}
                           {canUpload ? (
                             <label
-                              className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-[10px] border border-brand-sand bg-brand-ivory px-3 text-xs font-semibold text-brand-ink transition hover:border-brand-gold/60 hover:bg-[var(--color-accent-soft)] focus-within:outline-none focus-within:ring-2 focus-within:ring-brand-gold"
+                              className={`inline-flex min-h-10 min-w-[220px] cursor-pointer items-center gap-2 rounded-[10px] border border-dashed px-3 py-2 text-xs font-semibold text-brand-ink transition focus-within:outline-none focus-within:ring-2 focus-within:ring-brand-gold ${
+                                draggingProjectId === project.id
+                                  ? "border-brand-gold bg-[var(--color-accent-soft)]"
+                                  : "border-brand-sand bg-brand-ivory hover:border-brand-gold/60 hover:bg-[var(--color-accent-soft)]"
+                              }`}
                               htmlFor={`task-file-${project.id}`}
+                              onDragEnter={(event) => {
+                                event.preventDefault();
+                                setDraggingProjectId(project.id);
+                              }}
+                              onDragLeave={() => setDraggingProjectId(null)}
+                              onDragOver={(event) => {
+                                event.preventDefault();
+                                setDraggingProjectId(project.id);
+                              }}
+                              onDrop={(event) => {
+                                event.preventDefault();
+                                setDraggingProjectId(null);
+                                handleProjectFile(
+                                  project,
+                                  event.dataTransfer.files?.[0] ?? null,
+                                );
+                              }}
                             >
-                              <Upload className="h-3.5 w-3.5" />
-                              {isExpanded
-                                ? "Choose another file"
-                                : "Upload completed work"}
+                              <Upload className="h-3.5 w-3.5 shrink-0" />
+                              <span className="min-w-0">
+                                <span className="block truncate">
+                                  {isUploading
+                                    ? "Uploading..."
+                                    : "Upload completed work"}
+                                </span>
+                                <span className="block text-[11px] font-medium text-brand-muted">
+                                  Drop a file or click to choose
+                                </span>
+                              </span>
                             </label>
                           ) : (
                             <button
@@ -529,82 +580,16 @@ export function HomeDashboardClient({
                             id={`task-file-${project.id}`}
                             onChange={(event) => {
                               const nextFile = event.target.files?.[0] ?? null;
-                              setSelectedFile(nextFile);
-                              setTaskNotes("");
-                              setSubmissionStatus("idle");
-                              setExpandedProjectId(nextFile ? project.id : null);
+                              event.currentTarget.value = "";
+                              handleProjectFile(project, nextFile);
                             }}
                             type="file"
                           />
                         </div>
-
-                        {isExpanded && canUpload ? (
-                          <div className="mt-3 grid gap-3 rounded-[12px] border border-brand-sand bg-[#f1ebdf] p-3">
-                            <div className="flex items-center gap-2 rounded-[10px] border border-brand-gold/30 bg-brand-ivory px-3 py-2.5">
-                              <span className="flex min-w-0 items-center gap-2">
-                                <Upload className="h-4 w-4 shrink-0 text-brand-gold-strong" />
-                                <span className="min-w-0">
-                                  <span className="block text-xs font-semibold text-brand-muted">
-                                    Selected file
-                                  </span>
-                                  <span className="block truncate text-sm font-semibold text-brand-ink">
-                                    {selectedFile?.name}
-                                  </span>
-                                  <span className="block text-xs text-brand-muted">
-                                    Up to 4 MB
-                                  </span>
-                                </span>
-                              </span>
-                            </div>
-                            {selectedFile &&
-                            selectedFile.size > MAX_TASK_SUBMISSION_BYTES ? (
-                              <p className="text-xs font-semibold text-red-600">
-                                This file is larger than the 4 MB upload limit.
-                              </p>
-                            ) : null}
-                            <label className="block">
-                              <span className="text-xs font-semibold text-slate-600">
-                                Notes for reviewers
-                              </span>
-                              <textarea
-                                className="mt-1 min-h-20 w-full rounded-[10px] border border-brand-sand bg-brand-ivory px-3 py-2 text-sm text-brand-ink outline-none transition placeholder:text-slate-400 focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
-                                onChange={(event) =>
-                                  setTaskNotes(event.target.value)
-                                }
-                                placeholder="Add a short note about the completed work."
-                                value={taskNotes}
-                              />
-                            </label>
-                            <div className="flex flex-wrap items-center gap-3">
-                              <button
-                                className="inline-flex h-10 items-center gap-1.5 rounded-[10px] bg-brand-ink px-3 text-xs font-semibold text-brand-ivory transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold disabled:cursor-not-allowed disabled:opacity-50"
-                                disabled={
-                                  !selectedFile ||
-                                  selectedFile.size > MAX_TASK_SUBMISSION_BYTES ||
-                                  submissionStatus === "submitting"
-                                }
-                                onClick={() => {
-                                  void submitProjectWork(project);
-                                }}
-                                type="button"
-                              >
-                                <Upload className="h-3.5 w-3.5" />
-                                {submissionStatus === "submitting"
-                                  ? "Uploading"
-                                  : "Submit completed work"}
-                              </button>
-                              {submissionStatus === "submitted" ? (
-                                <span className="text-xs font-semibold text-emerald-700">
-                                  Submitted for review.
-                                </span>
-                              ) : null}
-                              {submissionStatus === "error" ? (
-                                <span className="text-xs font-semibold text-red-600">
-                                  Upload failed. Check the file or link and try again.
-                                </span>
-                              ) : null}
-                            </div>
-                          </div>
+                        {projectUploadError ? (
+                          <p className="mt-2 text-xs font-semibold text-red-600">
+                            {projectUploadError}
+                          </p>
                         ) : null}
                       </div>
                     ) : null}
