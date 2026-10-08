@@ -202,7 +202,7 @@ export default async function ProfilePage() {
         isAuthenticated={isAuthenticated}
         userName={user.name}
       />
-      <main className="flex-1 overflow-y-auto px-6 pb-8 pt-24 md:px-12 md:pb-10 md:pt-28">
+      <main className="flex-1 overflow-y-auto px-6 pb-8 pt-24 md:px-12 md:pb-10 md:pt-28 lg:pl-64">
         <div className="mx-auto max-w-[1040px] space-y-8">
           <section className="rounded-2xl border border-brand-sand bg-brand-ivory p-6 shadow-brand-card">
             <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">

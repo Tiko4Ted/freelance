@@ -33,7 +33,7 @@ export default async function WalletPage() {
         isAuthenticated
         userName={userName}
       />
-      <main className="flex-1 overflow-y-auto px-6 pb-8 pt-24 md:px-12 md:pb-10 md:pt-28">
+      <main className="flex-1 overflow-y-auto px-6 pb-8 pt-24 md:px-12 md:pb-10 md:pt-28 lg:pl-64">
         <div className="mx-auto max-w-[1040px] space-y-8">
           <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
             <h1 className="text-3xl font-bold tracking-tight text-brand-ink md:text-[34px]">

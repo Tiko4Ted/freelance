@@ -112,7 +112,7 @@ export default async function ApplyPage({
         isAuthenticated
         userName={session.user.name ?? "Teddy"}
       />
-      <main className="min-h-screen bg-brand-canvas pt-[72px] text-brand-ink">
+      <main className="min-h-screen bg-brand-canvas pt-[72px] text-brand-ink lg:pl-64">
         <div className="mx-auto grid max-w-[1050px] gap-10 px-5 pb-16 pt-6 sm:px-8 lg:grid-cols-[minmax(0,1fr)_24.25rem] lg:gap-11 lg:px-0">
         <article className="min-w-0">
           <header className="mt-7">
