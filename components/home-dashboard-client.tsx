@@ -14,6 +14,8 @@ import {
   MessageCircle,
   Send,
   X,
+  Download,
+  Upload,
   CheckCircle2,
 } from "lucide-react";
 
@@ -25,6 +27,7 @@ import {
 
 type DashboardProject = {
   id: string;
+  applicationId?: string;
   jobId?: string;
   applyHref?: string;
   jobHref?: string;
@@ -37,6 +40,10 @@ type DashboardProject = {
   payoutLabel: string;
   payoutType: string;
   skills: string[];
+  canSubmit?: boolean;
+  isSubmitted?: boolean;
+  submittedFileName?: string | null;
+  briefHref?: string;
   isApplied?: boolean;
 };
 
@@ -123,6 +130,15 @@ export function HomeDashboardClient({
   const [activeTab, setActiveTab] = useState<"projects" | "applications">(
     "projects",
   );
+  const [expandedProjectId, setExpandedProjectId] = useState<string | null>(
+    null,
+  );
+  const [taskFileName, setTaskFileName] = useState("");
+  const [taskNotes, setTaskNotes] = useState("");
+  const [submissionStatus, setSubmissionStatus] = useState<
+    "idle" | "submitting" | "submitted" | "error"
+  >("idle");
+  const [submittedProjectIds, setSubmittedProjectIds] = useState<string[]>([]);
   const [helpOpen, setHelpOpen] = useState(false);
   const [supportMessage, setSupportMessage] = useState("");
   const [referralCopied, setReferralCopied] = useState(false);
@@ -133,6 +149,60 @@ export function HomeDashboardClient({
     },
   ]);
   const [supportTopic, setSupportTopic] = useState<SupportTopic>();
+
+  const toggleProjectActions = (projectId: string) => {
+    if (expandedProjectId === projectId) {
+      setExpandedProjectId(null);
+      setTaskFileName("");
+      setTaskNotes("");
+      setSubmissionStatus("idle");
+      return;
+    }
+
+    setExpandedProjectId(projectId);
+    setTaskFileName("");
+    setTaskNotes("");
+    setSubmissionStatus("idle");
+  };
+
+  const submitProjectWork = async (project: DashboardProject) => {
+    if (!project.canSubmit || !project.applicationId || !taskFileName.trim()) {
+      return;
+    }
+
+    setSubmissionStatus("submitting");
+
+    try {
+      const response = await fetch(
+        `/api/v1/applications/${project.applicationId}/task-submission`,
+        {
+          body: JSON.stringify({
+            fileName: taskFileName,
+            notes: taskNotes,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+          method: "POST",
+        },
+      );
+
+      if (!response.ok) {
+        setSubmissionStatus("error");
+        return;
+      }
+
+      setSubmittedProjectIds((current) =>
+        current.includes(project.id) ? current : [...current, project.id],
+      );
+      setTaskFileName("");
+      setTaskNotes("");
+      setSubmissionStatus("submitted");
+    } catch {
+      setSubmissionStatus("error");
+    }
+  };
+
   const sendSupportMessage = (message: string) => {
     const trimmedMessage = message.trim();
 
@@ -388,6 +458,10 @@ export function HomeDashboardClient({
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {visibleProjects.map((project) => {
                 const isApplied = project.isApplied !== false;
+                const hasSubmitted =
+                  project.isSubmitted || submittedProjectIds.includes(project.id);
+                const canUpload = Boolean(project.canSubmit) && !hasSubmitted;
+                const isExpanded = expandedProjectId === project.id;
 
                 return (
                   <article
@@ -415,7 +489,7 @@ export function HomeDashboardClient({
                     </div>
                     <div className="mt-5 flex flex-wrap items-center gap-2 text-xs">
                       <span className="rounded-full bg-[var(--color-accent-soft)] px-2.5 py-1 font-semibold text-brand-gold-strong">
-                        {project.statusLabel}
+                        {hasSubmitted ? "Submitted for review" : project.statusLabel}
                       </span>
                       <span className="font-medium text-slate-600">
                         {project.payoutLabel}
@@ -427,6 +501,98 @@ export function HomeDashboardClient({
                         </span>
                       ) : null}
                     </div>
+                    {isApplied ? (
+                      <div className="mt-4 border-t border-brand-sand/70 pt-3">
+                        <div className="flex flex-wrap items-center gap-2">
+                          {project.briefHref ? (
+                            <a
+                              className="inline-flex h-9 items-center gap-1.5 rounded-[10px] border border-brand-sand bg-brand-ivory px-3 text-xs font-semibold text-brand-ink transition hover:border-brand-gold/60 hover:bg-[var(--color-accent-soft)] focus:outline-none focus:ring-2 focus:ring-brand-gold"
+                              download
+                              href={project.briefHref}
+                            >
+                              <Download className="h-3.5 w-3.5" />
+                              Download materials
+                            </a>
+                          ) : (
+                            <span className="text-xs text-brand-muted">
+                              Materials unlock after project approval.
+                            </span>
+                          )}
+                          <button
+                            className="inline-flex h-9 items-center gap-1.5 rounded-[10px] border border-brand-sand bg-brand-ivory px-3 text-xs font-semibold text-brand-ink transition hover:border-brand-gold/60 hover:bg-[var(--color-accent-soft)] focus:outline-none focus:ring-2 focus:ring-brand-gold disabled:cursor-not-allowed disabled:opacity-50"
+                            disabled={!canUpload}
+                            onClick={() => toggleProjectActions(project.id)}
+                            type="button"
+                          >
+                            <Upload className="h-3.5 w-3.5" />
+                            {hasSubmitted
+                              ? "Submitted"
+                              : isExpanded
+                                ? "Hide upload"
+                                : "Upload completed work"}
+                          </button>
+                        </div>
+
+                        {isExpanded && canUpload ? (
+                          <div className="mt-3 grid gap-3 rounded-[12px] border border-brand-sand bg-[#f1ebdf] p-3">
+                            <label className="block">
+                              <span className="text-xs font-semibold text-slate-600">
+                                File name or share link
+                              </span>
+                              <input
+                                className="mt-1 h-10 w-full rounded-[10px] border border-brand-sand bg-brand-ivory px-3 text-sm text-brand-ink outline-none transition placeholder:text-slate-400 focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
+                                onChange={(event) =>
+                                  setTaskFileName(event.target.value)
+                                }
+                                placeholder="completed-work.pdf"
+                                value={taskFileName}
+                              />
+                            </label>
+                            <label className="block">
+                              <span className="text-xs font-semibold text-slate-600">
+                                Notes for reviewers
+                              </span>
+                              <textarea
+                                className="mt-1 min-h-20 w-full rounded-[10px] border border-brand-sand bg-brand-ivory px-3 py-2 text-sm text-brand-ink outline-none transition placeholder:text-slate-400 focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
+                                onChange={(event) =>
+                                  setTaskNotes(event.target.value)
+                                }
+                                placeholder="Add a short note about the completed work."
+                                value={taskNotes}
+                              />
+                            </label>
+                            <div className="flex flex-wrap items-center gap-3">
+                              <button
+                                className="inline-flex h-10 items-center gap-1.5 rounded-[10px] bg-brand-ink px-3 text-xs font-semibold text-brand-ivory transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold disabled:cursor-not-allowed disabled:opacity-50"
+                                disabled={
+                                  !taskFileName.trim() ||
+                                  submissionStatus === "submitting"
+                                }
+                                onClick={() => {
+                                  void submitProjectWork(project);
+                                }}
+                                type="button"
+                              >
+                                <Upload className="h-3.5 w-3.5" />
+                                {submissionStatus === "submitting"
+                                  ? "Uploading"
+                                  : "Submit completed work"}
+                              </button>
+                              {submissionStatus === "submitted" ? (
+                                <span className="text-xs font-semibold text-emerald-700">
+                                  Submitted for review.
+                                </span>
+                              ) : null}
+                              {submissionStatus === "error" ? (
+                                <span className="text-xs font-semibold text-red-600">
+                                  Upload failed. Check the file or link and try again.
+                                </span>
+                              ) : null}
+                            </div>
+                          </div>
+                        ) : null}
+                      </div>
+                    ) : null}
                   </article>
                 );
               })}
