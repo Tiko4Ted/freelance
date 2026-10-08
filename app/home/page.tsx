@@ -184,14 +184,14 @@ export default async function HomePage() {
         isAuthenticated={Boolean(userId)}
         userName={userName}
       />
-      <main className="flex-1 overflow-y-auto px-5 pb-6 pt-24 md:px-10 md:pb-8 md:pt-28">
+      <main className="flex-1 overflow-y-auto px-5 pb-6 pt-20 md:px-10 md:pb-8 md:pt-24">
         <div className="mx-auto max-w-[1180px]">
-          <div className="mb-7 flex items-center justify-between gap-4 border-b border-brand-sand/70 pb-4">
-            <div>
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-brand-sand/70 pb-2">
+            <div className="flex min-w-0 items-baseline gap-2">
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-gold-strong">
                 Workspace
               </p>
-              <p className="mt-1 text-sm text-brand-muted">
+              <p className="truncate text-xs text-brand-muted sm:text-sm">
                 Your work, referrals, and payouts in one place.
               </p>
             </div>

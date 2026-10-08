@@ -245,9 +245,9 @@ export function HomeDashboardClient({
   };
 
   return (
-    <div className="home-dashboard flex flex-col items-start gap-9 lg:flex-row lg:gap-10">
+    <div className="home-dashboard flex flex-col items-start gap-6 lg:flex-row lg:gap-8">
       {/* Main Left Column */}
-      <div className="min-w-0 flex-1 space-y-9">
+      <div className="min-w-0 flex-1 space-y-6">
         {!onboardingComplete ? (
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#fde68a] bg-[#fffbeb] px-5 py-3.5 shadow-sm">
         <div className="flex items-center gap-2.5">
@@ -269,13 +269,13 @@ export function HomeDashboardClient({
         ) : null}
 
       {/* Greeting & Refer Button */}
-      <div className="flex flex-wrap items-end justify-between gap-5 pt-1">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-muted">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-muted">
             Overview
           </p>
-          <h1 className="mt-2 text-4xl font-semibold tracking-[-0.045em] text-brand-ink md:text-[42px]">
-          Welcome back, {userName}
+          <h1 className="text-3xl font-semibold tracking-[-0.045em] text-brand-ink md:text-4xl">
+            Welcome back, {userName}
           </h1>
         </div>
         <Link

@@ -61,7 +61,13 @@ async function claimEligibleCandidatePayouts(userId: string, email: string) {
         candidateEmail: email,
         status: ApplicationStatus.PAYOUT_ELIGIBLE,
         lockedPayoutCents: { not: null },
-        ledgerEntry: { is: null },
+        ledgerEntries: {
+          none: {
+            userId,
+            account: LedgerAccount.HOLDING,
+            reason: "JOB_PAYOUT_HOLDING",
+          },
+        },
       },
       select: {
         id: true,

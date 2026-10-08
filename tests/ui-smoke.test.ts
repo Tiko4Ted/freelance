@@ -483,3 +483,17 @@ test("admin application controls render status and progress actions", () => {
   assert.match(markup, /name="hoursLogged"/);
   assert.match(markup, /name="tasksCompleted"/);
 });
+
+test("admin application controls expose submission approval for pending work", () => {
+  const markup = renderToStaticMarkup(
+    createElement(ApplicationActions, {
+      applicationId: "application-pending-task",
+      currentStatus: ApplicationStatus.CERTIFYING,
+      hasPendingSubmission: true,
+      hoursLogged: 0,
+      tasksCompleted: 1,
+    }),
+  );
+
+  assert.match(markup, /Approve submitted work/);
+});

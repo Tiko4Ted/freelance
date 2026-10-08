@@ -8,6 +8,7 @@ type ApplicationActionsProps = {
   currentStatus: ApplicationStatus;
   hoursLogged: number;
   tasksCompleted: number;
+  hasPendingSubmission?: boolean;
 };
 
 const statuses = Object.values(ApplicationStatus);
@@ -17,6 +18,7 @@ export function ApplicationActions({
   currentStatus,
   hoursLogged,
   tasksCompleted,
+  hasPendingSubmission = false,
 }: ApplicationActionsProps) {
   const [message, setMessage] = useState("");
 
@@ -64,8 +66,32 @@ export function ApplicationActions({
     }
   }
 
+  async function approveTaskSubmission() {
+    const response = await fetch(
+      `/api/v1/admin/applications/${applicationId}/approve-submission`,
+      { method: "POST" },
+    );
+
+    setMessage(
+      response.ok ? "Submission approved and payout queued" : "Submission approval failed",
+    );
+
+    if (response.ok) {
+      window.location.reload();
+    }
+  }
+
   return (
     <div className="space-y-3">
+      {hasPendingSubmission ? (
+        <button
+          className="h-10 w-full rounded-lg bg-brand-gold-strong px-3 text-sm font-semibold text-brand-ivory transition hover:bg-brand-gold focus:outline-none focus:ring-2 focus:ring-brand-gold/40"
+          onClick={approveTaskSubmission}
+          type="button"
+        >
+          Approve submitted work
+        </button>
+      ) : null}
       <form className="flex gap-2" onSubmit={updateStatus}>
         <select
           className="h-10 min-w-40 rounded-lg border border-brand-sand bg-brand-canvas/50 px-2 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"

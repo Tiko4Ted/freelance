@@ -300,6 +300,28 @@ test("expired applications produce no ledger entry and notify the candidate", as
   });
 });
 
+test("direct applications stay payout eligible instead of being marked paid without a wallet entry", async () => {
+  const directApplication = activeApplication("application-direct", {
+    referral: null,
+    job: { id: "job-direct", payoutType: PayoutTrigger.TASK_1 },
+    hoursLogged: 0,
+    tasksCompleted: 1,
+  });
+
+  await withEligibilityDatabase([directApplication], async (state) => {
+    const result = await PayoutEligibilityService.runOnce(
+      new Date("2026-09-22T00:00:00.000Z"),
+    );
+
+    assert.deepEqual(result, [
+      { applicationId: "application-direct", result: "PAYOUT_ELIGIBLE" },
+    ]);
+    assert.equal(directApplication.status, ApplicationStatus.PAYOUT_ELIGIBLE);
+    assert.equal(state.ledger.length, 0);
+    assert.equal(state.balances.size, 0);
+  });
+});
+
 test("wallet reconciliation is derived from append-only ledger entries", () => {
   const balances = reconcileLedgerBalances([
     { account: LedgerAccount.HOLDING, amountCents: 5000 },
