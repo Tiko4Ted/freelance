@@ -230,7 +230,7 @@ model Application {
   createdAt                 DateTime          @default(now())
   updatedAt                 DateTime          @updatedAt
 
-  ledgerEntry LedgerEntry?
+  ledgerEntries LedgerEntry[]
 
   @@unique([applicantUserId, jobId])
   @@unique([candidateEmail, jobId])
@@ -348,7 +348,7 @@ model LedgerEntry {
   amountCents   Int
   account       LedgerAccount   @default(FUNDING)
   reason        String
-  applicationId String?         @unique
+  applicationId String?
   application   Application?    @relation(fields: [applicationId], references: [id])
   withdrawalId  String?
   withdrawal    Withdrawal?     @relation(fields: [withdrawalId], references: [id])
@@ -358,6 +358,8 @@ model LedgerEntry {
   updatedAt     DateTime        @updatedAt
 
   @@index([userId])
+  @@index([applicationId])
+  @@unique([applicationId, userId, reason])
   @@index([withdrawalId])
   @@index([transferId])
   @@index([account])

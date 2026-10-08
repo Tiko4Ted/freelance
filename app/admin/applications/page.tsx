@@ -1,4 +1,4 @@
-import { Role } from "@prisma/client";
+import { ApplicationStatus, Role } from "@prisma/client";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -147,6 +147,11 @@ export default async function AdminApplicationsPage() {
                 <ApplicationActions
                   applicationId={application.id}
                   currentStatus={application.status}
+                  hasPendingSubmission={Boolean(
+                    application.taskSubmittedAt &&
+                      (application.status === ApplicationStatus.CERTIFYING ||
+                        application.status === ApplicationStatus.CERTIFIED),
+                  )}
                   hoursLogged={application.hoursLogged}
                   tasksCompleted={application.tasksCompleted}
                 />

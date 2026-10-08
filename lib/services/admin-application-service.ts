@@ -1,4 +1,4 @@
-import { ApplicationStatus } from "@prisma/client";
+import { ApplicationStatus, LedgerAccount, PayoutTrigger, Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/db/prisma";
 import { EmailNotificationService } from "@/lib/services/email-notification-service";
@@ -11,6 +11,13 @@ function addThreeMonths(date: Date) {
   const deadline = new Date(date);
   deadline.setMonth(deadline.getMonth() + 3);
   return deadline;
+}
+
+function isUniqueConstraintError(error: unknown) {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === "P2002"
+  );
 }
 
 const capacityStatuses = new Set<ApplicationStatus>([
@@ -155,6 +162,21 @@ export const AdminApplicationService = {
   },
 
   async updateStatus(id: string, input: AdminStatusInput) {
+    if (input.status === ApplicationStatus.CERTIFIED) {
+      const existingApplication = await prisma.application.findUnique({
+        where: { id },
+        select: { status: true, taskSubmittedAt: true },
+      });
+
+      if (
+        existingApplication?.taskSubmittedAt &&
+        (existingApplication.status === ApplicationStatus.CERTIFYING ||
+          existingApplication.status === ApplicationStatus.CERTIFIED)
+      ) {
+        return this.approveTaskSubmission(id);
+      }
+    }
+
     const now = new Date();
     const activationData =
       input.status === ApplicationStatus.ACTIVE
@@ -196,6 +218,102 @@ export const AdminApplicationService = {
         where: { id },
         data: {
           status: input.status,
+          ...activationData,
+        },
+        select: applicationSelect,
+      });
+
+      return {
+        application: updatedApplication,
+        previousStatus: existingApplication.status,
+      };
+    });
+
+    await EmailNotificationService.notifyApplicationStatusChanged(
+      application.id,
+      previousStatus,
+    );
+
+    return toApplicationResponse(application);
+  },
+
+  async approveTaskSubmission(id: string) {
+    const now = new Date();
+    const { application, previousStatus } = await prisma.$transaction(async (tx) => {
+      const existingApplication = await tx.application.findUniqueOrThrow({
+        where: { id },
+        select: {
+          jobId: true,
+          status: true,
+          taskSubmittedAt: true,
+          applicantUserId: true,
+          lockedPayoutCents: true,
+          job: { select: { payoutType: true } },
+        },
+      });
+
+      if (
+        !existingApplication.taskSubmittedAt ||
+        (existingApplication.status !== ApplicationStatus.CERTIFYING &&
+          existingApplication.status !== ApplicationStatus.CERTIFIED)
+      ) {
+        throw new Error("TASK_SUBMISSION_NOT_PENDING");
+      }
+
+      const shouldPayTask =
+        existingApplication.job.payoutType === PayoutTrigger.TASK_1 &&
+        Boolean(existingApplication.lockedPayoutCents);
+      const nextStatus = shouldPayTask
+        ? ApplicationStatus.PAYOUT_ELIGIBLE
+        : ApplicationStatus.ACTIVE;
+      const activationData =
+        nextStatus === ApplicationStatus.ACTIVE
+          ? {
+              onboardedAt: now,
+              payoutDeadline: addThreeMonths(now),
+            }
+          : {};
+
+      if (
+        nextStatus === ApplicationStatus.PAYOUT_ELIGIBLE &&
+        existingApplication.applicantUserId &&
+        existingApplication.lockedPayoutCents
+      ) {
+        const candidateLedgerEntry = await tx.ledgerEntry
+          .create({
+            data: {
+              userId: existingApplication.applicantUserId,
+              amountCents: existingApplication.lockedPayoutCents,
+              account: LedgerAccount.HOLDING,
+              reason: "JOB_PAYOUT_HOLDING",
+              applicationId: id,
+            },
+            select: { id: true },
+          })
+          .catch((error: unknown) => {
+            if (isUniqueConstraintError(error)) {
+              return null;
+            }
+
+            throw error;
+          });
+
+        if (candidateLedgerEntry) {
+          await tx.user.update({
+            where: { id: existingApplication.applicantUserId },
+            data: {
+              holdingBalanceCents: {
+                increment: existingApplication.lockedPayoutCents,
+              },
+            },
+          });
+        }
+      }
+
+      const updatedApplication = await tx.application.update({
+        where: { id },
+        data: {
+          status: nextStatus,
           ...activationData,
         },
         select: applicationSelect,

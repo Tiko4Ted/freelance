@@ -163,6 +163,15 @@ export const PayoutEligibilityService = {
           }
         }
 
+        if (!application.referral && application.lockedPayoutCents) {
+          await tx.application.update({
+            where: { id: application.id },
+            data: { status: ApplicationStatus.PAYOUT_ELIGIBLE },
+          });
+
+          return "PAYOUT_ELIGIBLE";
+        }
+
         if (!application.referral || !application.lockedPayoutCents) {
           await tx.application.update({
             where: { id: application.id },
