@@ -84,6 +84,7 @@ export default async function HomePage() {
             status: true,
             lockedPayoutCents: true,
             taskSubmittedAt: true,
+            taskSubmissionFileName: true,
             job: {
               select: {
                 title: true,
@@ -108,9 +109,12 @@ export default async function HomePage() {
             const hasTaskAccess = ["ACTIVE", "MATCHED", "CERTIFIED"].includes(
               application.status,
             );
+            const taskAvailable = onboarding.complete && hasTaskAccess;
+            const canSubmit = taskAvailable && !application.taskSubmittedAt;
 
             return {
               id: application.id,
+              applicationId: application.id,
               jobId: application.jobId,
               applyHref: `/jobs/${application.jobId}/apply`,
               jobHref: `/jobs/${application.jobId}`,
@@ -137,6 +141,12 @@ export default async function HomePage() {
                   ? "Per approved task"
                   : "After approved hours",
               skills,
+              canSubmit,
+              isSubmitted: Boolean(application.taskSubmittedAt),
+              submittedFileName: application.taskSubmissionFileName,
+              briefHref: taskAvailable
+                ? `/api/v1/applications/${application.id}/task-material`
+                : undefined,
               isApplied: true,
             };
           }),

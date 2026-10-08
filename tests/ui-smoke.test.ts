@@ -272,6 +272,7 @@ test("dashboard UI renders application and payment state", () => {
       projects: [
         {
           id: "application-1",
+          applicationId: "application-1",
           jobHref: "/jobs/job-1",
           appliedAt: "2026-09-22T00:00:00.000Z",
           title: "AI Reviewer",
@@ -282,6 +283,8 @@ test("dashboard UI renders application and payment state", () => {
           payoutLabel: "$25.00",
           payoutType: "Per approved task",
           skills: ["Research"],
+          canSubmit: true,
+          briefHref: "/api/v1/applications/application-1/task-material",
           isApplied: true,
         },
       ],
@@ -292,6 +295,8 @@ test("dashboard UI renders application and payment state", () => {
   assert.match(markup, /Ready to start/);
   assert.match(markup, /\$25\.00/);
   assert.match(markup, /Applied/);
+  assert.match(markup, /Download materials/);
+  assert.match(markup, /Upload completed work/);
   assert.doesNotMatch(markup, /Task details/);
   assert.doesNotMatch(markup, /href="\/jobs\/job-1\/apply"/);
 });
