@@ -47,6 +47,8 @@ type DashboardProject = {
   isApplied?: boolean;
 };
 
+const MAX_TASK_SUBMISSION_BYTES = 4 * 1024 * 1024;
+
 type FeaturedProject = {
   id: string;
   title: string;
@@ -133,7 +135,7 @@ export function HomeDashboardClient({
   const [expandedProjectId, setExpandedProjectId] = useState<string | null>(
     null,
   );
-  const [taskFileName, setTaskFileName] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [taskNotes, setTaskNotes] = useState("");
   const [submissionStatus, setSubmissionStatus] = useState<
     "idle" | "submitting" | "submitted" | "error"
@@ -153,36 +155,34 @@ export function HomeDashboardClient({
   const toggleProjectActions = (projectId: string) => {
     if (expandedProjectId === projectId) {
       setExpandedProjectId(null);
-      setTaskFileName("");
+      setSelectedFile(null);
       setTaskNotes("");
       setSubmissionStatus("idle");
       return;
     }
 
     setExpandedProjectId(projectId);
-    setTaskFileName("");
+    setSelectedFile(null);
     setTaskNotes("");
     setSubmissionStatus("idle");
   };
 
   const submitProjectWork = async (project: DashboardProject) => {
-    if (!project.canSubmit || !project.applicationId || !taskFileName.trim()) {
+    if (!project.canSubmit || !project.applicationId || !selectedFile) {
       return;
     }
 
     setSubmissionStatus("submitting");
 
     try {
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+      formData.append("notes", taskNotes);
+
       const response = await fetch(
         `/api/v1/applications/${project.applicationId}/task-submission`,
         {
-          body: JSON.stringify({
-            fileName: taskFileName,
-            notes: taskNotes,
-          }),
-          headers: {
-            "Content-Type": "application/json",
-          },
+          body: formData,
           method: "POST",
         },
       );
@@ -195,7 +195,7 @@ export function HomeDashboardClient({
       setSubmittedProjectIds((current) =>
         current.includes(project.id) ? current : [...current, project.id],
       );
-      setTaskFileName("");
+      setSelectedFile(null);
       setTaskNotes("");
       setSubmissionStatus("submitted");
     } catch {
@@ -535,19 +535,40 @@ export function HomeDashboardClient({
 
                         {isExpanded && canUpload ? (
                           <div className="mt-3 grid gap-3 rounded-[12px] border border-brand-sand bg-[#f1ebdf] p-3">
-                            <label className="block">
-                              <span className="text-xs font-semibold text-slate-600">
-                                File name or share link
+                            <label
+                              className="flex cursor-pointer items-center justify-between gap-3 rounded-[10px] border border-dashed border-brand-gold/60 bg-brand-ivory px-3 py-2.5 transition hover:border-brand-gold hover:bg-[var(--color-accent-soft)]"
+                              htmlFor={`task-file-${project.id}`}
+                            >
+                              <span className="flex min-w-0 items-center gap-2">
+                                <Upload className="h-4 w-4 shrink-0 text-brand-gold-strong" />
+                                <span className="min-w-0">
+                                  <span className="block truncate text-sm font-semibold text-brand-ink">
+                                    {selectedFile?.name ?? "Choose completed file"}
+                                  </span>
+                                  <span className="block text-xs text-brand-muted">
+                                    Up to 4 MB
+                                  </span>
+                                </span>
                               </span>
-                              <input
-                                className="mt-1 h-10 w-full rounded-[10px] border border-brand-sand bg-brand-ivory px-3 text-sm text-brand-ink outline-none transition placeholder:text-slate-400 focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
-                                onChange={(event) =>
-                                  setTaskFileName(event.target.value)
-                                }
-                                placeholder="completed-work.pdf"
-                                value={taskFileName}
-                              />
+                              <span className="shrink-0 text-xs font-semibold text-brand-gold-strong">
+                                Browse
+                              </span>
                             </label>
+                            <input
+                              accept=".pdf,.doc,.docx,.txt,.csv,.xls,.xlsx,.zip,.png,.jpg,.jpeg"
+                              className="sr-only"
+                              id={`task-file-${project.id}`}
+                              onChange={(event) =>
+                                setSelectedFile(event.target.files?.[0] ?? null)
+                              }
+                              type="file"
+                            />
+                            {selectedFile &&
+                            selectedFile.size > MAX_TASK_SUBMISSION_BYTES ? (
+                              <p className="text-xs font-semibold text-red-600">
+                                This file is larger than the 4 MB upload limit.
+                              </p>
+                            ) : null}
                             <label className="block">
                               <span className="text-xs font-semibold text-slate-600">
                                 Notes for reviewers
@@ -565,7 +586,8 @@ export function HomeDashboardClient({
                               <button
                                 className="inline-flex h-10 items-center gap-1.5 rounded-[10px] bg-brand-ink px-3 text-xs font-semibold text-brand-ivory transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold disabled:cursor-not-allowed disabled:opacity-50"
                                 disabled={
-                                  !taskFileName.trim() ||
+                                  !selectedFile ||
+                                  selectedFile.size > MAX_TASK_SUBMISSION_BYTES ||
                                   submissionStatus === "submitting"
                                 }
                                 onClick={() => {

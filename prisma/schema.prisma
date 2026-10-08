@@ -221,6 +221,8 @@ model Application {
   hoursLogged               Float             @default(0)
   tasksCompleted            Int               @default(0)
   taskSubmissionFileName    String?
+  taskSubmissionFileContent Bytes?
+  taskSubmissionMimeType    String?
   taskSubmissionNotes       String?
   taskSubmittedAt           DateTime?
   onboardedAt               DateTime?
