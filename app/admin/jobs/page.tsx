@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 
 import { JobCreateForm } from "@/components/admin/job-create-form";
 import { HomeProjectToggle } from "@/components/admin/home-project-toggle";
+import { PortalSidebar } from "@/components/portal-sidebar";
 import { requireRole } from "@/lib/auth/session";
 import { AdminJobService } from "@/lib/services/admin-job-service";
 
@@ -19,7 +20,9 @@ export default async function AdminJobsPage() {
   const jobs = await AdminJobService.listJobs();
 
   return (
-    <main className="min-h-screen bg-brand-canvas text-brand-ink">
+    <>
+      <PortalSidebar activeTab="home" isAuthenticated userName="Admin" />
+      <main className="min-h-screen bg-brand-canvas pt-[72px] text-brand-ink">
       <section className="border-b border-brand-sand bg-brand-ivory">
         <div className="mx-auto max-w-6xl px-6 py-8 md:px-8">
           <Link
@@ -68,6 +71,7 @@ export default async function AdminJobsPage() {
           </div>
         </aside>
       </section>
-    </main>
+      </main>
+    </>
   );
 }

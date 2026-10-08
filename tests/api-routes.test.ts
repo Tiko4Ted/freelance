@@ -201,7 +201,9 @@ test("public jobs API returns the service payload", async () => {
   ] as Awaited<ReturnType<typeof JobService.listActiveJobs>>;
 
   try {
-    const response = await getJobs();
+    const response = await getJobs(
+      new Request("https://example.test/api/v1/jobs"),
+    );
     assert.equal(response.status, 200);
     assert.deepEqual(await response.json(), {
       jobs: [{ id: "job-1", title: "AI Reviewer" }],

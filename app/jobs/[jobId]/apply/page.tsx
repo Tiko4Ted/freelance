@@ -2,10 +2,10 @@ import { notFound, redirect } from "next/navigation";
 
 import { auth } from "@/auth";
 import { ApplicationForm } from "@/components/application-form";
-import { BrandLogo } from "@/components/brand-logo";
 import { buildJobDetailCopy } from "@/lib/job-detail-copy";
 import { JobService } from "@/lib/services/job-service";
 import { OnboardingService } from "@/lib/services/onboarding-service";
+import { PortalSidebar } from "@/components/portal-sidebar";
 
 export const dynamic = "force-dynamic";
 
@@ -106,16 +106,15 @@ export default async function ApplyPage({
   );
 
   return (
-    <main className="min-h-screen bg-brand-canvas text-brand-ink">
-      <div className="mx-auto grid max-w-[1050px] gap-10 px-5 pb-16 pt-6 sm:px-8 lg:grid-cols-[minmax(0,1fr)_24.25rem] lg:gap-11 lg:px-0">
+    <>
+      <PortalSidebar
+        activeTab="apply"
+        isAuthenticated
+        userName={session.user.name ?? "Teddy"}
+      />
+      <main className="min-h-screen bg-brand-canvas pt-[72px] text-brand-ink">
+        <div className="mx-auto grid max-w-[1050px] gap-10 px-5 pb-16 pt-6 sm:px-8 lg:grid-cols-[minmax(0,1fr)_24.25rem] lg:gap-11 lg:px-0">
         <article className="min-w-0">
-          <BrandLogo
-            imageClassName="h-12 w-12 shadow-sm"
-            nameClassName="text-[24px] font-black leading-none tracking-normal text-brand-ink"
-            showName
-            size={48}
-          />
-
           <header className="mt-7">
             <h1 className="text-[30px] font-semibold leading-tight tracking-normal text-brand-ink">
               {job.title}
@@ -206,7 +205,8 @@ export default async function ApplyPage({
             jobId={job.id}
           />
         </aside>
-      </div>
-    </main>
+        </div>
+      </main>
+    </>
   );
 }

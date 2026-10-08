@@ -22,7 +22,7 @@ export default async function ReferralPage() {
         isAuthenticated={Boolean(session?.user?.id)}
         userName={userName}
       />
-      <main className="flex-1 overflow-y-auto px-6 py-8 md:px-12 md:py-10">
+      <main className="flex-1 overflow-y-auto px-6 pb-8 pt-24 md:px-12 md:pb-10 md:pt-28">
         <div className="mx-auto max-w-[1040px]">
           <ReferralClient
             joinedCount={referral.joinedCount}

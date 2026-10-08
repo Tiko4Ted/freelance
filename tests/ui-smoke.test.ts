@@ -155,7 +155,7 @@ test("payment onboarding displays payout options in reverse order", () => {
   assert.deepEqual(positions, [...positions].sort((left, right) => left - right));
 });
 
-test("authenticated portal sidebar renders a logout control", () => {
+test("authenticated portal header renders a logout control", () => {
   const markup = renderToStaticMarkup(
     createElement(PortalSidebar, {
       activeTab: "home",
@@ -168,8 +168,8 @@ test("authenticated portal sidebar renders a logout control", () => {
   assert.match(markup, />Log out</);
   assert.match(markup, /aria-label="Portal navigation"/);
   assert.match(markup, /aria-current="page"/);
-  assert.match(markup, /fixed left-0 top-0 z-\[1\]/);
-  assert.match(markup, /text-brand-gold-light/);
+  assert.match(markup, /fixed inset-x-0 top-0 z-40/);
+  assert.match(markup, /text-brand-ink/);
   assert.doesNotMatch(markup, /text-brand-gold-light\/70/);
   assert.doesNotMatch(markup, /Informational notification dot/);
 });
@@ -272,7 +272,6 @@ test("dashboard UI renders application and payment state", () => {
       projects: [
         {
           id: "application-1",
-          applicationId: "application-1",
           jobHref: "/jobs/job-1",
           appliedAt: "2026-09-22T00:00:00.000Z",
           title: "AI Reviewer",
@@ -283,10 +282,7 @@ test("dashboard UI renders application and payment state", () => {
           payoutLabel: "$25.00",
           payoutType: "Per approved task",
           skills: ["Research"],
-          canSubmit: true,
-          isSubmitted: false,
-          briefHref: "/api/v1/applications/application-1/task-material",
-          taskBrief: [],
+          isApplied: true,
         },
       ],
     }),
@@ -295,6 +291,9 @@ test("dashboard UI renders application and payment state", () => {
   assert.match(markup, /AI Reviewer/);
   assert.match(markup, /Ready to start/);
   assert.match(markup, /\$25\.00/);
+  assert.match(markup, /Applied/);
+  assert.doesNotMatch(markup, /Task details/);
+  assert.doesNotMatch(markup, /href="\/jobs\/job-1\/apply"/);
 });
 
 test("dashboard removes onboarding prompts after review approval", () => {
@@ -315,7 +314,7 @@ test("dashboard removes onboarding prompts after review approval", () => {
   assert.doesNotMatch(markup, /PENDING TASKS/);
 });
 
-test("dashboard keeps task controls locked during onboarding review", () => {
+test("dashboard shows applied projects without the task workspace during onboarding review", () => {
   const markup = renderToStaticMarkup(
     createElement(HomeDashboardClient, {
       userName: "Ada",
@@ -326,7 +325,6 @@ test("dashboard keeps task controls locked during onboarding review", () => {
       projects: [
         {
           id: "application-1",
-          applicationId: "application-1",
           jobHref: "/jobs/job-1",
           appliedAt: "2026-09-22T00:00:00.000Z",
           title: "AI Reviewer",
@@ -337,17 +335,16 @@ test("dashboard keeps task controls locked during onboarding review", () => {
           payoutLabel: "$25.00",
           payoutType: "Per approved task",
           skills: ["Research"],
-          canSubmit: false,
-          isSubmitted: false,
-          taskBrief: [],
+          isApplied: true,
         },
       ],
     }),
   );
 
   assert.match(markup, /Onboarding review pending/);
-  assert.match(markup, /cursor-not-allowed/);
-  assert.doesNotMatch(markup, /Download brief/);
+  assert.match(markup, /Applied/);
+  assert.doesNotMatch(markup, /Task details/);
+  assert.doesNotMatch(markup, /Project details/);
 });
 
 test("empty dashboard does not render demo projects or task workspace", () => {
@@ -434,6 +431,30 @@ test("dashboard renders flagged database projects as summary cards", () => {
   assert.match(markup, /Try Versus/);
   assert.match(markup, /href="\/apply"/);
   assert.doesNotMatch(markup, /Start task/);
+});
+
+test("dashboard marks an already-applied featured project without a link", () => {
+  const markup = renderToStaticMarkup(
+    createElement(HomeDashboardClient, {
+      paymentSummary: {
+        formattedAwaitingPayment: "$0.00",
+        formattedHoursWorked: "0",
+      },
+      featuredProjects: [
+        {
+          id: "job-applied",
+          title: "Applied Review",
+          description: "Review model output.",
+          companyName: "Trinity-AI",
+          isApplied: true,
+          skills: [],
+        },
+      ],
+    }),
+  );
+
+  assert.match(markup, /Applied/);
+  assert.doesNotMatch(markup, /href="\/jobs\/job-applied"/);
 });
 
 test("admin application controls render status and progress actions", () => {
