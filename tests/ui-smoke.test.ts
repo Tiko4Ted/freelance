@@ -297,6 +297,8 @@ test("dashboard UI renders application and payment state", () => {
   assert.match(markup, /Applied/);
   assert.match(markup, /Download materials/);
   assert.match(markup, /Upload completed work/);
+  assert.match(markup, /for="task-file-application-1"/);
+  assert.doesNotMatch(markup, /Hide upload/);
   assert.doesNotMatch(markup, /Task details/);
   assert.doesNotMatch(markup, /href="\/jobs\/job-1\/apply"/);
 });

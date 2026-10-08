@@ -152,21 +152,6 @@ export function HomeDashboardClient({
   ]);
   const [supportTopic, setSupportTopic] = useState<SupportTopic>();
 
-  const toggleProjectActions = (projectId: string) => {
-    if (expandedProjectId === projectId) {
-      setExpandedProjectId(null);
-      setSelectedFile(null);
-      setTaskNotes("");
-      setSubmissionStatus("idle");
-      return;
-    }
-
-    setExpandedProjectId(projectId);
-    setSelectedFile(null);
-    setTaskNotes("");
-    setSubmissionStatus("idle");
-  };
-
   const submitProjectWork = async (project: DashboardProject) => {
     if (!project.canSubmit || !project.applicationId || !selectedFile) {
       return;
@@ -518,51 +503,59 @@ export function HomeDashboardClient({
                               Materials unlock after project approval.
                             </span>
                           )}
-                          <button
-                            className="inline-flex h-9 items-center gap-1.5 rounded-[10px] border border-brand-sand bg-brand-ivory px-3 text-xs font-semibold text-brand-ink transition hover:border-brand-gold/60 hover:bg-[var(--color-accent-soft)] focus:outline-none focus:ring-2 focus:ring-brand-gold disabled:cursor-not-allowed disabled:opacity-50"
-                            disabled={!canUpload}
-                            onClick={() => toggleProjectActions(project.id)}
-                            type="button"
-                          >
-                            <Upload className="h-3.5 w-3.5" />
-                            {hasSubmitted
-                              ? "Submitted"
-                              : isExpanded
-                                ? "Hide upload"
+                          {canUpload ? (
+                            <label
+                              className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-[10px] border border-brand-sand bg-brand-ivory px-3 text-xs font-semibold text-brand-ink transition hover:border-brand-gold/60 hover:bg-[var(--color-accent-soft)] focus-within:outline-none focus-within:ring-2 focus-within:ring-brand-gold"
+                              htmlFor={`task-file-${project.id}`}
+                            >
+                              <Upload className="h-3.5 w-3.5" />
+                              {isExpanded
+                                ? "Choose another file"
                                 : "Upload completed work"}
-                          </button>
+                            </label>
+                          ) : (
+                            <button
+                              className="inline-flex h-9 items-center gap-1.5 rounded-[10px] border border-brand-sand bg-brand-ivory px-3 text-xs font-semibold text-brand-ink transition hover:border-brand-gold/60 hover:bg-[var(--color-accent-soft)] focus:outline-none focus:ring-2 focus:ring-brand-gold disabled:cursor-not-allowed disabled:opacity-50"
+                              disabled
+                              type="button"
+                            >
+                              <Upload className="h-3.5 w-3.5" />
+                              {hasSubmitted ? "Submitted" : "Upload completed work"}
+                            </button>
+                          )}
+                          <input
+                            accept=".pdf,.doc,.docx,.txt,.csv,.xls,.xlsx,.zip,.png,.jpg,.jpeg"
+                            className="sr-only"
+                            id={`task-file-${project.id}`}
+                            onChange={(event) => {
+                              const nextFile = event.target.files?.[0] ?? null;
+                              setSelectedFile(nextFile);
+                              setTaskNotes("");
+                              setSubmissionStatus("idle");
+                              setExpandedProjectId(nextFile ? project.id : null);
+                            }}
+                            type="file"
+                          />
                         </div>
 
                         {isExpanded && canUpload ? (
                           <div className="mt-3 grid gap-3 rounded-[12px] border border-brand-sand bg-[#f1ebdf] p-3">
-                            <label
-                              className="flex cursor-pointer items-center justify-between gap-3 rounded-[10px] border border-dashed border-brand-gold/60 bg-brand-ivory px-3 py-2.5 transition hover:border-brand-gold hover:bg-[var(--color-accent-soft)]"
-                              htmlFor={`task-file-${project.id}`}
-                            >
+                            <div className="flex items-center gap-2 rounded-[10px] border border-brand-gold/30 bg-brand-ivory px-3 py-2.5">
                               <span className="flex min-w-0 items-center gap-2">
                                 <Upload className="h-4 w-4 shrink-0 text-brand-gold-strong" />
                                 <span className="min-w-0">
+                                  <span className="block text-xs font-semibold text-brand-muted">
+                                    Selected file
+                                  </span>
                                   <span className="block truncate text-sm font-semibold text-brand-ink">
-                                    {selectedFile?.name ?? "Choose completed file"}
+                                    {selectedFile?.name}
                                   </span>
                                   <span className="block text-xs text-brand-muted">
                                     Up to 4 MB
                                   </span>
                                 </span>
                               </span>
-                              <span className="shrink-0 text-xs font-semibold text-brand-gold-strong">
-                                Browse
-                              </span>
-                            </label>
-                            <input
-                              accept=".pdf,.doc,.docx,.txt,.csv,.xls,.xlsx,.zip,.png,.jpg,.jpeg"
-                              className="sr-only"
-                              id={`task-file-${project.id}`}
-                              onChange={(event) =>
-                                setSelectedFile(event.target.files?.[0] ?? null)
-                              }
-                              type="file"
-                            />
+                            </div>
                             {selectedFile &&
                             selectedFile.size > MAX_TASK_SUBMISSION_BYTES ? (
                               <p className="text-xs font-semibold text-red-600">
