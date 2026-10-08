@@ -3,7 +3,10 @@ import { ZodError } from "zod";
 
 import { requireSession } from "@/lib/auth/session";
 import { ApplicationService } from "@/lib/services/application-service";
-import { taskSubmissionSchema } from "@/lib/validation/task-submission";
+import {
+  MAX_TASK_SUBMISSION_BYTES,
+  taskSubmissionSchema,
+} from "@/lib/validation/task-submission";
 
 type RouteContext = {
   params: Promise<{
@@ -15,10 +18,34 @@ export async function POST(request: Request, context: RouteContext) {
   try {
     const session = await requireSession();
     const { id } = await context.params;
-    const body: unknown = await request.json();
-    const input = taskSubmissionSchema.parse(body);
+    const formData = await request.formData();
+    const file = formData.get("file");
 
-    await ApplicationService.submitTask(id, session.user.id, input);
+    if (!(file instanceof File)) {
+      return NextResponse.json(
+        { error: "A completed work file is required" },
+        { status: 400 },
+      );
+    }
+
+    if (file.size === 0 || file.size > MAX_TASK_SUBMISSION_BYTES) {
+      return NextResponse.json(
+        { error: "The completed work file must be between 1 byte and 4 MB" },
+        { status: 400 },
+      );
+    }
+
+    const rawNotes = formData.get("notes");
+    const input = taskSubmissionSchema.parse({
+      fileName: file.name.replace(/[\\/\0]/g, "_").trim(),
+      notes: typeof rawNotes === "string" ? rawNotes : "",
+    });
+    const fileContent = Buffer.from(await file.arrayBuffer());
+
+    await ApplicationService.submitTask(id, session.user.id, input, {
+      content: fileContent,
+      mimeType: file.type || "application/octet-stream",
+    });
 
     return NextResponse.json({
       application: {

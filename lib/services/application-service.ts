@@ -9,6 +9,11 @@ import { buildTaskAssignment } from "@/lib/task-assignment";
 import type { ApplicationInput } from "@/lib/validation/application";
 import type { TaskSubmissionInput } from "@/lib/validation/task-submission";
 
+type TaskSubmissionFile = {
+  content: Buffer;
+  mimeType: string;
+};
+
 type ReferralCookie = {
   jobId: string;
   referralCode: string;
@@ -358,6 +363,7 @@ export const ApplicationService = {
     applicationId: string,
     applicantUserId: string,
     input: TaskSubmissionInput,
+    file?: TaskSubmissionFile,
   ) {
     const onboarding = await OnboardingService.getStatus(applicantUserId);
     if (!onboarding.complete) {
@@ -402,6 +408,8 @@ export const ApplicationService = {
       data: {
         status: ApplicationStatus.CERTIFYING,
         taskSubmissionFileName: input.fileName.trim(),
+        taskSubmissionFileContent: file?.content,
+        taskSubmissionMimeType: file?.mimeType,
         taskSubmissionNotes: input.notes.trim(),
         taskSubmittedAt: new Date(),
         tasksCompleted: 1,
