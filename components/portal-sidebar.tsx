@@ -174,14 +174,6 @@ export function PortalSidebar({
       </header>
 
       <aside className="fixed bottom-0 left-0 top-[72px] z-30 hidden w-64 border-r border-brand-sand/80 bg-brand-ivory/92 px-4 py-6 text-brand-ink shadow-[8px_0_28px_rgba(32,38,30,0.04)] backdrop-blur-md lg:block">
-        <div className="px-2 pb-4">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-gold-strong">
-            Workspace
-          </p>
-          <p className="mt-1 text-xs leading-5 text-brand-muted">
-            Move through your Trinity-AI account.
-          </p>
-        </div>
         <PortalNav activeTab={activeTab} />
       </aside>
 
@@ -197,14 +189,6 @@ export function PortalSidebar({
             className="fixed bottom-0 left-0 top-[72px] z-50 w-[min(18rem,88vw)] border-r border-brand-sand bg-brand-ivory px-4 py-6 text-brand-ink shadow-[16px_0_36px_rgba(32,38,30,0.16)] lg:hidden"
             id="portal-mobile-navigation"
           >
-            <div className="px-2 pb-4">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-brand-gold-strong">
-                Workspace
-              </p>
-              <p className="mt-1 text-xs leading-5 text-brand-muted">
-                Move through your Trinity-AI account.
-              </p>
-            </div>
             <PortalNav
               activeTab={activeTab}
               onNavigate={() => setMenuOpen(false)}
