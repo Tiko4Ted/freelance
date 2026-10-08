@@ -54,7 +54,7 @@ export default async function AboutUsPage() {
         isAuthenticated={Boolean(session?.user?.id)}
         userName={userName}
       />
-      <main className="flex-1 overflow-y-auto pt-[72px]">
+      <main className="flex-1 overflow-y-auto pt-[72px] lg:pl-64">
         <article className="mx-auto max-w-[1120px] px-5 py-8 md:px-10 md:py-12">
           <div className="mb-8">
             <Link

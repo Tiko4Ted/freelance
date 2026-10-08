@@ -50,15 +50,13 @@ export default async function ApplyPage({ searchParams }: ApplyPageProps) {
 
   return (
     <div className="flex min-h-screen bg-brand-canvas text-brand-ink">
-      {/* Side Menu */}
       <PortalSidebar
         activeTab="apply"
         isAuthenticated={Boolean(session?.user?.id)}
         userName={userName}
       />
 
-      {/* Main Content Area */}
-      <main className="flex-1 overflow-x-hidden pt-[72px]">
+      <main className="flex-1 overflow-x-hidden pt-[72px] lg:pl-64">
         <JobBoard
           headerCopy={getHeaderCopy(referralContext?.firstName)}
           hasMore={jobPage.hasMore}

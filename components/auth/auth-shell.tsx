@@ -20,7 +20,7 @@ export function AuthShell({
   return (
     <>
       <PortalSidebar activeTab="home" userName="Welcome" />
-      <main className="min-h-[100dvh] bg-brand-canvas pt-[72px] text-brand-ink">
+      <main className="min-h-[100dvh] bg-brand-canvas pt-[72px] text-brand-ink lg:pl-64">
       <div className="grid min-h-[100dvh] lg:grid-cols-[minmax(320px,0.86fr)_minmax(440px,1fr)]">
         <aside className="relative hidden overflow-hidden bg-brand-ink px-10 py-10 text-brand-ivory lg:flex lg:flex-col lg:justify-between xl:px-16">
           <div className="absolute -right-24 top-16 h-72 w-72 rounded-full border border-brand-gold-light/20" />

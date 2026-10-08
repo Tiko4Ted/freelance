@@ -86,7 +86,7 @@ export default async function AptitudePage({
         isAuthenticated
         userName={session.user.name ?? "Teddy"}
       />
-      <main className="min-h-screen bg-brand-canvas px-5 pb-6 pt-[96px] text-brand-ink sm:px-8">
+      <main className="min-h-screen bg-brand-canvas px-5 pb-6 pt-[96px] text-brand-ink sm:px-8 lg:pl-64">
         <div className="mx-auto max-w-[960px]">
         <header className="mt-7 border-b border-brand-sand pb-6">
           <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-brand-gold-strong">

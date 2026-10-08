@@ -22,7 +22,7 @@ export default async function OnboardingPage() {
         isAuthenticated={Boolean(session?.user?.id)}
         userName={userName}
       />
-    <main className="relative flex-1 overflow-y-auto px-4 pb-8 pt-24 sm:px-6 md:px-12 md:pb-10 md:pt-28">
+    <main className="relative flex-1 overflow-y-auto px-4 pb-8 pt-24 sm:px-6 md:px-12 md:pb-10 md:pt-28 lg:pl-64">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(circle_at_top,_rgba(200,164,93,0.12),_transparent_68%)]" />
       <div className="relative mx-auto max-w-[880px]">
         <OnboardingFlowClient

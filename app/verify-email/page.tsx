@@ -30,7 +30,7 @@ export default async function VerifyEmailPage({
   return (
     <>
       <PortalSidebar activeTab="home" userName="Welcome" />
-      <main className="min-h-screen bg-[radial-gradient(circle_at_18%_22%,rgba(235,204,144,0.28),transparent_30%),linear-gradient(135deg,#f7f3ea,#fffdf8)] px-6 pb-10 pt-[112px] text-brand-ink">
+      <main className="min-h-screen bg-[radial-gradient(circle_at_18%_22%,rgba(235,204,144,0.28),transparent_30%),linear-gradient(135deg,#f7f3ea,#fffdf8)] px-6 pb-10 pt-[112px] text-brand-ink lg:pl-64">
       <section className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-md flex-col justify-center">
         <Link aria-label="Trinity-AI home" className="mx-auto" href="/">
           <BrandLogo
