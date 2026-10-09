@@ -83,11 +83,11 @@ function JobCard({
         </div>
 
         <div className="mt-auto pt-3 text-sm">
-          {job.formattedHourlyPay ? (
+          {job.formattedPay ? (
             <p className="text-brand-muted">
               Pay:{" "}
               <span className="font-semibold text-brand-ink">
-                {job.formattedHourlyPay}
+                {job.formattedPay}
               </span>
             </p>
           ) : null}

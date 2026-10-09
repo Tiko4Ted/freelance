@@ -406,7 +406,7 @@ const baseDemoJobs: DemoJob[] = [
     title: "AI Response Quality Evaluator",
     description:
       "Review AI-generated answers against clear rubrics for accuracy, helpfulness, instruction-following, and safety, then record concise evidence-based feedback.",
-    payoutAmountCents: 15000,
+    payoutAmountCents: 5000,
     payoutType: PayoutTrigger.TASK_1,
     openings: 40,
     hourlyMinCents: 1500,
@@ -427,7 +427,7 @@ const baseDemoJobs: DemoJob[] = [
     title: "AI Conversation Quality Evaluator",
     description:
       "Review short user and AI conversations, identify where the model loses context or produces an unsafe or unhelpful reply, and record structured quality judgments.",
-    payoutAmountCents: 15000,
+    payoutAmountCents: 7500,
     payoutType: PayoutTrigger.TASK_1,
     openings: 35,
     hourlyMinCents: 1500,
@@ -448,7 +448,7 @@ const baseDemoJobs: DemoJob[] = [
     title: "AI Search Relevance Evaluator",
     description:
       "Compare AI search results and summaries with user intent, rank relevance and usefulness, flag unsupported claims, and explain each decision using project guidelines.",
-    payoutAmountCents: 15000,
+    payoutAmountCents: 10000,
     payoutType: PayoutTrigger.TASK_1,
     openings: 30,
     hourlyMinCents: 1500,

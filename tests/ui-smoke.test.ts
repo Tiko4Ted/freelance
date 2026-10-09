@@ -204,6 +204,7 @@ test("public jobs UI renders a referral-preserving application link", () => {
           openings: 2,
           hourlyMinCents: null,
           hourlyMaxCents: null,
+          formattedPay: "$300 per task",
           formattedHourlyPay: null,
           formattedPayout: "$300",
           payoutTriggerLabel: "after 1 completed task",

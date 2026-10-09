@@ -26,6 +26,15 @@ function formatCurrency(cents: number | null | undefined) {
   }).format((cents ?? 0) / 100);
 }
 
+function formatProjectPayout(
+  cents: number | null | undefined,
+  payoutType: string,
+) {
+  const payout = formatCurrency(cents);
+
+  return payoutType === "TASK_1" ? `${payout} per task` : payout;
+}
+
 function projectStatusLabel(status: string, submittedAt?: Date | null) {
   if (submittedAt) {
     return "Submitted for review";
@@ -132,9 +141,10 @@ export default async function HomePage() {
                       application.status,
                       application.taskSubmittedAt,
                     ),
-              payoutLabel: formatCurrency(
+              payoutLabel: formatProjectPayout(
                 application.lockedPayoutCents ??
                   application.job.payoutAmountCents,
+                application.job.payoutType,
               ),
               payoutType:
                 application.job.payoutType === "TASK_1"
@@ -174,6 +184,7 @@ export default async function HomePage() {
     title: project.title,
     description: project.description,
     companyName: project.companyName,
+    formattedPay: project.formattedPay ?? project.formattedPayout,
     isApplied: appliedJobIds.has(project.id),
     skills: project.skills,
   }));
