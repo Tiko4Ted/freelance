@@ -196,8 +196,8 @@ export function WithdrawalForm({
   }
 
   return (
-    <div className="space-y-6">
-      <form className="space-y-3" onSubmit={requestTransfer}>
+    <div className="space-y-4">
+      <form className="space-y-2" onSubmit={requestTransfer}>
         <div>
           <label
             className="text-sm font-medium text-brand-ink"
@@ -206,7 +206,7 @@ export function WithdrawalForm({
             Transfer amount
           </label>
           <input
-            className="mt-2 h-10 w-full rounded-lg border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold disabled:cursor-not-allowed disabled:bg-brand-sand/50"
+            className="mt-1 h-9 w-full rounded-lg border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold disabled:cursor-not-allowed disabled:bg-brand-sand/50"
             disabled={state.status === "submitting"}
             id="transferAmountDollars"
             min={1}
@@ -218,7 +218,7 @@ export function WithdrawalForm({
           />
         </div>
         <button
-          className="inline-flex h-10 w-full items-center justify-center rounded-lg border border-brand-sand bg-brand-ivory px-4 text-sm font-semibold text-brand-ink transition hover:border-brand-gold hover:bg-[#f2e8d7] hover:text-brand-gold-strong disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex h-9 w-full items-center justify-center rounded-lg border border-brand-sand bg-brand-ivory px-4 text-sm font-semibold text-brand-ink transition hover:border-brand-gold hover:bg-[#f2e8d7] hover:text-brand-gold-strong disabled:cursor-not-allowed disabled:opacity-50"
           disabled={state.status === "submitting"}
           type="submit"
         >
@@ -226,13 +226,13 @@ export function WithdrawalForm({
         </button>
       </form>
 
-      <form className="space-y-3" onSubmit={requestWithdrawal}>
+      <form className="space-y-2" onSubmit={requestWithdrawal}>
         <div>
           <label className="text-sm font-medium text-brand-ink" htmlFor="amountDollars">
             Withdraw from Funding
           </label>
           <input
-            className="mt-2 h-10 w-full rounded-lg border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold disabled:cursor-not-allowed disabled:bg-brand-sand/50"
+            className="mt-1 h-9 w-full rounded-lg border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold disabled:cursor-not-allowed disabled:bg-brand-sand/50"
             disabled={fundingBalanceCents < 1000 || state.status === "submitting"}
             id="amountDollars"
             max={Math.floor(fundingBalanceCents / 100)}
@@ -245,7 +245,7 @@ export function WithdrawalForm({
           />
         </div>
         <select
-          className="h-10 w-full rounded-lg border border-brand-sand bg-brand-ivory px-3 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
+          className="h-9 w-full rounded-lg border border-brand-sand bg-brand-ivory px-3 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
           onChange={(event) => setPayoutMethod(event.target.value as PayoutMethod)}
           value={payoutMethod}
         >
@@ -256,14 +256,14 @@ export function WithdrawalForm({
           ))}
         </select>
         <input
-          className="h-10 w-full rounded-lg border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold disabled:cursor-not-allowed disabled:bg-brand-sand/50"
+          className="h-9 w-full rounded-lg border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold disabled:cursor-not-allowed disabled:bg-brand-sand/50"
           disabled={fundingBalanceCents < 1000 || state.status === "submitting"}
           name="destinationDetails"
           placeholder={destinationPlaceholders[payoutMethod]}
           required
         />
         <button
-          className="inline-flex h-10 w-full items-center justify-center rounded-lg bg-brand-ink px-4 text-sm font-semibold text-brand-ivory transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold/40 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex h-9 w-full items-center justify-center rounded-lg bg-brand-ink px-4 text-sm font-semibold text-brand-ivory transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold/40 disabled:cursor-not-allowed disabled:opacity-50"
           disabled={fundingBalanceCents < 1000 || state.status === "submitting"}
           type="submit"
         >
