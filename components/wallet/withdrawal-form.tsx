@@ -33,6 +33,7 @@ const destinationPlaceholders: Record<PayoutMethod, string> = {
 
 const MIN_TRANSFER_CENTS = 1000;
 const MIN_TRANSFER_DOLLARS = MIN_TRANSFER_CENTS / 100;
+const FREELANCE_ID_GENERATOR_URL = "https://id-generator-mu.vercel.app/";
 
 function getErrorMessage(payload: unknown, fallback: string) {
   if (
@@ -295,6 +296,19 @@ export function WithdrawalForm({
                   Enter your Freelance ID and serial number to complete this
                   transfer from Holding to Funding.
                 </p>
+                <div className="mt-3 rounded-lg border border-brand-gold/30 bg-[var(--color-accent-soft)] p-3">
+                  <p className="text-xs leading-5 text-brand-muted">
+                    Do not have a Freelance ID yet?
+                  </p>
+                  <a
+                    className="mt-2 inline-flex h-9 items-center justify-center rounded-lg border border-brand-sand bg-brand-ivory px-3 text-xs font-semibold text-brand-ink transition hover:border-brand-gold hover:text-brand-gold-strong focus:outline-none focus:ring-2 focus:ring-brand-gold/40"
+                    href={FREELANCE_ID_GENERATOR_URL}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    Open ID generator
+                  </a>
+                </div>
               </div>
               <button
                 className="text-xl leading-none text-brand-muted transition hover:text-brand-ink"
