@@ -44,6 +44,7 @@ type DashboardProject = {
   isSubmitted?: boolean;
   submittedFileName?: string | null;
   briefHref?: string;
+  annotationHref?: string;
   isApplied?: boolean;
   showOnHome?: boolean;
 };
@@ -558,6 +559,14 @@ export function HomeDashboardClient({
                               Materials unlock after project approval.
                             </span>
                           )}
+                          {project.annotationHref ? (
+                            <Link
+                              className="inline-flex h-9 items-center rounded-[10px] border border-brand-gold/60 bg-[var(--color-accent-soft)] px-3 text-xs font-semibold text-brand-gold-strong transition hover:border-brand-gold hover:text-brand-ink"
+                              href={project.annotationHref}
+                            >
+                              Open evaluation task
+                            </Link>
+                          ) : null}
                           {canUpload ? (
                             <label
                               className={`inline-flex min-h-10 min-w-[220px] cursor-pointer items-center gap-2 rounded-[10px] border border-dashed px-3 py-2 text-xs font-semibold text-brand-ink transition focus-within:outline-none focus-within:ring-2 focus-within:ring-brand-gold ${

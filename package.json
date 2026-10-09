@@ -13,6 +13,7 @@
     "db:migrate:deploy": "prisma migrate deploy",
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
+    "db:seed:annotations": "tsx prisma/seed-annotation-workflow.ts",
     "db:validate": "prisma validate",
     "jobs:payout-eligibility": "tsx workers/payout-eligibility.ts",
     "jobs:withdrawals": "tsx workers/withdrawals.ts"

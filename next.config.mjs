@@ -8,6 +8,15 @@ const nextConfig = {
   turbopack: {
     root: projectRoot,
   },
+  async redirects() {
+    return [
+      {
+        source: "/app",
+        destination: "/home",
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

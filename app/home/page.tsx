@@ -105,6 +105,7 @@ export default async function HomePage() {
                 payoutType: true,
                 showOnHome: true,
                 isAiTask: true,
+                annotationProject: { select: { id: true } },
                 skills: {
                   select: {
                     label: true,
@@ -154,6 +155,9 @@ export default async function HomePage() {
               submittedFileName: application.taskSubmissionFileName,
               briefHref: taskAvailable
                 ? `/api/v1/applications/${application.id}/task-material`
+                : undefined,
+              annotationHref: taskAvailable && application.job.annotationProject
+                ? `/home/projects/${application.jobId}/task`
                 : undefined,
               isApplied: true,
               showOnHome: application.job.showOnHome,
