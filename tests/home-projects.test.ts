@@ -39,7 +39,8 @@ test("admin job input accepts home placement and participant capacity", () => {
   const parsed = adminCreateJobSchema.parse({
     title: "AI Quality Review",
     description: "Review AI responses for accuracy, clarity, and policy alignment.",
-    payoutAmountCents: 30000,
+    payoutAmountCents: 5000,
+    payoutType: "TASK_1",
     openings: 4,
     showOnHome: true,
   });
@@ -47,6 +48,20 @@ test("admin job input accepts home placement and participant capacity", () => {
   assert.equal(parsed.showOnHome, true);
   assert.equal(parsed.openings, 4);
   assert.equal(parsed.isAiTask, true);
+});
+
+test("admin job input rejects hourly home projects outside the task payout rule", () => {
+  assert.throws(
+    () =>
+      adminCreateJobSchema.parse({
+        title: "Hourly Home Project",
+        description: "This hourly project should not appear in home projects.",
+        payoutAmountCents: 7500,
+        payoutType: "HOURS_10",
+        showOnHome: true,
+      }),
+    /per-task payout eligibility/i,
+  );
 });
 
 test("admin job input rejects projects outside the AI task structure", () => {

@@ -13,10 +13,10 @@ import {
 
 export const dynamic = "force-dynamic";
 
-function formatHoursWorked(hours: number) {
+function formatTasksCompleted(tasks: number) {
   return new Intl.NumberFormat("en-US", {
-    maximumFractionDigits: 2,
-  }).format(hours);
+    maximumFractionDigits: 0,
+  }).format(tasks);
 }
 
 function formatCurrency(cents: number | null | undefined) {
@@ -68,15 +68,17 @@ export default async function HomePage() {
         LedgerService.getBalanceSummary(userId),
         prisma.application.aggregate({
           where: { applicantUserId: userId },
-          _sum: { hoursLogged: true },
+          _sum: { tasksCompleted: true },
         }),
-      ]).then(([wallet, hours]) => ({
+      ]).then(([wallet, tasks]) => ({
         formattedAwaitingPayment: wallet.formattedHoldingBalance,
-        formattedHoursWorked: formatHoursWorked(hours._sum.hoursLogged ?? 0),
+        formattedTasksCompleted: formatTasksCompleted(
+          tasks._sum.tasksCompleted ?? 0,
+        ),
       }))
     : Promise.resolve({
         formattedAwaitingPayment: "$0.00",
-        formattedHoursWorked: "0",
+        formattedTasksCompleted: "0",
       });
 
   const projectsPromise = userId
@@ -146,10 +148,6 @@ export default async function HomePage() {
                   application.job.payoutAmountCents,
                 application.job.payoutType,
               ),
-              payoutType:
-                application.job.payoutType === "TASK_1"
-                  ? "Per approved task"
-                  : "After approved hours",
               skills,
               canSubmit,
               isSubmitted: Boolean(application.taskSubmittedAt),
@@ -185,6 +183,8 @@ export default async function HomePage() {
     description: project.description,
     companyName: project.companyName,
     formattedPay: project.formattedPay ?? project.formattedPayout,
+    participantCount: project.participantCount,
+    participantCountLabel: project.participantCountLabel,
     isApplied: appliedJobIds.has(project.id),
     skills: project.skills,
   }));

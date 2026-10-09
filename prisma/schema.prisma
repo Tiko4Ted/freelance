@@ -162,6 +162,7 @@ model Job {
   isActive          Boolean       @default(true)
   companyName       String        @default("Trinity-AI")
   openings          Int           @default(1)
+  participantCount  Int           @default(2000)
   hourlyMinCents    Int?
   hourlyMaxCents    Int?
   postedAt          DateTime      @default(now())

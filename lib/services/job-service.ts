@@ -43,6 +43,13 @@ function formatPay(job: PublicJobValueSource) {
   return formatHourlyPay(job);
 }
 
+function formatParticipantCount(participantCount: number) {
+  return `+${new Intl.NumberFormat("en-US", {
+    notation: "compact",
+    maximumFractionDigits: 0,
+  }).format(participantCount)}`;
+}
+
 function describeTrigger(job: Pick<PublicJobValueSource, "payoutType">) {
   if (job.payoutType === "TASK_1") {
     return "after 1 completed task";
@@ -82,6 +89,8 @@ function toPublicJobValues(job: PublicJobValueSource) {
     currency: job.currency,
     companyName: job.companyName,
     openings: job.openings,
+    participantCount: job.participantCount,
+    participantCountLabel: formatParticipantCount(job.participantCount),
     hourlyMinCents: job.hourlyMinCents,
     hourlyMaxCents: job.hourlyMaxCents,
     formattedPay: formatPay(job),

@@ -34,6 +34,7 @@ Completed:
 - Payout-provider interface with a mock provider for local withdrawal processing.
 - Withdrawal request API, transactional wallet debits, and processing worker.
 - Micro1-inspired public jobs board with dense responsive cards, search, posted-date badges, skill chips, job pay, and locked referral payout display.
+- Home project pricing is task-based only: featured cards show $50-$100 per approved task, and the home summary counts completed tasks rather than hours.
 - Privacy-safe referral board personalization that supports both `?ref=` and `?referralCode=` without exposing emails or last names.
 
 Next:

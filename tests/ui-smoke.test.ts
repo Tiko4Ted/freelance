@@ -202,6 +202,8 @@ test("public jobs UI renders a referral-preserving application link", () => {
           currency: "USD",
           companyName: "Trinity-AI",
           openings: 2,
+          participantCount: 2000,
+          participantCountLabel: "+2K",
           hourlyMinCents: null,
           hourlyMaxCents: null,
           formattedPay: "$300 per task",
@@ -268,7 +270,7 @@ test("dashboard UI renders application and payment state", () => {
       userName: "Ada",
       paymentSummary: {
         formattedAwaitingPayment: "$25.00",
-        formattedHoursWorked: "10",
+        formattedTasksCompleted: "10",
       },
       projects: [
         {
@@ -282,7 +284,6 @@ test("dashboard UI renders application and payment state", () => {
           status: "CERTIFIED",
           statusLabel: "Ready to start",
           payoutLabel: "$25.00",
-          payoutType: "Per approved task",
           skills: ["Research"],
           canSubmit: true,
           briefHref: "/api/v1/applications/application-1/task-material",
@@ -294,6 +295,7 @@ test("dashboard UI renders application and payment state", () => {
 
   assert.match(markup, /AI Reviewer/);
   assert.match(markup, /Ready to start/);
+  assert.match(markup, /Total tasks/);
   assert.match(markup, /\$25\.00/);
   assert.match(markup, /Applied/);
   assert.match(markup, /Download materials/);
@@ -314,7 +316,7 @@ test("dashboard removes onboarding prompts after review approval", () => {
       onboardingComplete: true,
       paymentSummary: {
         formattedAwaitingPayment: "$0.00",
-        formattedHoursWorked: "0",
+        formattedTasksCompleted: "0",
       },
       projects: [],
     }),
@@ -331,7 +333,7 @@ test("dashboard shows applied projects without the task workspace during onboard
       userName: "Ada",
       paymentSummary: {
         formattedAwaitingPayment: "$0.00",
-        formattedHoursWorked: "0",
+        formattedTasksCompleted: "0",
       },
       projects: [
         {
@@ -344,7 +346,6 @@ test("dashboard shows applied projects without the task workspace during onboard
           status: "CERTIFIED",
           statusLabel: "Onboarding review pending",
           payoutLabel: "$25.00",
-          payoutType: "Per approved task",
           skills: ["Research"],
           isApplied: true,
         },
@@ -364,7 +365,7 @@ test("empty dashboard does not render demo projects or task workspace", () => {
       userName: "Ada",
       paymentSummary: {
         formattedAwaitingPayment: "$0.00",
-        formattedHoursWorked: "0",
+        formattedTasksCompleted: "0",
       },
       projects: [],
     }),
@@ -409,7 +410,7 @@ test("dashboard renders flagged database projects as summary cards", () => {
       userName: "Ada",
       paymentSummary: {
         formattedAwaitingPayment: "$0.00",
-        formattedHoursWorked: "0",
+        formattedTasksCompleted: "0",
       },
       projects: [],
       referralLink:
@@ -420,6 +421,9 @@ test("dashboard renders flagged database projects as summary cards", () => {
           title: "AI Quality Review",
           description: "Review model output for accuracy and clarity.",
           companyName: "Trinity-AI",
+          formattedPay: "$50 per task",
+          participantCount: 2000,
+          participantCountLabel: "+2K",
           skills: [{ id: "skill-review", label: "Review" }],
         },
       ],
@@ -428,6 +432,8 @@ test("dashboard renders flagged database projects as summary cards", () => {
 
   assert.match(markup, /Featured projects/);
   assert.match(markup, /AI Quality Review/);
+  assert.match(markup, /\$50 per task/);
+  assert.match(markup, /\+2K participants/);
   assert.match(markup, /\/jobs\/job-featured/);
   const featuredCardStart = markup.indexOf("AI Quality Review");
   const featuredCardEnd = markup.indexOf("</a>", featuredCardStart);
@@ -449,7 +455,7 @@ test("dashboard marks an already-applied featured project without a link", () =>
     createElement(HomeDashboardClient, {
       paymentSummary: {
         formattedAwaitingPayment: "$0.00",
-        formattedHoursWorked: "0",
+        formattedTasksCompleted: "0",
       },
       featuredProjects: [
         {
@@ -457,6 +463,8 @@ test("dashboard marks an already-applied featured project without a link", () =>
           title: "Applied Review",
           description: "Review model output.",
           companyName: "Trinity-AI",
+          participantCount: 2000,
+          participantCountLabel: "+2K",
           isApplied: true,
           skills: [],
         },
