@@ -284,6 +284,25 @@ test("non-home applications stay pending for manual admin approval", async () =>
   });
 });
 
+test("failed home aptitude applications are rejected without task access", async () => {
+  await withApplicationDatabase({}, async (captured) => {
+    const application = await ApplicationService.submitApplication(
+      {
+        ...applicationInput(),
+        aptitudeAnswers: applicationInput().aptitudeAnswers.map((answer) => ({
+          ...answer,
+          selectedOptionId: "b",
+        })),
+      },
+      applicant,
+    );
+
+    assert.equal(application.status, "REJECTED");
+    assert.equal(captured[0]?.aptitudePassed, false);
+    assert.equal(captured[0]?.aptitudeCorrectAnswers, 0);
+  });
+});
+
 test("pending task applications do not block home project applications", async () => {
   await withApplicationDatabase(
     { existingApplicationStatus: ApplicationStatus.APPLIED },

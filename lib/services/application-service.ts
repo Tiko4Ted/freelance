@@ -179,8 +179,10 @@ export const ApplicationService = {
 
         const aptitudeResult = scoreAptitudeTest(job, input.aptitudeAnswers);
 
-        const applicationStatus = job.showOnHome && aptitudeResult.passed
-          ? ApplicationStatus.CERTIFIED
+        const applicationStatus = job.showOnHome
+          ? aptitudeResult.passed
+            ? ApplicationStatus.CERTIFIED
+            : ApplicationStatus.REJECTED
           : ApplicationStatus.APPLIED;
 
         if (applicationStatus === ApplicationStatus.CERTIFIED) {

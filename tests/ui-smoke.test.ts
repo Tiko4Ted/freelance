@@ -327,6 +327,37 @@ test("dashboard removes onboarding prompts after review approval", () => {
   assert.doesNotMatch(markup, /PENDING TASKS/);
 });
 
+test("dashboard hides task materials and uploads for failed applications", () => {
+  const markup = renderToStaticMarkup(
+    createElement(HomeDashboardClient, {
+      userName: "Ada",
+      paymentSummary: {
+        formattedAwaitingPayment: "$0.00",
+        formattedTasksCompleted: "0",
+      },
+      projects: [
+        {
+          id: "application-failed",
+          applicationId: "application-failed",
+          title: "AI Reviewer",
+          description: "Review AI responses.",
+          status: "REJECTED",
+          statusLabel: "Failed",
+          payoutLabel: "$25.00",
+          skills: ["Research"],
+          isApplied: true,
+        },
+      ],
+    }),
+  );
+
+  assert.match(markup, /Failed/);
+  assert.match(markup, /Task materials and uploads are unavailable/);
+  assert.doesNotMatch(markup, /Download materials/);
+  assert.doesNotMatch(markup, /Upload completed work/);
+  assert.doesNotMatch(markup, /task-file-application-failed/);
+});
+
 test("dashboard shows applied projects without the task workspace during onboarding review", () => {
   const markup = renderToStaticMarkup(
     createElement(HomeDashboardClient, {

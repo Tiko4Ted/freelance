@@ -49,7 +49,7 @@ function projectStatusLabel(status: string, submittedAt?: Date | null) {
     PAYOUT_ELIGIBLE: "Payment eligible",
     PAID: "Paid",
     EXPIRED: "Expired",
-    REJECTED: "Not selected",
+    REJECTED: "Failed",
   };
 
   return labels[status] ?? status;
