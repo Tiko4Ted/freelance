@@ -35,12 +35,6 @@ export default async function WalletPage() {
       />
       <main className="flex-1 overflow-y-auto px-4 pb-6 pt-[88px] md:h-[calc(100dvh-72px)] md:min-h-0 md:overflow-hidden md:px-8 md:pb-4 md:pt-[84px] lg:pl-64">
         <div className="mx-auto flex h-full min-h-0 max-w-[1120px] flex-col gap-4">
-          <div className="flex shrink-0 flex-wrap items-center justify-between gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-brand-ink md:text-[28px]">
-              Wallet
-            </h1>
-          </div>
-
           <div className="grid shrink-0 gap-3 md:grid-cols-3">
             <div className="rounded-xl border border-brand-gold/50 bg-[#f2e8d7] p-4 shadow-brand-card">
               <p className="text-xs font-medium text-brand-muted">
