@@ -11,6 +11,8 @@ enum Role {
   REFERRER
   CANDIDATE
   ADMIN
+  ANNOTATOR
+  REVIEWER
 }
 
 enum PayoutTrigger {
@@ -59,6 +61,32 @@ enum NotificationJobStatus {
   FAILED
 }
 
+enum AnnotationTaskType {
+  SXS_PREFERENCE
+  SINGLE_RESPONSE_CRITIQUE
+  SFT_REWRITE
+}
+
+enum AnnotationTaskStatus {
+  UNASSIGNED
+  ASSIGNED
+  COMPLETED
+  DISPUTED
+}
+
+enum AnnotationAssignmentStatus {
+  IN_PROGRESS
+  SUBMITTED
+  EXPIRED
+  ABANDONED
+}
+
+enum AnnotationReviewGrade {
+  APPROVED
+  REJECTED
+  NEEDS_REVISION
+}
+
 model User {
   id                  String    @id @default(uuid())
   email               String    @unique
@@ -78,8 +106,8 @@ model User {
   updatedAt           DateTime  @updatedAt
 
   referrals                   Referral[]
-  referredBy                  User?     @relation("UserReferrals", fields: [referredById], references: [id], onDelete: SetNull)
-  referredUsers               User[]    @relation("UserReferrals")
+  referredBy                  User?                                @relation("UserReferrals", fields: [referredById], references: [id], onDelete: SetNull)
+  referredUsers               User[]                               @relation("UserReferrals")
   ledgerEntries               LedgerEntry[]
   withdrawals                 Withdrawal[]
   walletTransfers             WalletTransfer[]
@@ -88,6 +116,10 @@ model User {
   freelanceVerificationAudits FreelanceIdentityVerificationAudit[]
   applications                Application[]
   emailVerificationToken      EmailVerificationToken?
+  annotationProfile           AnnotationProfile?
+  annotationAssignments       AnnotationAssignment[]
+  annotationSubmissions       AnnotationSubmission[]               @relation("AnnotationSubmissions")
+  annotationReviews           AnnotationReview[]                   @relation("AnnotationReviews")
 
   @@index([role])
   @@index([referredById])
@@ -172,9 +204,10 @@ model Job {
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
-  applications Application[]
-  referrals    Referral[]
-  skills       JobSkill[]
+  applications      Application[]
+  referrals         Referral[]
+  skills            JobSkill[]
+  annotationProject AnnotationProject?
 
   @@index([isActive])
   @@index([showOnHome, isActive, postedAt])
@@ -231,7 +264,8 @@ model Application {
   createdAt                 DateTime          @default(now())
   updatedAt                 DateTime          @updatedAt
 
-  ledgerEntries LedgerEntry[]
+  ledgerEntries         LedgerEntry[]
+  annotationAssignments AnnotationAssignment[]
 
   @@unique([applicantUserId, jobId])
   @@unique([candidateEmail, jobId])
@@ -239,6 +273,107 @@ model Application {
   @@index([candidateEmail])
   @@index([status])
   @@index([payoutDeadline])
+}
+
+model AnnotationProfile {
+  userId                String   @id
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  qualifications        String[] @default([])
+  tasksCompleted        Int      @default(0)
+  averageTimePerTaskSec Int      @default(0)
+  consensusScore        Float    @default(0)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model AnnotationProject {
+  id           String             @id @default(uuid())
+  jobId        String             @unique
+  job          Job                @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  version      Int                @default(1)
+  description  String
+  taskType     AnnotationTaskType
+  rubricSchema Json
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  tasks AnnotationTask[]
+}
+
+model AnnotationTask {
+  id                String               @id @default(uuid())
+  projectId         String
+  project           AnnotationProject    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  status            AnnotationTaskStatus @default(UNASSIGNED)
+  isGoldStandard    Boolean              @default(false)
+  systemInstruction String
+  prompt            String
+  constraints       Json?
+  modelOutputs      Json
+  metadata          Json?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  assignments AnnotationAssignment[]
+  submissions AnnotationSubmission[]
+
+  @@index([projectId, status])
+  @@index([status, createdAt])
+}
+
+model AnnotationAssignment {
+  id            String                     @id @default(uuid())
+  taskId        String
+  task          AnnotationTask             @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  applicationId String?
+  application   Application?               @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+  status        AnnotationAssignmentStatus @default(IN_PROGRESS)
+  assignedAt    DateTime                   @default(now())
+  expiresAt     DateTime
+  createdAt     DateTime                   @default(now())
+  updatedAt     DateTime                   @updatedAt
+
+  submission AnnotationSubmission?
+
+  @@unique([taskId, userId])
+  @@index([userId, status])
+  @@index([status, expiresAt])
+  @@index([applicationId])
+}
+
+model AnnotationSubmission {
+  id               String               @id @default(uuid())
+  taskId           String
+  task             AnnotationTask       @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  assignmentId     String               @unique
+  assignment       AnnotationAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  annotatorId      String
+  annotator        User                 @relation("AnnotationSubmissions", fields: [annotatorId], references: [id], onDelete: Cascade)
+  evaluationData   Json
+  timeSpentSeconds Int?
+  submittedAt      DateTime             @default(now())
+
+  reviews AnnotationReview[]
+
+  @@index([taskId])
+  @@index([annotatorId])
+}
+
+model AnnotationReview {
+  id           String                @id @default(uuid())
+  submissionId String
+  submission   AnnotationSubmission  @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  reviewerId   String
+  reviewer     User                  @relation("AnnotationReviews", fields: [reviewerId], references: [id], onDelete: Cascade)
+  grade        AnnotationReviewGrade
+  qualityScore Int
+  feedbackText String?
+  reviewedAt   DateTime              @default(now())
+
+  @@unique([submissionId, reviewerId])
+  @@index([reviewerId])
 }
 
 model Referral {
@@ -358,9 +493,9 @@ model LedgerEntry {
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
 
+  @@unique([applicationId, userId, reason])
   @@index([userId])
   @@index([applicationId])
-  @@unique([applicationId, userId, reason])
   @@index([withdrawalId])
   @@index([transferId])
   @@index([account])
