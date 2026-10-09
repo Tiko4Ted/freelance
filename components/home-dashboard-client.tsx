@@ -271,7 +271,7 @@ export function HomeDashboardClient({
       {/* Greeting & Refer Button */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="text-xl font-semibold tracking-[-0.045em] text-brand-ink md:text-2xl">
+          <h1 className="text-lg font-semibold tracking-[-0.045em] text-slate-600 md:text-xl">
             Welcome back, {userName}
           </h1>
         </div>
