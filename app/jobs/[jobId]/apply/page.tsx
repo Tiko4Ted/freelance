@@ -24,12 +24,12 @@ const ABOUT_TRINITY_AI = [
   "Our platform identifies and vets top talent through an AI-powered application flow, enabling high-quality expert contributions at scale. As our global expert network grows, Trinity-AI is building the human intelligence layer for frontier AI.",
 ];
 
-function formatApplyPay(formattedHourlyPay: string | null) {
-  if (!formattedHourlyPay) {
+function formatApplyPay(formattedPay: string | null) {
+  if (!formattedPay) {
     return "Pay discussed";
   }
 
-  return formattedHourlyPay.replace("/hr", "/hour");
+  return formattedPay.replace("/hr", "/hour");
 }
 
 function formatSkillLabel(label: string) {
@@ -100,7 +100,7 @@ export default async function ApplyPage({
   }
 
   const detailCopy = buildJobDetailCopy(job);
-  const payLabel = formatApplyPay(job.formattedHourlyPay);
+  const payLabel = formatApplyPay(job.formattedPay);
   const applicantName = splitApplicantName(
     onboarding.identityLegalName ?? session.user.name,
   );
@@ -122,7 +122,7 @@ export default async function ApplyPage({
 
             <div className="mt-4 inline-flex items-center rounded border border-brand-sand bg-[#f2e8d7] px-3 py-2 text-[14px] font-semibold text-brand-gold-strong">
               <span>{payLabel}</span>
-              {job.formattedHourlyPay ? (
+              {job.formattedPay ? (
                 <span className="ml-1 text-[12px] font-normal text-brand-muted">
                   pay
                 </span>

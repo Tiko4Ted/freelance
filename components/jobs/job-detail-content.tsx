@@ -14,7 +14,7 @@ function openingLabel(openings: number) {
 
 export function JobDetailContent({ applyHref, job }: JobDetailContentProps) {
   const detailCopy = buildJobDetailCopy(job);
-  const payLabel = job.formattedHourlyPay ?? job.formattedPayout;
+  const payLabel = job.formattedPay ?? job.formattedPayout;
 
   return (
     <section className="mx-auto max-w-[1040px] pb-12">

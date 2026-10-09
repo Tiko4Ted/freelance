@@ -35,6 +35,14 @@ function formatHourlyPay(
   )}/hr`;
 }
 
+function formatPay(job: PublicJobValueSource) {
+  if (job.payoutType === "TASK_1") {
+    return `${formatPayout(job)} per task`;
+  }
+
+  return formatHourlyPay(job);
+}
+
 function describeTrigger(job: Pick<PublicJobValueSource, "payoutType">) {
   if (job.payoutType === "TASK_1") {
     return "after 1 completed task";
@@ -76,6 +84,9 @@ function toPublicJobValues(job: PublicJobValueSource) {
     openings: job.openings,
     hourlyMinCents: job.hourlyMinCents,
     hourlyMaxCents: job.hourlyMaxCents,
+    formattedPay: formatPay(job),
+    // Keep the hourly-only field for existing consumers while the UI uses
+    // formattedPay for both hourly and task-based roles.
     formattedHourlyPay: formatHourlyPay(job),
     formattedPayout: formatPayout(job),
     payoutTriggerLabel: describeTrigger(job),

@@ -55,6 +55,7 @@ type FeaturedProject = {
   title: string;
   description: string;
   companyName: string;
+  formattedPay?: string;
   isApplied?: boolean;
   skills: Array<{
     id: string;
@@ -372,6 +373,11 @@ export function HomeDashboardClient({
                     <p className="mt-2 line-clamp-3 text-sm leading-6 text-brand-muted">
                       {project.description}
                     </p>
+                    {project.formattedPay ? (
+                      <p className="mt-3 text-sm font-semibold text-brand-ink">
+                        Pay: {project.formattedPay}
+                      </p>
+                    ) : null}
                   </div>
                   <div className="mt-5 flex flex-wrap items-center gap-1.5">
                     {project.skills.slice(0, 2).map((skill) => (
