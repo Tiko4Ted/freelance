@@ -148,6 +148,7 @@ export default async function HomePage() {
                 ? `/api/v1/applications/${application.id}/task-material`
                 : undefined,
               isApplied: true,
+              showOnHome: application.job.showOnHome,
             };
           }),
         )
