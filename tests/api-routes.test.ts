@@ -60,7 +60,7 @@ test("applications API validates input and returns a created application", async
 
   const invalidResponse = await handler(
     jsonRequest("https://example.test/api/v1/applications", {
-      jobId: "not-a-uuid",
+      jobId: "job id with spaces",
     }),
   );
   const successResponse = await handler(
@@ -75,6 +75,34 @@ test("applications API validates input and returns a created application", async
   assert.equal(submittedReferral, "job-id:REFERRER");
   assert.deepEqual(await successResponse.json(), {
     application: { id: "application-1", status: "CERTIFIED" },
+  });
+});
+
+test("applications API accepts legacy hex job IDs", async () => {
+  const handler = createApplicationPostHandler({
+    requireSession: async () => ({
+      user: { id: "candidate-user", email: "candidate@example.test" },
+    }),
+    readReferralCookie: async () => undefined,
+    submitApplication: async (input) => ({
+      id: input.jobId,
+      status: "CERTIFIED",
+    }),
+  });
+
+  const response = await handler(
+    jsonRequest("https://example.test/api/v1/applications", {
+      ...validApplication,
+      jobId: "6d200090ddc70da5a56705908566c233",
+    }),
+  );
+
+  assert.equal(response.status, 201);
+  assert.deepEqual(await response.json(), {
+    application: {
+      id: "6d200090ddc70da5a56705908566c233",
+      status: "CERTIFIED",
+    },
   });
 });
 

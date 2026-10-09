@@ -31,7 +31,14 @@ function optionalTrimmedString(max: number) {
 }
 
 export const applicationSchema = z.object({
-  jobId: z.string().uuid(),
+  // Job IDs are persisted as strings and production also contains legacy
+  // Mongo-style hex IDs, so they are not guaranteed to be UUIDs.
+  jobId: z
+    .string()
+    .trim()
+    .min(1, "Job ID is required")
+    .max(80)
+    .regex(/^[A-Za-z0-9_-]+$/, "Enter a valid job ID"),
   candidateName: optionalTrimmedString(120),
   candidateFirstName: optionalTrimmedString(60),
   candidateLastName: optionalTrimmedString(60),
