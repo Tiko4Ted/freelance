@@ -201,6 +201,8 @@ export function AptitudeTestForm({
 
       const autoApproved =
         isApplicationPayload(payload) && payload.application.status === "CERTIFIED";
+      const failed =
+        isApplicationPayload(payload) && payload.application.status === "REJECTED";
       const score = isApplicationPayload(payload)
         ? payload.application.aptitudeScorePercent
         : null;
@@ -209,6 +211,8 @@ export function AptitudeTestForm({
         status: "success",
         message: autoApproved
           ? `Your aptitude score was ${score}%, so your application was automatically approved and the task is now available on your home page.`
+          : failed
+            ? `Your aptitude score was ${score}%. You did not pass this project's aptitude test, so the project is marked as failed and its task materials remain unavailable.`
           : `Your aptitude score was ${score ?? "recorded"}%. Your application is pending manual review before the task unlocks.`,
       });
     } catch {

@@ -498,6 +498,7 @@ export function HomeDashboardClient({
                 const hasSubmitted =
                   project.isSubmitted || submittedProjectIds.includes(project.id);
                 const canUpload = Boolean(project.canSubmit) && !hasSubmitted;
+                const isFailed = project.status === "REJECTED";
                 const isUploading =
                   uploadFeedbackProjectId === project.id &&
                   submissionStatus === "submitting";
@@ -545,6 +546,13 @@ export function HomeDashboardClient({
                     {isApplied ? (
                       <div className="mt-4 border-t border-brand-sand/70 pt-3">
                         <div className="flex flex-wrap items-center gap-2">
+                          {isFailed ? (
+                            <span className="text-xs text-brand-muted">
+                              Task materials and uploads are unavailable because
+                              the aptitude test was not passed.
+                            </span>
+                          ) : (
+                            <>
                           {project.briefHref ? (
                             <a
                               className="inline-flex h-9 items-center gap-1.5 rounded-[10px] border border-brand-sand bg-brand-ivory px-3 text-xs font-semibold text-brand-ink transition hover:border-brand-gold/60 hover:bg-[var(--color-accent-soft)] focus:outline-none focus:ring-2 focus:ring-brand-gold"
@@ -626,6 +634,8 @@ export function HomeDashboardClient({
                             }}
                             type="file"
                           />
+                            </>
+                          )}
                         </div>
                         {projectUploadError ? (
                           <p className="mt-2 text-xs font-semibold text-red-600">
