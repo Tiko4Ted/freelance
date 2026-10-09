@@ -1,4 +1,8 @@
 import { prisma } from "@/lib/db/prisma";
+import {
+  homeProjectPricingError,
+  HomeProjectPricingError,
+} from "@/lib/home-project-pricing";
 import type {
   AdminCreateJobInput,
   AdminUpdateJobInput,
@@ -49,6 +53,11 @@ export const AdminJobService = {
   },
 
   async createJob(input: AdminCreateJobInput) {
+    const pricingError = homeProjectPricingError(input);
+    if (pricingError) {
+      throw new HomeProjectPricingError(pricingError);
+    }
+
     const { skills, ...jobInput } = input;
     const job = await prisma.job.create({
       data: {
@@ -69,7 +78,11 @@ export const AdminJobService = {
     const result = await prisma.$transaction(async (tx) => {
       const previousJob = await tx.job.findUniqueOrThrow({
         where: { id },
-        select: { showOnHome: true },
+        select: {
+          showOnHome: true,
+          payoutType: true,
+          payoutAmountCents: true,
+        },
       });
       const updatedJob = await tx.job.update({
         where: { id },
@@ -79,6 +92,10 @@ export const AdminJobService = {
         },
         include: adminJobInclude,
       });
+      const pricingError = homeProjectPricingError(updatedJob);
+      if (pricingError) {
+        throw new HomeProjectPricingError(pricingError);
+      }
 
       if (skills) {
         await tx.jobSkill.deleteMany({ where: { jobId: id } });

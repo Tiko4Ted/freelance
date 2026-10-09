@@ -2,6 +2,7 @@ import { PayoutTrigger, PrismaClient, Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 import { EmailNotificationService } from "../lib/services/email-notification-service";
+import { homeProjectPricingError } from "../lib/home-project-pricing";
 
 const prisma = new PrismaClient();
 
@@ -13,6 +14,7 @@ type DemoJob = {
   currency?: string;
   companyName?: string;
   openings: number;
+  participantCount?: number;
   hourlyMinCents: number;
   hourlyMaxCents: number;
   postedDaysAgo: number;
@@ -26,6 +28,7 @@ const DIGITAL_JOB_DATA_RULES = [
   "Each seeded job must be deliverable online or remotely.",
   "Each seeded job must include a title, description, hourly pay range, openings, posted-date spread, demand flag, and skill tags.",
   "Every seeded project uses the AI task packet structure and is marked with the AI task flag.",
+  "Home projects use TASK_1 payouts between $50 and $100 per task.",
   "Each seeded job must have at least 30 openings.",
   "Posted dates are spread across the last 28 days so the New flag appears naturally for recent roles.",
   "High-demand flags are assigned to AI, software, data, security, cloud, healthcare, legal, and revenue roles plus a deterministic share of the remaining catalog.",
@@ -409,6 +412,7 @@ const baseDemoJobs: DemoJob[] = [
     payoutAmountCents: 5000,
     payoutType: PayoutTrigger.TASK_1,
     openings: 40,
+    participantCount: 2000,
     hourlyMinCents: 1500,
     hourlyMaxCents: 1800,
     postedDaysAgo: 0,
@@ -430,6 +434,7 @@ const baseDemoJobs: DemoJob[] = [
     payoutAmountCents: 7500,
     payoutType: PayoutTrigger.TASK_1,
     openings: 35,
+    participantCount: 3000,
     hourlyMinCents: 1500,
     hourlyMaxCents: 1800,
     postedDaysAgo: 0,
@@ -451,6 +456,7 @@ const baseDemoJobs: DemoJob[] = [
     payoutAmountCents: 10000,
     payoutType: PayoutTrigger.TASK_1,
     openings: 30,
+    participantCount: 4000,
     hourlyMinCents: 1500,
     hourlyMaxCents: 1800,
     postedDaysAgo: 0,
@@ -1234,6 +1240,15 @@ function validateJobCatalog(jobs: DemoJob[]) {
     if (job.isAiTask === false) {
       throw new Error(`${job.title} must use the AI task structure.`);
     }
+
+    const pricingError = homeProjectPricingError({
+      showOnHome: job.showOnHome ?? false,
+      payoutType: job.payoutType ?? PayoutTrigger.HOURS_10,
+      payoutAmountCents: job.payoutAmountCents,
+    });
+    if (pricingError) {
+      throw new Error(`${job.title}: ${pricingError}`);
+    }
   }
 }
 
@@ -1270,6 +1285,7 @@ async function seedJob(job: DemoJob) {
       currency: job.currency ?? "USD",
       companyName: job.companyName ?? "Trinity-AI",
       openings: job.openings,
+      participantCount: job.participantCount ?? 2000,
       hourlyMinCents: job.hourlyMinCents,
       hourlyMaxCents: job.hourlyMaxCents,
       postedAt: postedAt(job.postedDaysAgo),
@@ -1288,6 +1304,7 @@ async function seedJob(job: DemoJob) {
       currency: job.currency ?? "USD",
       companyName: job.companyName ?? "Trinity-AI",
       openings: job.openings,
+      participantCount: job.participantCount ?? 2000,
       hourlyMinCents: job.hourlyMinCents,
       hourlyMaxCents: job.hourlyMaxCents,
       postedAt: postedAt(job.postedDaysAgo),

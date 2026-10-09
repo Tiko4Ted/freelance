@@ -17,6 +17,7 @@ import {
   Download,
   Upload,
   CheckCircle2,
+  UserRound,
 } from "lucide-react";
 
 import {
@@ -38,7 +39,6 @@ type DashboardProject = {
   status: string;
   statusLabel: string;
   payoutLabel: string;
-  payoutType: string;
   skills: string[];
   canSubmit?: boolean;
   isSubmitted?: boolean;
@@ -56,6 +56,8 @@ type FeaturedProject = {
   description: string;
   companyName: string;
   formattedPay?: string;
+  participantCount?: number;
+  participantCountLabel?: string;
   isApplied?: boolean;
   skills: Array<{
     id: string;
@@ -66,7 +68,7 @@ type FeaturedProject = {
 interface HomeDashboardClientProps {
   paymentSummary: {
     formattedAwaitingPayment: string;
-    formattedHoursWorked: string;
+    formattedTasksCompleted: string;
   };
   featuredProjects?: FeaturedProject[];
   onboardingComplete?: boolean;
@@ -86,9 +88,9 @@ const faqs = [
       "Begin by completing onboarding and applying for an available role. Once your application is reviewed and matched, your project activity will appear on the home page with the next steps clearly shown.",
   },
   {
-    question: "Where can I see my hours and payment status?",
+    question: "Where can I see my tasks and payment status?",
     answer:
-      "The home page gives a quick summary of your hours worked and awaiting payment. For the full account record, including balances, ledger history, transfers, and withdrawals, use the wallet page.",
+      "The home page gives a quick summary of your completed tasks and awaiting payment. For the full account record, including balances, ledger history, transfers, and withdrawals, use the wallet page.",
   },
   {
     question: "Why does some money show as awaiting payment?",
@@ -98,7 +100,7 @@ const faqs = [
   {
     question: "What should I do if my progress looks incorrect?",
     answer:
-      "Check your project status, submitted work, and wallet records first. If the numbers still do not match your work, contact support with the project name and the hours or payment record you expected to see.",
+      "Check your project status, submitted work, and wallet records first. If the numbers still do not match your work, contact support with the project name and the task or payment record you expected to see.",
   },
   {
     question: "How do I identify fraud or scams?",
@@ -377,6 +379,30 @@ export function HomeDashboardClient({
                       <p className="mt-3 text-sm font-semibold text-brand-ink">
                         Pay: {project.formattedPay}
                       </p>
+                    ) : null}
+                    {project.participantCountLabel ? (
+                      <div className="mt-3 flex items-center gap-2">
+                        <div aria-hidden="true" className="flex -space-x-2">
+                          {[
+                            "bg-[#d7c7aa] text-[#5d482f]",
+                            "bg-[#c7d0c1] text-[#405247]",
+                            "bg-[#c9c9d2] text-[#4c4c5c]",
+                          ].map((avatarClassName) => (
+                            <span
+                              className={`inline-flex h-6 w-6 items-center justify-center rounded-full border-2 border-brand-ivory ${avatarClassName}`}
+                              key={avatarClassName}
+                            >
+                              <UserRound className="h-3 w-3" strokeWidth={2} />
+                            </span>
+                          ))}
+                        </div>
+                        <span
+                          aria-label={`${project.participantCount?.toLocaleString("en-US") ?? project.participantCountLabel} participants`}
+                          className="text-xs font-semibold text-brand-muted"
+                        >
+                          {project.participantCountLabel} participants
+                        </span>
+                      </div>
                     ) : null}
                   </div>
                   <div className="mt-5 flex flex-wrap items-center gap-1.5">
@@ -704,7 +730,7 @@ export function HomeDashboardClient({
                 Frequently asked questions
               </h2>
               <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500">
-                Quick answers about projects, hours, payments, safety, and what
+                Quick answers about projects, tasks, payments, safety, and what
                 to check next.
               </p>
             </div>
@@ -761,11 +787,11 @@ export function HomeDashboardClient({
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-1">
               <div>
                 <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                  Total hours
+                  Total tasks
                   <Clock className="h-3.5 w-3.5" />
                 </div>
                 <div className="mt-1 text-2xl font-bold text-brand-ink">
-                  {paymentSummary.formattedHoursWorked}
+                  {paymentSummary.formattedTasksCompleted}
                 </div>
               </div>
               <div>

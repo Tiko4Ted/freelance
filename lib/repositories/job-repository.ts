@@ -12,6 +12,7 @@ const publicJobSelect = {
   isActive: true,
   companyName: true,
   openings: true,
+  participantCount: true,
   hourlyMinCents: true,
   hourlyMaxCents: true,
   postedAt: true,

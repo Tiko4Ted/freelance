@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 
 import { requireRole } from "@/lib/auth/session";
+import { HomeProjectPricingError } from "@/lib/home-project-pricing";
 import { AdminJobService } from "@/lib/services/admin-job-service";
 import { EmailNotificationService } from "@/lib/services/email-notification-service";
 import { adminCreateJobSchema } from "@/lib/validation/admin";
@@ -35,6 +36,10 @@ export async function POST(request: Request) {
         { error: "Invalid job input", issues: error.flatten() },
         { status: 400 },
       );
+    }
+
+    if (error instanceof HomeProjectPricingError) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
     return NextResponse.json({ error: "Unable to create job" }, { status: 500 });

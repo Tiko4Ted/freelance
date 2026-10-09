@@ -1,7 +1,9 @@
 import { ApplicationStatus, PayoutTrigger } from "@prisma/client";
 import { z } from "zod";
 
-export const adminCreateJobSchema = z.object({
+import { homeProjectPricingError } from "@/lib/home-project-pricing";
+
+const adminJobFields = {
   title: z.string().trim().min(3).max(160),
   description: z.string().trim().min(20).max(4000),
   payoutAmountCents: z.coerce.number().int().positive(),
@@ -21,9 +23,38 @@ export const adminCreateJobSchema = z.object({
   isAiTask: z.literal(true).optional().default(true),
   skills: z.array(z.string().trim().min(1).max(80)).optional().default([]),
   isActive: z.boolean().optional().default(true),
-});
+};
 
-export const adminUpdateJobSchema = adminCreateJobSchema.partial();
+function withHomeProjectPricingValidation<
+  T extends z.ZodRawShape,
+>(schema: z.ZodObject<T>) {
+  return schema.superRefine((input, context) => {
+    if (!input.showOnHome) {
+      return;
+    }
+
+    const pricingError = homeProjectPricingError({
+      showOnHome: true,
+      payoutType: input.payoutType ?? PayoutTrigger.HOURS_10,
+      payoutAmountCents: input.payoutAmountCents ?? 0,
+    });
+    if (pricingError) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["showOnHome"],
+        message: pricingError,
+      });
+    }
+  });
+}
+
+export const adminCreateJobSchema = withHomeProjectPricingValidation(
+  z.object(adminJobFields),
+);
+
+export const adminUpdateJobSchema = withHomeProjectPricingValidation(
+  z.object(adminJobFields).partial(),
+);
 
 export const adminStatusSchema = z.object({
   status: z.enum([
