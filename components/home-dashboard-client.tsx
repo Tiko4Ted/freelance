@@ -45,6 +45,7 @@ type DashboardProject = {
   submittedFileName?: string | null;
   briefHref?: string;
   isApplied?: boolean;
+  showOnHome?: boolean;
 };
 
 const MAX_TASK_SUBMISSION_BYTES = 4 * 1024 * 1024;
@@ -128,7 +129,9 @@ export function HomeDashboardClient({
   referralLink = null,
   userName = "Teddy",
 }: HomeDashboardClientProps) {
-  const visibleProjects = projects;
+  const visibleProjects = projects.filter(
+    (project) => project.showOnHome !== false,
+  );
   const [activeTab, setActiveTab] = useState<"projects" | "applications">(
     "projects",
   );
