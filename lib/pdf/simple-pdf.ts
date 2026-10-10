@@ -3,6 +3,13 @@ export type PdfSection = {
   lines: string[];
 };
 
+export type PdfImage = {
+  data: Buffer;
+  width: number;
+  height: number;
+  caption: string;
+};
+
 type TextLine = {
   text: string;
   size: number;
@@ -113,28 +120,60 @@ export function createSimplePdf(
   title: string,
   sections: PdfSection[],
   subtitle?: string,
+  images: PdfImage[] = [],
 ) {
-  const pages = paginate(buildTextLines(title, sections, subtitle));
-  const pageCount = pages.length;
+  const textPages = paginate(buildTextLines(title, sections, subtitle));
+  const pageCount = textPages.length + images.length;
   const pageStartId = 3;
   const contentStartId = pageStartId + pageCount;
   const regularFontId = contentStartId + pageCount;
   const boldFontId = regularFontId + 1;
+  const imageStartId = boldFontId + 1;
   const objects: string[] = [];
 
   objects[0] = "<< /Type /Catalog /Pages 2 0 R >>";
-  objects[1] = `<< /Type /Pages /Kids [${pages
+  objects[1] = `<< /Type /Pages /Kids [${Array.from({ length: pageCount })
     .map((_, index) => `${pageStartId + index} 0 R`)
     .join(" ")}] /Count ${pageCount} >>`;
 
-  pages.forEach((_, index) => {
+  Array.from({ length: pageCount }).forEach((_, index) => {
+    const imageIndex = index - textPages.length;
+    const imageResource = imageIndex >= 0
+      ? `/XObject << /Im1 ${imageStartId + imageIndex} 0 R >> `
+      : "";
+
     objects[pageStartId + index - 1] =
       `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PAGE_WIDTH} ${PAGE_HEIGHT}] ` +
-      `/Resources << /Font << /F1 ${regularFontId} 0 R /F2 ${boldFontId} 0 R >> >> ` +
+      `/Resources << /Font << /F1 ${regularFontId} 0 R /F2 ${boldFontId} 0 R >> ${imageResource}>> ` +
       `/Contents ${contentStartId + index} 0 R >>`;
   });
 
-  pages.forEach((commands, index) => {
+  Array.from({ length: pageCount }).forEach((_, index) => {
+    const imageIndex = index - textPages.length;
+    const commands = imageIndex >= 0
+      ? [
+          textCommand(
+            { text: "Image packet", size: 15, bold: true },
+            MARGIN_X,
+            TOP_Y,
+          ),
+          textCommand(
+            {
+              text: `Image ${imageIndex + 1} of ${images.length}`,
+              size: 10,
+              gapBefore: 0,
+            },
+            MARGIN_X,
+            TOP_Y - 24,
+          ),
+          `q 487 0 0 365 ${MARGIN_X} 360 cm /Im1 Do Q`,
+          textCommand(
+            { text: images[imageIndex].caption, size: 10 },
+            MARGIN_X,
+            330,
+          ),
+        ]
+      : textPages[index];
     const stream = commands.join("\n");
     objects[contentStartId + index - 1] = `<< /Length ${Buffer.byteLength(
       stream,
@@ -145,6 +184,14 @@ export function createSimplePdf(
   objects[regularFontId - 1] = "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>";
   objects[boldFontId - 1] =
     "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>";
+
+  images.forEach((image, index) => {
+    const imageData = image.data.toString("latin1");
+    objects[imageStartId + index - 1] =
+      `<< /Type /XObject /Subtype /Image /Width ${image.width} /Height ${image.height} ` +
+      `/ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode ` +
+      `/Length ${image.data.length} >>\nstream\n${imageData}\nendstream`;
+  });
 
   let pdf = "%PDF-1.4\n";
   const offsets = [0];

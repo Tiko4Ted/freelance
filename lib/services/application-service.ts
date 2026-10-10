@@ -1,11 +1,16 @@
 import { ApplicationStatus, Prisma, Role } from "@prisma/client";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
 import { scoreAptitudeTest } from "@/lib/aptitude-test";
 import { prisma } from "@/lib/db/prisma";
-import { createSimplePdf } from "@/lib/pdf/simple-pdf";
+import { createSimplePdf, type PdfImage } from "@/lib/pdf/simple-pdf";
 import { EmailNotificationService } from "@/lib/services/email-notification-service";
 import { OnboardingService } from "@/lib/services/onboarding-service";
-import { buildTaskAssignment } from "@/lib/task-assignment";
+import {
+  buildTaskAssignment,
+  type TaskAssignmentImage,
+} from "@/lib/task-assignment";
 import type { ApplicationInput } from "@/lib/validation/application";
 import type { TaskSubmissionInput } from "@/lib/validation/task-submission";
 
@@ -23,6 +28,13 @@ type AuthenticatedApplicant = {
   id: string;
   email: string;
 };
+
+function loadTaskImages(images: TaskAssignmentImage[] | undefined): PdfImage[] {
+  return (images ?? []).map((image) => ({
+    ...image,
+    data: readFileSync(join(process.cwd(), "public", "task-assets", image.fileName)),
+  }));
+}
 
 function parseReferralCookie(value: string | undefined): ReferralCookie | null {
   if (!value) {
@@ -357,7 +369,12 @@ export const ApplicationService = {
 
     return {
       fileName: `${assignment.fileBaseName}.pdf`,
-      content: createSimplePdf(assignment.title, assignment.sections),
+      content: createSimplePdf(
+        assignment.title,
+        assignment.sections,
+        undefined,
+        loadTaskImages(assignment.imageAssets),
+      ),
     };
   },
 

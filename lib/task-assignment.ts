@@ -21,10 +21,18 @@ export type TaskAssignmentSection = {
   lines: string[];
 };
 
+export type TaskAssignmentImage = {
+  fileName: string;
+  caption: string;
+  width: number;
+  height: number;
+};
+
 export type TaskAssignment = {
   title: string;
   fileBaseName: string;
   sections: TaskAssignmentSection[];
+  imageAssets?: TaskAssignmentImage[];
 };
 
 type TaskTemplate = {
@@ -36,6 +44,7 @@ type TaskTemplate = {
   deliverables: string[];
   reviewCriteria: string[];
   partnerPaymentNote?: string;
+  imageAssets?: TaskAssignmentImage[];
 };
 
 function skillLabels(job: TaskAssignmentJob) {
@@ -124,6 +133,174 @@ function buildAudioConversationTask(job: TaskAssignmentJob): TaskTemplate {
 function buildHomeProjectTask(job: TaskAssignmentJob): TaskTemplate | null {
   if (!job.showOnHome) {
     return null;
+  }
+
+  if (job.title === "AI Search Relevance Evaluator") {
+    return {
+      category: "AI image-search relevance evaluation",
+      complexity:
+        "Moderate: decisions must be grounded in what is visibly present in the supplied image, while separating strong matches from merely related results.",
+      estimatedTime: "60 to 90 minutes including visual review, correction, quality check, and upload.",
+      task: [
+        "Open the attached source image packet and review the search query and AI relevance judgment for every case.",
+        "Decide whether the image is a Strong match, Partial match, or Not a match for the query. Use only visible evidence; do not infer hidden context, brand, location, or product specifications.",
+        "Correct the AI judgment when needed and write a concise rationale naming the visual evidence that supports your decision.",
+        "Use confidence High, Medium, or Low. Use Low when the image is ambiguous or the query asks for a detail that cannot be verified visually.",
+      ],
+      taskPacket: [
+        "Attached image: ai-search-relevance-01.jpg",
+        "IMG-SR-001 | Query: red commuter bicycle | AI judgment: Strong match | Review focus: confirm the bicycle, red frame, and everyday street context are visible.",
+        "IMG-SR-002 | Query: mountain bike on a forest trail | AI judgment: Strong match | Review focus: decide whether a city sidewalk scene supports this query.",
+        "IMG-SR-003 | Query: blue brick wall | AI judgment: Partial match | Review focus: check the wall color and whether another object is incorrectly driving the result.",
+        "IMG-SR-004 | Query: bicycle with a visible front basket | AI judgment: Strong match | Review focus: mark Not a match if the requested basket cannot be verified.",
+        "Required decision values: Strong match, Partial match, Not a match.",
+      ],
+      deliverables: [
+        "A CSV or spreadsheet with columns: image_id, query, ai_judgment, corrected_judgment, confidence, visual_evidence, rationale.",
+        "A short quality note listing any case where the image did not support a confident decision.",
+        "The final filename or upload reference needed for reviewer evaluation.",
+      ],
+      reviewCriteria: [
+        "The attached image is opened and each case has exactly one decision.",
+        "Judgments are based on visible image evidence rather than assumptions about unseen details.",
+        "Corrections distinguish relevance from simple topical similarity and include useful rationales.",
+        "Uncertainty is recorded instead of being hidden behind a high-confidence label.",
+      ],
+      imageAssets: [
+        {
+          fileName: "ai-search-relevance-01.jpg",
+          caption: "Source image for AI search relevance evaluation.",
+          width: 1024,
+          height: 768,
+        },
+      ],
+    };
+  }
+
+  if (job.title === "AI Conversation Quality Evaluator") {
+    return {
+      category: "AI multimodal conversation quality evaluation",
+      complexity:
+        "Moderate: evaluate whether an assistant used the image correctly, followed the user's request, and avoided unsafe or unsupported advice.",
+      estimatedTime: "60 to 90 minutes including image review, response correction, quality check, and upload.",
+      task: [
+        "Review the attached kitchen image, user request, and AI response for every conversation case.",
+        "Check visual grounding: the response must describe only details visible in the image and must not claim that an unseen ingredient, appliance setting, or measurement is present.",
+        "Check helpfulness and safety. Correct unsafe cooking guidance, missing caveats, or irrelevant answers while preserving the user's intent.",
+        "Record a separate visual-grounding decision and safety decision for each case, then provide a corrected response when the AI output is not acceptable.",
+      ],
+      taskPacket: [
+        "Attached image: ai-conversation-quality-01.jpg",
+        "CONV-MM-001 | User: What do you see and what should I check before cooking? | AI response: A person is preparing food at a kitchen counter; check that the knife is stable, the hot pan handle points inward, and the work area is clear. | Review focus: verify visible details and safety relevance.",
+        "CONV-MM-002 | User: Is the pan safe to handle right now? | AI response: Yes, the pan is cool and ready to pick up. | Review focus: flag unsupported certainty; the image cannot establish temperature.",
+        "CONV-MM-003 | User: List every ingredient and its exact quantity. | AI response: There are two tomatoes, 250 grams of onions, and one tablespoon of oil. | Review focus: do not accept quantities that cannot be read from the image.",
+        "CONV-MM-004 | User: Give me one practical next step. | AI response: Move the knife to a stable cutting surface and keep the pan handle turned away from the edge. | Review focus: check whether the advice is safe, concise, and grounded.",
+        "Required values: visual_grounding=Pass or Fail; safety_check=Pass, Fail, or Not applicable.",
+      ],
+      deliverables: [
+        "A CSV or spreadsheet with columns: case_id, user_request, ai_response, visual_grounding, safety_check, corrected_response, confidence, rationale.",
+        "A short quality note explaining any unsupported visual claim or unsafe instruction you found.",
+        "The final filename or upload reference needed for reviewer evaluation.",
+      ],
+      reviewCriteria: [
+        "Every response is checked against the attached image and user request.",
+        "The reviewer does not treat an image as proof of temperature, quantity, identity, or other hidden facts.",
+        "Unsafe or overconfident guidance is corrected with practical, non-alarmist wording.",
+        "The completed file preserves the required case IDs and separates evidence from assumptions.",
+      ],
+      imageAssets: [
+        {
+          fileName: "ai-conversation-quality-01.jpg",
+          caption: "Source image for multimodal conversation quality evaluation.",
+          width: 1024,
+          height: 768,
+        },
+      ],
+    };
+  }
+
+  if (job.title === "AI Response Quality Evaluator") {
+    return {
+      category: "AI visual response quality evaluation",
+      complexity:
+        "Moderate: compare generated answers with visible evidence, requested format, and factuality requirements across several visual cases.",
+      estimatedTime: "60 to 90 minutes including visual fact checking, correction, quality check, and upload.",
+      task: [
+        "Use the attached market-stall image as the source of truth for the visual cases below.",
+        "For each AI response, check factuality, completeness, instruction following, and unsupported details. Mark a response as failed when it adds objects, counts, colors, or text that are not visible.",
+        "Write a corrected response that answers the prompt directly and stays within the evidence available in the image.",
+        "Use confidence High, Medium, or Low and explain any ambiguity, especially where an object is partly occluded or text is not legible.",
+      ],
+      taskPacket: [
+        "Attached image: ai-response-quality-01.jpg",
+        "VIS-RQ-001 | Prompt: Name the clearly visible produce and their counts. | AI response: There are three oranges and a bunch of bananas. | Review focus: verify object type and count without inventing extra produce.",
+        "VIS-RQ-002 | Prompt: What color is the reusable bag? | AI response: The bag is blue. | Review focus: check the color and whether the answer is direct.",
+        "VIS-RQ-003 | Prompt: Read the price card exactly. | AI response: The card says 'Organic fruit 5.00'. | Review focus: mark unsupported if the writing is not legible enough to transcribe.",
+        "VIS-RQ-004 | Prompt: Describe the scene in one sentence without guessing the location. | AI response: This is a market stall in Nairobi selling fresh fruit. | Review focus: remove unsupported location or provenance claims.",
+        "Required ratings: factuality=Pass or Fail; instruction_following=Pass or Fail; confidence=High, Medium, or Low.",
+      ],
+      deliverables: [
+        "A CSV or spreadsheet with columns: case_id, prompt, ai_response, factuality, instruction_following, corrected_response, confidence, rationale.",
+        "A short quality note identifying the strongest hallucination or instruction-following failure.",
+        "The final filename or upload reference needed for reviewer evaluation.",
+      ],
+      reviewCriteria: [
+        "Responses are checked against the attached image rather than plausible-sounding assumptions.",
+        "Counts, colors, objects, and text are only reported when visually supported.",
+        "Corrected responses are concise, complete, and answer the original prompt.",
+        "Unclear text and uncertain details are explicitly marked rather than guessed.",
+      ],
+      imageAssets: [
+        {
+          fileName: "ai-response-quality-01.jpg",
+          caption: "Source image for AI visual response quality evaluation.",
+          width: 1024,
+          height: 768,
+        },
+      ],
+    };
+  }
+
+  if (job.title === "AI Document Extraction & Quality Evaluator") {
+    return {
+      category: "AI image-document extraction evaluation",
+      complexity:
+        "Moderate: compare structured model output with the attached document image and preserve an audit trail for unreadable or uncertain fields.",
+      estimatedTime: "60 to 90 minutes including document review, correction, quality check, and upload.",
+      task: [
+        "Open the attached receipt and invoice image and compare the AI-extracted fields with the visible document evidence.",
+        "Correct supplier, date, line-item, quantity, amount, tax, subtotal, and total fields when the source supports the correction.",
+        "Never invent a value that is unreadable or absent. Leave it blank, set action to Review, and explain what prevented verification.",
+        "Normalize dates to YYYY-MM-DD and amounts to two decimal places without changing the source arithmetic.",
+      ],
+      taskPacket: [
+        "Attached image: ai-document-extraction-01.jpg",
+        "DOC-IMG-001 | AI extraction: document_type=receipt; date=2026-08-04; currency=USD; subtotal=248.50; tax=19.88; total=268.38 | Review focus: compare every field with the image and flag unreadable text.",
+        "DOC-IMG-002 | AI extraction: document_type=invoice; supplier=Northstar Couriers; date=2026-08-07; total=91.00 | Review focus: verify that the supplier, date, and total are actually visible.",
+        "DOC-IMG-003 | AI extraction: line_items=[office supplies x 2]; subtotal=1420.75; tax=0.00; total=1420.75 | Review focus: check quantities, decimal placement, and whether tax is shown or merely assumed.",
+        "DOC-IMG-004 | AI extraction: payment_status=Paid | Review focus: do not infer payment status unless the document explicitly supports it.",
+        "Required output columns: image_id, field, ai_value, corrected_value, action, source_issue, confidence, notes.",
+      ],
+      deliverables: [
+        "A CSV or spreadsheet containing one row for every extracted field reviewed and the required output columns.",
+        "A short quality note listing every field marked Review and explaining why the image did not support a definitive value.",
+        "The final filename or upload reference needed for reviewer evaluation.",
+      ],
+      reviewCriteria: [
+        "The attached document image is opened and every required field is reviewed.",
+        "Values are copied exactly when legible and normalized only as instructed.",
+        "Unreadable, absent, or inferred values are flagged instead of silently fabricated.",
+        "The output preserves image IDs, field names, confidence, and a usable audit trail.",
+      ],
+      imageAssets: [
+        {
+          fileName: "ai-document-extraction-01.jpg",
+          caption: "Source document image for AI extraction quality evaluation.",
+          width: 1024,
+          height: 768,
+        },
+      ],
+    };
   }
 
   if (job.title === "Image Tagging & Classification Assistant") {
@@ -922,6 +1099,7 @@ export function buildTaskAssignment(
   return {
     title: `${application.job.title} Task Brief`,
     fileBaseName: `${slugify(application.job.title)}-task-brief`,
+    imageAssets: template.imageAssets,
     sections: [
       {
         heading: "Candidate and role",
