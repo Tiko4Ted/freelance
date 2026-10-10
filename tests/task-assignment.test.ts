@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import test from "node:test";
 
 import { PayoutTrigger } from "@prisma/client";
@@ -73,7 +75,7 @@ test("builds downloadable and uploadable work samples for featured projects", ()
     {
       title: "AI Document Extraction & Quality Evaluator",
       description: "Review AI-extracted document fields against source records and flag exceptions.",
-      expected: /AI extraction-evaluation packet/,
+      expected: /ai-document-extraction-01\.jpg/,
     },
   ];
 
@@ -100,6 +102,38 @@ test("builds downloadable and uploadable work samples for featured projects", ()
     );
     assert.match(content, /upload/i);
     assert.match(content, /evaluation/i);
+  }
+});
+
+test("builds image-backed task packets for all four home AI projects", () => {
+  const roles = [
+    ["AI Search Relevance Evaluator", "ai-search-relevance-01.jpg", /Strong match/],
+    ["AI Conversation Quality Evaluator", "ai-conversation-quality-01.jpg", /visual_grounding/],
+    ["AI Response Quality Evaluator", "ai-response-quality-01.jpg", /instruction_following/],
+    ["AI Document Extraction & Quality Evaluator", "ai-document-extraction-01.jpg", /source_issue/],
+  ] as const;
+
+  for (const [title, imageFile, expected] of roles) {
+    const assignment = buildTaskAssignment({
+      id: `application-${title}`,
+      candidateName: "Ada Candidate",
+      job: {
+        title,
+        description: "Evaluate AI outputs against a supplied image source.",
+        companyName: "Trinity-AI",
+        payoutType: PayoutTrigger.TASK_1,
+        showOnHome: true,
+        isAiTask: true,
+        skills: [{ label: "AI evaluation" }],
+      },
+    });
+    const content = assignment.sections.flatMap((section) => section.lines).join("\n");
+
+    assert.equal(assignment.imageAssets?.length, 1);
+    assert.equal(assignment.imageAssets?.[0].fileName, imageFile);
+    assert.match(content, expected);
+    assert.match(content, new RegExp(imageFile.replace(".", "\\.")));
+    assert.match(content, /Do not invent|unsupported|visible/i);
   }
 });
 
@@ -162,4 +196,24 @@ test("renders task assignments as PDF bytes", () => {
   assert.equal(pdf.subarray(0, 8).toString("latin1"), "%PDF-1.4");
   assert.match(pdf.toString("latin1"), /\/Helvetica/);
   assert.match(pdf.toString("latin1"), /startxref/);
+});
+
+test("embeds compressed task images in the downloadable PDF", () => {
+  const image = readFileSync(
+    join(process.cwd(), "public", "task-assets", "ai-search-relevance-01.jpg"),
+  );
+  const pdf = createSimplePdf(
+    "Image Task Brief",
+    [{ heading: "Task", lines: ["Review the attached image."] }],
+    undefined,
+    [{
+      data: image,
+      width: 1024,
+      height: 768,
+      caption: "Source image for review.",
+    }],
+  );
+
+  assert.match(pdf.toString("latin1"), /\/Subtype \/Image/);
+  assert.match(pdf.toString("latin1"), /\/Filter \/DCTDecode/);
 });
