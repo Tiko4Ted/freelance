@@ -72,7 +72,7 @@ export const JobRepository = {
         title: { not: "micro1", mode: "insensitive" },
       },
       orderBy: [{ postedAt: "desc" }, { createdAt: "desc" }],
-      take: 3,
+      take: 4,
       select: publicJobSelect,
     });
   },

@@ -348,13 +348,13 @@ export function HomeDashboardClient({
               View all roles
             </Link>
           </div>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
             {featuredProjects.map((project) => {
               const cardClassName = `flex min-h-[190px] flex-col justify-between rounded-[18px] border bg-brand-ivory p-5 text-left shadow-brand-card ${
                 project.isApplied
                   ? "border-brand-gold/50"
                   : "group border-brand-sand transition hover:-translate-y-0.5 hover:border-brand-gold/60 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-brand-gold"
-              } ${project.id === featuredProjects[0]?.id ? "md:col-span-2" : ""}`;
+              }`;
               const cardContent = (
                 <>
                   <div>
