@@ -5,7 +5,7 @@ import { prisma } from "../lib/db/prisma";
 import { JobRepository } from "../lib/repositories/job-repository";
 import { adminCreateJobSchema } from "../lib/validation/admin";
 
-test("home projects query is flagged, active, available, and limited to three", async () => {
+test("home projects query is flagged, active, available, and limited to four", async () => {
   const originalFindMany = prisma.job.findMany;
   let capturedQuery: Record<string, unknown> | undefined;
 
@@ -32,7 +32,7 @@ test("home projects query is flagged, active, available, and limited to three", 
     openings: { gt: 0 },
     title: { not: "micro1", mode: "insensitive" },
   });
-  assert.equal(capturedQuery?.take, 3);
+  assert.equal(capturedQuery?.take, 4);
 });
 
 test("admin job input accepts home placement and participant capacity", () => {
