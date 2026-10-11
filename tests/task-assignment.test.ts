@@ -110,7 +110,7 @@ test("builds image-backed task packets for all four home AI projects", () => {
     ["AI Search Relevance Evaluator", "ai-search-relevance-01.jpg", /Strong match/],
     ["AI Conversation Quality Evaluator", "ai-conversation-quality-01.jpg", /visual_grounding/],
     ["AI Response Quality Evaluator", "ai-response-quality-01.jpg", /instruction_following/],
-    ["AI Document Extraction & Quality Evaluator", "ai-document-extraction-01.jpg", /source_issue/],
+    ["AI Document Extraction & Quality Evaluator", "ai-document-extraction-01.jpg", /source_region/],
   ] as const;
 
   for (const [title, imageFile, expected] of roles) {
@@ -131,6 +131,8 @@ test("builds image-backed task packets for all four home AI projects", () => {
 
     assert.equal(assignment.imageAssets?.length, 1);
     assert.equal(assignment.imageAssets?.[0].fileName, imageFile);
+    assert.equal(assignment.imageAssets?.[0].width, 640);
+    assert.equal(assignment.imageAssets?.[0].height, 480);
     assert.match(content, expected);
     assert.match(content, new RegExp(imageFile.replace(".", "\\.")));
     assert.match(content, /Do not invent|unsupported|visible/i);
