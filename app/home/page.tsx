@@ -36,7 +36,10 @@ function formatProjectPayout(
 }
 
 function projectStatusLabel(status: string, submittedAt?: Date | null) {
-  if (submittedAt) {
+  if (
+    submittedAt &&
+    (status === "CERTIFYING" || status === "CERTIFIED")
+  ) {
     return "Submitted for review";
   }
 

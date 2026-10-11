@@ -309,6 +309,48 @@ test("dashboard UI renders application and payment state", () => {
   assert.doesNotMatch(markup, /href="\/jobs\/job-1\/apply"/);
 });
 
+test("dashboard distinguishes paid and failed projects", () => {
+  const markup = renderToStaticMarkup(
+    createElement(HomeDashboardClient, {
+      userName: "Ada",
+      paymentSummary: {
+        formattedAwaitingPayment: "$0.00",
+        formattedTasksCompleted: "1",
+      },
+      projects: [
+        {
+          id: "application-paid",
+          title: "Paid review",
+          description: "A completed review.",
+          status: "PAID",
+          statusLabel: "Paid",
+          payoutLabel: "$25.00 per task",
+          skills: [],
+          isApplied: true,
+          showOnHome: true,
+        },
+        {
+          id: "application-failed",
+          title: "Failed review",
+          description: "A review that did not pass.",
+          status: "REJECTED",
+          statusLabel: "Failed",
+          payoutLabel: "$25.00 per task",
+          skills: [],
+          isApplied: true,
+          showOnHome: true,
+        },
+      ],
+    }),
+  );
+
+  assert.match(markup, /Paid review/);
+  assert.match(markup, /Failed review/);
+  assert.match(markup, /bg-emerald-100 text-emerald-800/);
+  assert.match(markup, /bg-red-100 text-red-800/);
+  assert.doesNotMatch(markup, /Submitted for review/);
+});
+
 test("dashboard removes onboarding prompts after review approval", () => {
   const markup = renderToStaticMarkup(
     createElement(HomeDashboardClient, {

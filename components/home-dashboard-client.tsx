@@ -52,6 +52,34 @@ type DashboardProject = {
 
 const MAX_TASK_SUBMISSION_BYTES = 4 * 1024 * 1024;
 
+function statusPillClass(status: string) {
+  if (status === "PAID") {
+    return "bg-emerald-100 text-emerald-800";
+  }
+
+  if (status === "PAYOUT_ELIGIBLE") {
+    return "bg-emerald-50 text-emerald-700";
+  }
+
+  if (status === "REJECTED") {
+    return "bg-red-100 text-red-800";
+  }
+
+  if (status === "CLOSED") {
+    return "bg-slate-200 text-slate-700";
+  }
+
+  return "bg-[var(--color-accent-soft)] text-brand-gold-strong";
+}
+
+function projectStatusText(project: DashboardProject, hasSubmitted: boolean) {
+  const finalStatuses = ["PAID", "PAYOUT_ELIGIBLE", "REJECTED", "CLOSED"];
+
+  return hasSubmitted && !finalStatuses.includes(project.status)
+    ? "Submitted for review"
+    : project.statusLabel;
+}
+
 type FeaturedProject = {
   id: string;
   title: string;
@@ -533,8 +561,10 @@ export function HomeDashboardClient({
                       </p>
                     </div>
                     <div className="mt-5 flex flex-wrap items-center gap-2 text-xs">
-                      <span className="rounded-full bg-[var(--color-accent-soft)] px-2.5 py-1 font-semibold text-brand-gold-strong">
-                        {hasSubmitted ? "Submitted for review" : project.statusLabel}
+                      <span
+                        className={`rounded-full px-2.5 py-1 font-semibold ${statusPillClass(project.status)}`}
+                      >
+                        {projectStatusText(project, hasSubmitted)}
                       </span>
                       <span className="font-medium text-slate-600">
                         {project.payoutLabel}
@@ -704,7 +734,9 @@ export function HomeDashboardClient({
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="rounded-full bg-[#f2e8d7] px-2.5 py-1 text-xs font-semibold text-brand-gold-strong">
+                          <span
+                            className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusPillClass(application.status)}`}
+                          >
                             {application.statusLabel}
                           </span>
                           {application.appliedAt ? (
