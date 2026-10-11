@@ -10,6 +10,7 @@ import { ApplicationActions } from "../components/admin/application-actions";
 import { JobCreateForm } from "../components/admin/job-create-form";
 import { HomeProjectToggle } from "../components/admin/home-project-toggle";
 import { ProjectLifecycleActions } from "../components/admin/project-lifecycle-actions";
+import { ProjectPricingEditor } from "../components/admin/project-pricing-editor";
 import { ProjectPublishAction } from "../components/admin/project-publish-action";
 import { ApplicationSubmissionPage } from "../components/application-feedback";
 import { HomeDashboardClient } from "../components/home-dashboard-client";
@@ -514,6 +515,24 @@ test("admin draft action explains the publish requirements", () => {
   assert.match(markup, /Draft project/);
   assert.match(markup, /Brief missing/);
   assert.match(markup, /Add the PDF brief and all 15 aptitude questions/);
+});
+
+test("admin pricing editor explains locked application rates", () => {
+  const markup = renderToStaticMarkup(
+    createElement(ProjectPricingEditor, {
+      applicationCount: 3,
+      currency: "USD",
+      isActive: true,
+      jobId: "job-1",
+      payoutAmountCents: 7500,
+      payoutType: "TASK_1",
+    }),
+  );
+
+  assert.match(markup, /Current rate: \$75\.00 per task/);
+  assert.match(markup, /New rate \(USD\)/);
+  assert.match(markup, /3 existing applications keep the rate locked/);
+  assert.match(markup, /Only new applicants use a changed price/);
 });
 
 test("admin can flag existing jobs and edit their remaining spots", () => {
