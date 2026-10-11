@@ -462,6 +462,8 @@ test("dashboard renders flagged database projects as summary cards", () => {
   );
 
   assert.match(markup, /Featured projects/);
+  assert.match(markup, /grid grid-cols-1 gap-4 md:grid-cols-2/);
+  assert.doesNotMatch(markup, /xl:grid-cols-4/);
   assert.match(markup, /AI Quality Review/);
   assert.match(markup, /\$50 per task/);
   assert.match(markup, /\+2K participants/);
