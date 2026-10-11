@@ -12,6 +12,7 @@ import { HomeProjectToggle } from "../components/admin/home-project-toggle";
 import { ProjectLifecycleActions } from "../components/admin/project-lifecycle-actions";
 import { ProjectPricingEditor } from "../components/admin/project-pricing-editor";
 import { ProjectPublishAction } from "../components/admin/project-publish-action";
+import { ApplicationBulkOperations } from "../components/admin/application-bulk-operations";
 import { ApplicationSubmissionPage } from "../components/application-feedback";
 import { HomeDashboardClient } from "../components/home-dashboard-client";
 import { HelpCenterClient } from "../components/help-center-client";
@@ -533,6 +534,22 @@ test("admin pricing editor explains locked application rates", () => {
   assert.match(markup, /New rate \(USD\)/);
   assert.match(markup, /3 existing applications keep the rate locked/);
   assert.match(markup, /Only new applicants use a changed price/);
+});
+
+test("admin bulk operations expose preview, scheduling, and status changes", () => {
+  const markup = renderToStaticMarkup(
+    createElement(ApplicationBulkOperations, {
+      jobs: [{ id: "job-1", title: "AI review", isActive: true }],
+      operations: [],
+    }),
+  );
+
+  assert.match(markup, /Bulk application changes/);
+  assert.match(markup, /Preview matches/);
+  assert.match(markup, /Run after \(hours\)/);
+  assert.match(markup, /Queue change/);
+  assert.match(markup, /Approved \/ certified/);
+  assert.match(markup, /Closed \/ cancelled/);
 });
 
 test("admin can flag existing jobs and edit their remaining spots", () => {

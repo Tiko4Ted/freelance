@@ -78,6 +78,15 @@ export const adminProgressSchema = z.object({
   tasksCompleted: z.coerce.number().int().min(0).optional(),
 });
 
+export const adminBulkOperationSchema = z.object({
+  sourceStatus: z.nativeEnum(ApplicationStatus).nullable().optional(),
+  targetStatus: z.nativeEnum(ApplicationStatus),
+  jobId: z.string().uuid().nullable().optional(),
+  olderThanHours: z.coerce.number().int().min(0).max(24 * 365).nullable().optional(),
+  maxItems: z.coerce.number().int().min(1).max(500).default(100),
+  delayHours: z.coerce.number().int().min(0).max(24 * 7).default(0),
+});
+
 export const adminEmailTestSchema = z.object({
   to: z.string().trim().email().max(320).transform((value) => value.toLowerCase()),
 });
@@ -86,4 +95,5 @@ export type AdminCreateJobInput = z.infer<typeof adminCreateJobSchema>;
 export type AdminUpdateJobInput = z.infer<typeof adminUpdateJobSchema>;
 export type AdminStatusInput = z.infer<typeof adminStatusSchema>;
 export type AdminProgressInput = z.infer<typeof adminProgressSchema>;
+export type AdminBulkOperationInput = z.infer<typeof adminBulkOperationSchema>;
 export type AdminEmailTestInput = z.infer<typeof adminEmailTestSchema>;

@@ -16,6 +16,14 @@
           "topic": "phone-verifications"
         }
       ]
+    },
+    "app/api/queues/application-bulk-operations/route.ts": {
+      "experimentalTriggers": [
+        {
+          "type": "queue/v2beta",
+          "topic": "application-bulk-operations"
+        }
+      ]
     }
   }
 }

@@ -3,8 +3,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { ApplicationActions } from "@/components/admin/application-actions";
+import { ApplicationBulkOperations } from "@/components/admin/application-bulk-operations";
 import { StatusBadge } from "@/components/status-badge";
 import { requireRole } from "@/lib/auth/session";
+import { AdminBulkOperationService } from "@/lib/services/admin-bulk-operation-service";
 import { AdminApplicationService } from "@/lib/services/admin-application-service";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +18,11 @@ export default async function AdminApplicationsPage() {
     redirect("/login");
   }
 
-  const applications = await AdminApplicationService.listApplications();
+  const [applications, operations, jobs] = await Promise.all([
+    AdminApplicationService.listApplications(),
+    AdminBulkOperationService.listOperations(),
+    AdminBulkOperationService.listJobs(),
+  ]);
 
   return (
     <>
@@ -33,21 +39,25 @@ export default async function AdminApplicationsPage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-6 py-8 md:px-8">
+        <ApplicationBulkOperations jobs={jobs} operations={operations} />
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 pb-8 md:px-8">
         <div className="divide-y divide-brand-sand overflow-hidden rounded-2xl border border-brand-sand bg-brand-ivory shadow-brand-card">
           {applications.length ? (
             applications.map((application) => (
               <article
-                className="grid gap-5 p-5 lg:grid-cols-[1fr_28rem]"
+                className="grid min-w-0 gap-5 p-5 lg:grid-cols-[minmax(0,1fr)_minmax(19rem,26rem)] md:p-6"
                 key={application.id}
               >
-                <div>
+                <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-3">
                     <h2 className="font-semibold text-brand-ink">
                       {application.candidateName}
                     </h2>
                     <StatusBadge status={application.status} />
                   </div>
-                  <p className="mt-2 text-sm text-brand-muted">
+                  <p className="mt-2 break-all text-sm text-brand-muted">
                     {application.candidateEmail}
                   </p>
                   {application.candidatePhoneNumber ? (
@@ -135,24 +145,26 @@ export default async function AdminApplicationsPage() {
                         }).format(new Date(application.taskSubmittedAt))}
                       </p>
                       {application.taskSubmissionNotes ? (
-                        <p className="mt-2 whitespace-pre-wrap">
+                        <p className="mt-2 break-words whitespace-pre-wrap">
                           Notes: {application.taskSubmissionNotes}
                         </p>
                       ) : null}
                     </div>
                   ) : null}
                 </div>
-                <ApplicationActions
-                  applicationId={application.id}
-                  currentStatus={application.status}
-                  hasPendingSubmission={Boolean(
-                    application.taskSubmittedAt &&
-                      (application.status === ApplicationStatus.CERTIFYING ||
-                        application.status === ApplicationStatus.CERTIFIED),
-                  )}
-                  hoursLogged={application.hoursLogged}
-                  tasksCompleted={application.tasksCompleted}
-                />
+                <div className="min-w-0 rounded-xl border border-brand-sand bg-brand-canvas/45 p-4">
+                  <ApplicationActions
+                    applicationId={application.id}
+                    currentStatus={application.status}
+                    hasPendingSubmission={Boolean(
+                      application.taskSubmittedAt &&
+                        (application.status === ApplicationStatus.CERTIFYING ||
+                          application.status === ApplicationStatus.CERTIFIED),
+                    )}
+                    hoursLogged={application.hoursLogged}
+                    tasksCompleted={application.tasksCompleted}
+                  />
+                </div>
               </article>
             ))
           ) : (
