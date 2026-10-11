@@ -105,6 +105,7 @@ export default async function HomePage() {
                 payoutAmountCents: true,
                 payoutType: true,
                 showOnHome: true,
+                isActive: true,
                 isAiTask: true,
                 annotationProject: { select: { id: true } },
                 skills: {
@@ -141,10 +142,12 @@ export default async function HomePage() {
                 hasTaskAccess &&
                 !application.taskSubmittedAt
                   ? "Onboarding review pending"
-                  : projectStatusLabel(
-                      application.status,
-                      application.taskSubmittedAt,
-                    ),
+                  : !application.job.isActive
+                    ? "Closed"
+                    : projectStatusLabel(
+                        application.status,
+                        application.taskSubmittedAt,
+                      ),
               payoutLabel: formatProjectPayout(
                 application.lockedPayoutCents ??
                   application.job.payoutAmountCents,
@@ -154,7 +157,8 @@ export default async function HomePage() {
               canSubmit,
               isSubmitted: Boolean(application.taskSubmittedAt),
               submittedFileName: application.taskSubmissionFileName,
-              isClosed: application.status === "CLOSED",
+              isClosed:
+                application.status === "CLOSED" || !application.job.isActive,
               briefHref: taskAvailable
                 ? `/api/v1/applications/${application.id}/task-material`
                 : undefined,
