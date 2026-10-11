@@ -67,6 +67,7 @@ export const adminStatusSchema = z.object({
     ApplicationStatus.PAID,
     ApplicationStatus.EXPIRED,
     ApplicationStatus.REJECTED,
+    ApplicationStatus.CLOSED,
   ]),
 });
 

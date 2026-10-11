@@ -22,7 +22,8 @@ function toDashboardDate(date: Date) {
 function applicationBucket(status: ApplicationStatus) {
   if (
     status === ApplicationStatus.EXPIRED ||
-    status === ApplicationStatus.REJECTED
+    status === ApplicationStatus.REJECTED ||
+    status === ApplicationStatus.CLOSED
   ) {
     return "failed" as const;
   }

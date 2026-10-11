@@ -25,6 +25,7 @@ type DemoJob = {
   postedDaysAgo: number;
   isHighDemand?: boolean;
   showOnHome?: boolean;
+  isActive?: boolean;
   isAiTask?: boolean;
   skills: string[];
 };
@@ -531,7 +532,8 @@ const baseDemoJobs: DemoJob[] = [
     hourlyMaxCents: 1800,
     postedDaysAgo: 0,
     isHighDemand: true,
-    showOnHome: true,
+    showOnHome: false,
+    isActive: false,
     skills: [
       "AI output review",
       "Quality evaluation",
@@ -553,7 +555,8 @@ const baseDemoJobs: DemoJob[] = [
     hourlyMaxCents: 1800,
     postedDaysAgo: 0,
     isHighDemand: true,
-    showOnHome: true,
+    showOnHome: false,
+    isActive: false,
     skills: [
       "Conversation review",
       "AI behavior evaluation",
@@ -575,7 +578,8 @@ const baseDemoJobs: DemoJob[] = [
     hourlyMaxCents: 1800,
     postedDaysAgo: 0,
     isHighDemand: true,
-    showOnHome: true,
+    showOnHome: false,
+    isActive: false,
     skills: [
       "Search relevance",
       "AI result evaluation",
@@ -596,7 +600,8 @@ const baseDemoJobs: DemoJob[] = [
     hourlyMaxCents: 1800,
     postedDaysAgo: 0,
     isHighDemand: true,
-    showOnHome: true,
+    showOnHome: false,
+    isActive: false,
     skills: [
       "AI output review",
       "Document comparison",
@@ -1408,7 +1413,7 @@ async function seedJob(job: DemoJob) {
       ...(job.showOnHome === undefined
         ? {}
         : { showOnHome: job.showOnHome }),
-      isActive: true,
+      isActive: job.isActive ?? true,
     },
     create: {
       title: job.title,
@@ -1425,7 +1430,7 @@ async function seedJob(job: DemoJob) {
       isHighDemand: job.isHighDemand ?? false,
       showOnHome: job.showOnHome ?? false,
       isAiTask: job.isAiTask ?? true,
-      isActive: true,
+      isActive: job.isActive ?? true,
     },
     select: { id: true },
   });

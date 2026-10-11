@@ -191,6 +191,14 @@ export const AdminApplicationService = {
         where: { id },
         select: { jobId: true, status: true },
       });
+
+      if (
+        existingApplication.status === ApplicationStatus.CLOSED &&
+        input.status !== ApplicationStatus.CLOSED
+      ) {
+        throw new Error("APPLICATION_CLOSED");
+      }
+
       const occupiedBefore = capacityStatuses.has(existingApplication.status);
       const occupiedAfter = capacityStatuses.has(input.status);
 

@@ -50,6 +50,7 @@ function projectStatusLabel(status: string, submittedAt?: Date | null) {
     PAID: "Paid",
     EXPIRED: "Expired",
     REJECTED: "Failed",
+    CLOSED: "Closed",
   };
 
   return labels[status] ?? status;
@@ -153,6 +154,7 @@ export default async function HomePage() {
               canSubmit,
               isSubmitted: Boolean(application.taskSubmittedAt),
               submittedFileName: application.taskSubmissionFileName,
+              isClosed: application.status === "CLOSED",
               briefHref: taskAvailable
                 ? `/api/v1/applications/${application.id}/task-material`
                 : undefined,

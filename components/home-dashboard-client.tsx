@@ -47,6 +47,7 @@ type DashboardProject = {
   annotationHref?: string;
   isApplied?: boolean;
   showOnHome?: boolean;
+  isClosed?: boolean;
 };
 
 const MAX_TASK_SUBMISSION_BYTES = 4 * 1024 * 1024;
@@ -492,6 +493,7 @@ export function HomeDashboardClient({
             </div>
 
             {/* Project Cards Grid */}
+            {visibleProjects.length ? (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {visibleProjects.map((project) => {
                 const isApplied = project.isApplied !== false;
@@ -499,6 +501,7 @@ export function HomeDashboardClient({
                   project.isSubmitted || submittedProjectIds.includes(project.id);
                 const canUpload = Boolean(project.canSubmit) && !hasSubmitted;
                 const isFailed = project.status === "REJECTED";
+                const isClosed = project.isClosed || project.status === "CLOSED";
                 const isUploading =
                   uploadFeedbackProjectId === project.id &&
                   submissionStatus === "submitting";
@@ -546,7 +549,12 @@ export function HomeDashboardClient({
                     {isApplied ? (
                       <div className="mt-4 border-t border-brand-sand/70 pt-3">
                         <div className="flex flex-wrap items-center gap-2">
-                          {isFailed ? (
+                          {isClosed ? (
+                            <span className="text-xs text-brand-muted">
+                              This project is closed. Task materials and uploads
+                              are no longer available.
+                            </span>
+                          ) : isFailed ? (
                             <span className="text-xs text-brand-muted">
                               Task materials and uploads are unavailable because
                               the aptitude test was not passed.
@@ -648,6 +656,25 @@ export function HomeDashboardClient({
                 );
               })}
             </div>
+            ) : (
+              <div className="rounded-2xl border border-brand-sand bg-brand-ivory p-8 text-center shadow-xs">
+                <p className="text-sm font-semibold text-brand-ink">
+                  No projects are currently available.
+                </p>
+                <p className="mt-1 text-sm text-brand-muted">
+                  Closed work remains available in your project history.
+                </p>
+                {projects.length ? (
+                  <button
+                    className="mt-4 text-sm font-semibold text-brand-gold-strong hover:text-brand-ink hover:underline"
+                    onClick={() => setActiveTab("applications")}
+                    type="button"
+                  >
+                    View project history
+                  </button>
+                ) : null}
+              </div>
+            )}
           </section>
         </>
       ) : (
@@ -706,17 +733,23 @@ export function HomeDashboardClient({
                         <span className="text-sm font-semibold text-slate-700">
                           {application.payoutLabel}
                         </span>
-                        <Link
-                          href={
-                            application.jobHref ??
-                            application.applyHref ??
-                            "/apply"
-                          }
-                          className="inline-flex items-center gap-1 text-sm font-semibold text-brand-gold-strong transition hover:text-brand-ink hover:underline"
-                        >
-                          View role
-                          <ChevronRight className="h-4 w-4" />
-                        </Link>
+                        {application.isClosed ? (
+                          <span className="text-sm font-semibold text-brand-muted">
+                            Closed
+                          </span>
+                        ) : (
+                          <Link
+                            href={
+                              application.jobHref ??
+                              application.applyHref ??
+                              "/apply"
+                            }
+                            className="inline-flex items-center gap-1 text-sm font-semibold text-brand-gold-strong transition hover:text-brand-ink hover:underline"
+                          >
+                            View role
+                            <ChevronRight className="h-4 w-4" />
+                          </Link>
+                        )}
                       </div>
                     </div>
                   </article>

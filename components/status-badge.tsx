@@ -39,6 +39,10 @@ const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
     label: "Rejected",
     className: "bg-red-100 text-red-800",
   },
+  CLOSED: {
+    label: "Closed",
+    className: "bg-slate-200 text-slate-600",
+  },
   PENDING: {
     label: "Pending",
     className: "bg-amber-100 text-amber-800",

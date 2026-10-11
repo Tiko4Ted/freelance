@@ -30,6 +30,7 @@ enum ApplicationStatus {
   PAID
   EXPIRED
   REJECTED
+  CLOSED
 }
 
 enum WithdrawalStatus {

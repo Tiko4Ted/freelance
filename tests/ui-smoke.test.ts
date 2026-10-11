@@ -358,6 +358,39 @@ test("dashboard hides task materials and uploads for failed applications", () =>
   assert.doesNotMatch(markup, /task-file-application-failed/);
 });
 
+test("dashboard closes projects without exposing task controls", () => {
+  const markup = renderToStaticMarkup(
+    createElement(HomeDashboardClient, {
+      userName: "Ada",
+      paymentSummary: {
+        formattedAwaitingPayment: "$0.00",
+        formattedTasksCompleted: "0",
+      },
+      projects: [
+        {
+          id: "application-closed",
+          applicationId: "application-closed",
+          title: "AI Reviewer",
+          description: "Review AI responses.",
+          status: "CLOSED",
+          statusLabel: "Closed",
+          payoutLabel: "$25.00",
+          skills: ["Research"],
+          isApplied: true,
+          isClosed: true,
+          showOnHome: true,
+        },
+      ],
+    }),
+  );
+
+  assert.match(markup, /Closed/);
+  assert.match(markup, /This project is closed/);
+  assert.doesNotMatch(markup, /Download materials/);
+  assert.doesNotMatch(markup, /Upload completed work/);
+  assert.doesNotMatch(markup, /task-file-application-closed/);
+});
+
 test("dashboard shows applied projects without the task workspace during onboarding review", () => {
   const markup = renderToStaticMarkup(
     createElement(HomeDashboardClient, {
