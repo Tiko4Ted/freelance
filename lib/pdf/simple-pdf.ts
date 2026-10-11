@@ -15,6 +15,7 @@ type TextLine = {
   size: number;
   bold?: boolean;
   gapBefore?: number;
+  x?: number;
 };
 
 const PAGE_WIDTH = 595;
@@ -35,10 +36,14 @@ function normalizePdfText(value: string) {
     .replace(/[^\x09\x0A\x0D\x20-\x7E]/g, "");
 }
 
-function wrapText(value: string, size: number) {
+function wrapText(
+  value: string,
+  size: number,
+  maxWidth = PAGE_WIDTH - MARGIN_X * 2,
+) {
   const maxChars = Math.max(
     24,
-    Math.floor((PAGE_WIDTH - MARGIN_X * 2) / (size * 0.48)),
+    Math.floor(maxWidth / (size * 0.48)),
   );
   const words = normalizePdfText(value).split(/\s+/).filter(Boolean);
   const lines: string[] = [];
@@ -71,6 +76,14 @@ function textCommand(line: TextLine, x: number, y: number) {
   )}) Tj ET`;
 }
 
+function pageNumberCommand(pageNumber: number, pageCount: number) {
+  return textCommand(
+    { text: `Page ${pageNumber} of ${pageCount}`, size: 8 },
+    PAGE_WIDTH - MARGIN_X - 58,
+    30,
+  );
+}
+
 function buildTextLines(
   title: string,
   sections: PdfSection[],
@@ -88,10 +101,51 @@ function buildTextLines(
   for (const section of sections) {
     lines.push({ text: section.heading, size: 13, bold: true, gapBefore: 18 });
 
+    const isPacket = section.heading === "Task packet";
+    const isList = [
+      "Before you start",
+      "Task to complete",
+      "What to submit",
+      "Review checklist",
+      "After upload",
+    ].includes(section.heading);
+
     for (const item of section.lines) {
-      for (const wrappedLine of wrapText(item, 10)) {
-        lines.push({ text: wrappedLine, size: 10 });
+      if (isPacket && item.includes(" | ") && !item.startsWith("Required ")) {
+        const segments = item.split(" | ");
+
+        segments.forEach((segment, segmentIndex) => {
+          const wrappedLines = wrapText(segment, 9, PAGE_WIDTH - MARGIN_X * 2 - 18);
+
+          wrappedLines.forEach((wrappedLine, lineIndex) => {
+            lines.push({
+              text: wrappedLine,
+              size: 9,
+              bold: segmentIndex === 0 && lineIndex === 0,
+              gapBefore: lineIndex === 0 ? (segmentIndex === 0 ? 16 : 11) : 11,
+              x: MARGIN_X + 12,
+            });
+          });
+        });
+        continue;
       }
+
+      const prefix = isList ? "- " : "";
+      const x = isList ? MARGIN_X + 8 : MARGIN_X;
+      const wrappedLines = wrapText(
+        `${prefix}${item}`,
+        10,
+        PAGE_WIDTH - x - MARGIN_X,
+      );
+
+      wrappedLines.forEach((wrappedLine, lineIndex) => {
+        lines.push({
+          text: wrappedLine,
+          size: 10,
+          gapBefore: lineIndex === 0 ? (isList ? 16 : 14) : 11,
+          x,
+        });
+      });
     }
   }
 
@@ -110,10 +164,38 @@ function paginate(lines: TextLine[]) {
       y = TOP_Y - (line.gapBefore ?? 14);
     }
 
-    pages[pages.length - 1].push(textCommand(line, MARGIN_X, y));
+    pages[pages.length - 1].push(textCommand(line, line.x ?? MARGIN_X, y));
   }
 
   return pages;
+}
+
+function imagePageCommands(
+  image: PdfImage,
+  imageIndex: number,
+  imageCount: number,
+) {
+  return [
+    textCommand(
+      { text: "Image packet", size: 15, bold: true },
+      MARGIN_X,
+      TOP_Y,
+    ),
+    textCommand(
+      { text: `Image ${imageIndex + 1} of ${imageCount}`, size: 10 },
+      MARGIN_X,
+      TOP_Y - 24,
+    ),
+    `q 487 0 0 365 ${MARGIN_X} 360 cm /Im1 Do Q`,
+    textCommand({ text: image.caption, size: 10 }, MARGIN_X, 330),
+  ];
+}
+
+function addPageNumbers(pages: string[][], pageCount: number) {
+  return pages.map((commands, index) => [
+    ...commands,
+    pageNumberCommand(index + 1, pageCount),
+  ]);
 }
 
 export function createSimplePdf(
@@ -122,8 +204,9 @@ export function createSimplePdf(
   subtitle?: string,
   images: PdfImage[] = [],
 ) {
-  const textPages = paginate(buildTextLines(title, sections, subtitle));
-  const pageCount = textPages.length + images.length;
+  const paginatedTextPages = paginate(buildTextLines(title, sections, subtitle));
+  const pageCount = paginatedTextPages.length + images.length;
+  const textPages = addPageNumbers(paginatedTextPages, pageCount);
   const pageStartId = 3;
   const contentStartId = pageStartId + pageCount;
   const regularFontId = contentStartId + pageCount;
@@ -152,26 +235,8 @@ export function createSimplePdf(
     const imageIndex = index - textPages.length;
     const commands = imageIndex >= 0
       ? [
-          textCommand(
-            { text: "Image packet", size: 15, bold: true },
-            MARGIN_X,
-            TOP_Y,
-          ),
-          textCommand(
-            {
-              text: `Image ${imageIndex + 1} of ${images.length}`,
-              size: 10,
-              gapBefore: 0,
-            },
-            MARGIN_X,
-            TOP_Y - 24,
-          ),
-          `q 487 0 0 365 ${MARGIN_X} 360 cm /Im1 Do Q`,
-          textCommand(
-            { text: images[imageIndex].caption, size: 10 },
-            MARGIN_X,
-            330,
-          ),
+          ...imagePageCommands(images[imageIndex], imageIndex, images.length),
+          pageNumberCommand(index + 1, pageCount),
         ]
       : textPages[index];
     const stream = commands.join("\n");
