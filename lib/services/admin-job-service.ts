@@ -63,7 +63,11 @@ function toJobResponse(job: {
   };
 }
 
-async function assertPublishable(tx: Prisma.TransactionClient, id: string) {
+async function assertPublishable(
+  tx: Prisma.TransactionClient,
+  id: string,
+  replaceJobId?: string,
+) {
   const job = await tx.job.findUnique({
     where: { id },
     select: {
@@ -90,19 +94,110 @@ async function assertPublishable(tx: Prisma.TransactionClient, id: string) {
     throw new Error("APTITUDE_TEST_REQUIRED");
   }
 
-  if (!job.showOnHome) {
-    const publishedCount = await tx.job.count({
-      where: {
-        isActive: true,
-        showOnHome: true,
-        id: { not: id },
-      },
+  const publishedCount = await tx.job.count({
+    where: {
+      isActive: true,
+      showOnHome: true,
+      id: { not: id },
+    },
+  });
+
+  if (replaceJobId && publishedCount < 4) {
+    throw new Error("PROJECT_REPLACEMENT_NOT_NEEDED");
+  }
+
+  if (replaceJobId) {
+    const replacement = await tx.job.findFirst({
+      where: { id: replaceJobId, isActive: true, showOnHome: true },
+      select: { id: true },
     });
 
-    if (publishedCount >= 4) {
+    if (!replacement || replaceJobId === id) {
+      throw new Error("PROJECT_TO_REPLACE_NOT_FOUND");
+    }
+  }
+
+  if (!job.showOnHome) {
+    if (publishedCount >= 4 && !replaceJobId) {
       throw new Error("HOME_PROJECT_LIMIT_REACHED");
     }
   }
+}
+
+async function closeJobWithinTransaction(tx: Prisma.TransactionClient, id: string) {
+  const job = await tx.job.findUnique({
+    where: { id },
+    select: { id: true },
+  });
+
+  if (!job) {
+    throw new Error("JOB_NOT_FOUND");
+  }
+
+  const applicationsToClose = await tx.application.findMany({
+    where: {
+      jobId: id,
+      taskSubmittedAt: null,
+      status: {
+        in: [
+          ApplicationStatus.APPLIED,
+          ApplicationStatus.CERTIFYING,
+          ApplicationStatus.CERTIFIED,
+          ApplicationStatus.MATCHED,
+          ApplicationStatus.ACTIVE,
+        ],
+      },
+    },
+    select: { id: true, status: true },
+  });
+
+  if (applicationsToClose.length) {
+    await tx.application.updateMany({
+      where: { id: { in: applicationsToClose.map((application) => application.id) } },
+      data: { status: ApplicationStatus.CLOSED },
+    });
+  }
+
+  const annotationProject = await tx.annotationProject.findUnique({
+    where: { jobId: id },
+    select: { id: true },
+  });
+
+  let expiredAssignments = 0;
+  let reopenedTasks = 0;
+
+  if (annotationProject) {
+    const expired = await tx.annotationAssignment.updateMany({
+      where: {
+        task: { projectId: annotationProject.id },
+        status: AnnotationAssignmentStatus.IN_PROGRESS,
+      },
+      data: { status: AnnotationAssignmentStatus.EXPIRED },
+    });
+    expiredAssignments = expired.count;
+
+    const reopened = await tx.annotationTask.updateMany({
+      where: {
+        projectId: annotationProject.id,
+        status: AnnotationTaskStatus.ASSIGNED,
+      },
+      data: { status: AnnotationTaskStatus.UNASSIGNED },
+    });
+    reopenedTasks = reopened.count;
+  }
+
+  const closedJob = await tx.job.update({
+    where: { id },
+    data: { isActive: false, showOnHome: false, openings: 0 },
+    include: adminJobInclude,
+  });
+
+  return {
+    job: closedJob,
+    closedApplications: applicationsToClose,
+    expiredAssignments,
+    reopenedTasks,
+  };
 }
 
 export const AdminJobService = {
@@ -208,11 +303,16 @@ export const AdminJobService = {
     };
   },
 
-  async publishJob(id: string) {
+  async publishJob(id: string, replaceJobId?: string) {
     const job = await prisma.$transaction(async (tx) => {
-      await assertPublishable(tx, id);
+      await assertPublishable(tx, id, replaceJobId);
 
-      return tx.job.update({
+      let replaced;
+      if (replaceJobId) {
+        replaced = await closeJobWithinTransaction(tx, replaceJobId);
+      }
+
+      const publishedJob = await tx.job.update({
         where: { id },
         data: {
           isActive: true,
@@ -224,94 +324,19 @@ export const AdminJobService = {
           _count: { select: { applications: true } },
         },
       });
+
+      return { publishedJob, replaced };
     });
 
-    return toJobResponse(job);
+    return {
+      job: toJobResponse(job.publishedJob),
+      replacedApplications: job.replaced?.closedApplications ?? [],
+    };
   },
 
   async closeJob(id: string) {
     const result = await prisma.$transaction(
-      async (tx) => {
-        const job = await tx.job.findUnique({
-          where: { id },
-          select: { id: true },
-        });
-
-        if (!job) {
-          throw new Error("JOB_NOT_FOUND");
-        }
-
-        const applicationsToClose = await tx.application.findMany({
-          where: {
-            jobId: id,
-            taskSubmittedAt: null,
-            status: {
-              in: [
-                ApplicationStatus.APPLIED,
-                ApplicationStatus.CERTIFYING,
-                ApplicationStatus.CERTIFIED,
-                ApplicationStatus.MATCHED,
-                ApplicationStatus.ACTIVE,
-              ],
-            },
-          },
-          select: { id: true, status: true },
-        });
-
-        if (applicationsToClose.length) {
-          await tx.application.updateMany({
-            where: {
-              id: { in: applicationsToClose.map((application) => application.id) },
-            },
-            data: { status: ApplicationStatus.CLOSED },
-          });
-        }
-
-        const annotationProject = await tx.annotationProject.findUnique({
-          where: { jobId: id },
-          select: { id: true },
-        });
-
-        let expiredAssignments = 0;
-        let reopenedTasks = 0;
-
-        if (annotationProject) {
-          const expired = await tx.annotationAssignment.updateMany({
-            where: {
-              task: { projectId: annotationProject.id },
-              status: AnnotationAssignmentStatus.IN_PROGRESS,
-            },
-            data: { status: AnnotationAssignmentStatus.EXPIRED },
-          });
-          expiredAssignments = expired.count;
-
-          const reopened = await tx.annotationTask.updateMany({
-            where: {
-              projectId: annotationProject.id,
-              status: AnnotationTaskStatus.ASSIGNED,
-            },
-            data: { status: AnnotationTaskStatus.UNASSIGNED },
-          });
-          reopenedTasks = reopened.count;
-        }
-
-        const closedJob = await tx.job.update({
-          where: { id },
-          data: {
-            isActive: false,
-            showOnHome: false,
-            openings: 0,
-          },
-          include: adminJobInclude,
-        });
-
-        return {
-          job: closedJob,
-          closedApplications: applicationsToClose,
-          expiredAssignments,
-          reopenedTasks,
-        };
-      },
+      (tx) => closeJobWithinTransaction(tx, id),
       { maxWait: 30000, timeout: 30000 },
     );
 

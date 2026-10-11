@@ -14,23 +14,41 @@ const publishErrors: Record<string, string> = {
   PROJECT_CLOSED: "Closed projects stay closed. Create a new project for a fresh run.",
   PROJECT_BRIEF_REQUIRED: "Upload a PDF project brief before publishing",
   APTITUDE_TEST_REQUIRED: "Add a valid 15-question aptitude test before publishing",
-  HOME_PROJECT_LIMIT_REACHED: "Only four projects can be published on home at once",
+  HOME_PROJECT_LIMIT_REACHED:
+    "Four projects are already published. Choose one to replace or close a published project first.",
+  PROJECT_REPLACEMENT_NOT_NEEDED: "There is an open publishing slot. Publish this draft directly.",
+  PROJECT_TO_REPLACE_NOT_FOUND: "Choose one currently published project to replace",
 };
 
 export async function POST(_request: Request, context: RouteContext) {
   try {
     await requireRole(Role.ADMIN);
     const { id } = await context.params;
-    const job = await AdminJobService.publishJob(id);
+    let replaceJobId: string | undefined;
+    try {
+      const body = (await _request.json()) as { replaceJobId?: unknown };
+      if (typeof body.replaceJobId === "string" && body.replaceJobId.trim()) {
+        replaceJobId = body.replaceJobId.trim();
+      }
+    } catch {
+      // An empty request body is the normal path when a free slot exists.
+    }
 
-    await EmailNotificationService.notifyUsersOfNewJob(job);
+    const result = await AdminJobService.publishJob(id, replaceJobId);
 
-    return NextResponse.json({ job });
+    await Promise.all([
+      EmailNotificationService.notifyUsersOfNewJob(result.job),
+      ...result.replacedApplications.map((application) =>
+        EmailNotificationService.notifyApplicationStatusChanged(application.id),
+      ),
+    ]);
+
+    return NextResponse.json({ job: result.job });
   } catch (error) {
     if (error instanceof Error && publishErrors[error.message]) {
       return NextResponse.json(
         { error: publishErrors[error.message] },
-        { status: 400 },
+        { status: error.message === "HOME_PROJECT_LIMIT_REACHED" ? 409 : 400 },
       );
     }
 

@@ -18,6 +18,9 @@ export default async function AdminJobsPage() {
   }
 
   const jobs = await AdminJobService.listJobs();
+  const publishedProjects = jobs
+    .filter((job) => job.isActive && job.showOnHome)
+    .map((job) => ({ id: job.id, title: job.title }));
 
   return (
     <>
@@ -33,6 +36,27 @@ export default async function AdminJobsPage() {
           <h1 className="mt-5 text-3xl font-semibold text-brand-ink md:text-5xl">
             Jobs
           </h1>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-6 pt-8 md:px-8">
+        <div className="rounded-2xl border border-brand-sand bg-brand-ivory px-5 py-4 shadow-brand-card">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-gold-strong">
+                User-facing capacity
+              </p>
+              <p className="mt-1 text-sm font-semibold text-brand-ink">
+                {publishedProjects.length} of 4 projects published
+              </p>
+              <p className="mt-1 max-w-3xl text-sm leading-6 text-brand-muted">
+                Close every published project below to show users zero available projects. When all four slots are full, publishing a draft lets you choose which live project to close and replace.
+              </p>
+            </div>
+            <span className="shrink-0 rounded-full bg-brand-canvas px-3 py-1 text-xs font-semibold text-brand-muted">
+              {publishedProjects.length === 0 ? "No projects visible" : "Visible to users"}
+            </span>
+          </div>
         </div>
       </section>
 
@@ -90,6 +114,7 @@ export default async function AdminJobsPage() {
                     hasTaskBrief={job.hasTaskBrief}
                     isActive={job.isActive}
                     jobId={job.id}
+                    publishedProjects={publishedProjects}
                     showOnHome={job.showOnHome}
                   />
                   <div className="mt-4">

@@ -506,6 +506,7 @@ test("admin draft action explains the publish requirements", () => {
       hasTaskBrief: false,
       isActive: true,
       jobId: "job-1",
+      publishedProjects: [],
       showOnHome: false,
     }),
   );
