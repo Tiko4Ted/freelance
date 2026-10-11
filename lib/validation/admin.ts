@@ -2,6 +2,7 @@ import { ApplicationStatus, PayoutTrigger } from "@prisma/client";
 import { z } from "zod";
 
 import { homeProjectPricingError } from "@/lib/home-project-pricing";
+import { aptitudeTestDefinitionSchema } from "@/lib/aptitude-test";
 
 const adminJobFields = {
   title: z.string().trim().min(3).max(160),
@@ -21,6 +22,7 @@ const adminJobFields = {
   // Every project must use the AI-data task structure. Keep this as a literal
   // so future admin writes cannot silently create a legacy task format.
   isAiTask: z.literal(true).optional().default(true),
+  aptitudeTest: aptitudeTestDefinitionSchema.optional(),
   skills: z.array(z.string().trim().min(1).max(80)).optional().default([]),
   isActive: z.boolean().optional().default(true),
 };

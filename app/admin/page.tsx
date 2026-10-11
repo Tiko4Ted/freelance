@@ -2,7 +2,6 @@ import { Role } from "@prisma/client";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { PortalSidebar } from "@/components/portal-sidebar";
 import { requireRole } from "@/lib/auth/session";
 import { AdminApplicationService } from "@/lib/services/admin-application-service";
 import { AdminJobService } from "@/lib/services/admin-job-service";
@@ -23,11 +22,10 @@ export default async function AdminPage() {
 
   return (
     <>
-      <PortalSidebar activeTab="home" isAuthenticated userName="Admin" />
       <main className="min-h-screen bg-brand-canvas pt-[72px] text-brand-ink lg:pl-64">
       <section className="border-b border-brand-sand bg-brand-ivory">
         <div className="mx-auto max-w-6xl px-6 py-8 md:px-8">
-          <Link aria-label="Trinity-AI home" href="/home">
+          <Link aria-label="Trinity-AI operations" href="/admin">
             Trinity-AI
           </Link>
           <p className="mt-8 text-sm font-semibold uppercase tracking-[0.16em] text-brand-gold-strong">

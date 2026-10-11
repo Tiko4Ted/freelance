@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { Role } from "@prisma/client";
 
 import { PortalSidebar } from "@/components/portal-sidebar";
 import { StatusBadge } from "@/components/status-badge";
@@ -15,6 +16,9 @@ export default async function WalletPage() {
 
   try {
     const session = await requireSession();
+    if (session.user.role === Role.ADMIN) {
+      redirect("/admin");
+    }
     userId = session.user.id;
     userName = session.user.name || "Teddy";
   } catch {

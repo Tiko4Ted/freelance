@@ -3,9 +3,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { JobCreateForm } from "@/components/admin/job-create-form";
-import { HomeProjectToggle } from "@/components/admin/home-project-toggle";
 import { ProjectLifecycleActions } from "@/components/admin/project-lifecycle-actions";
-import { PortalSidebar } from "@/components/portal-sidebar";
+import { ProjectPublishAction } from "@/components/admin/project-publish-action";
 import { requireRole } from "@/lib/auth/session";
 import { AdminJobService } from "@/lib/services/admin-job-service";
 
@@ -22,7 +21,6 @@ export default async function AdminJobsPage() {
 
   return (
     <>
-      <PortalSidebar activeTab="home" isAuthenticated userName="Admin" />
       <main className="min-h-screen bg-brand-canvas pt-[72px] text-brand-ink lg:pl-64">
       <section className="border-b border-brand-sand bg-brand-ivory">
         <div className="mx-auto max-w-6xl px-6 py-8 md:px-8">
@@ -59,7 +57,7 @@ export default async function AdminJobsPage() {
                         ? "CLOSED"
                         : job.showOnHome
                           ? "PUBLISHED"
-                          : "UNPUBLISHED"}
+                          : "DRAFT"}
                     </span>
                   </div>
                   <p className="mt-2 text-sm leading-6 text-brand-muted">
@@ -72,13 +70,28 @@ export default async function AdminJobsPage() {
                     {job.applicationCount} linked application
                     {job.applicationCount === 1 ? "" : "s"}
                   </p>
-                  {job.isActive ? (
-                    <HomeProjectToggle
-                      jobId={job.id}
-                      openings={job.openings}
-                      showOnHome={job.showOnHome}
-                    />
-                  ) : null}
+                  <div className="mt-3 flex flex-wrap items-center gap-3 text-xs font-medium text-brand-muted">
+                    <span>{job.hasTaskBrief ? "PDF brief uploaded" : "PDF brief missing"}</span>
+                    <span className="text-brand-sand">|</span>
+                    <span>{job.aptitudeQuestionCount}/15 aptitude questions</span>
+                    {job.hasTaskBrief ? (
+                      <a
+                        className="font-semibold text-brand-gold-strong underline-offset-4 hover:underline"
+                        href={`/api/v1/admin/jobs/${job.id}/brief`}
+                        rel="noreferrer"
+                        target="_blank"
+                      >
+                        Review brief
+                      </a>
+                    ) : null}
+                  </div>
+                  <ProjectPublishAction
+                    aptitudeQuestionCount={job.aptitudeQuestionCount}
+                    hasTaskBrief={job.hasTaskBrief}
+                    isActive={job.isActive}
+                    jobId={job.id}
+                    showOnHome={job.showOnHome}
+                  />
                   <div className="mt-4">
                     <ProjectLifecycleActions
                       applicationCount={job.applicationCount}

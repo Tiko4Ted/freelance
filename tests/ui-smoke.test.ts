@@ -10,6 +10,7 @@ import { ApplicationActions } from "../components/admin/application-actions";
 import { JobCreateForm } from "../components/admin/job-create-form";
 import { HomeProjectToggle } from "../components/admin/home-project-toggle";
 import { ProjectLifecycleActions } from "../components/admin/project-lifecycle-actions";
+import { ProjectPublishAction } from "../components/admin/project-publish-action";
 import { ApplicationSubmissionPage } from "../components/application-feedback";
 import { HomeDashboardClient } from "../components/home-dashboard-client";
 import { HelpCenterClient } from "../components/help-center-client";
@@ -488,13 +489,30 @@ test("empty dashboard does not render demo projects or task workspace", () => {
   assert.doesNotMatch(markup, /Project details/);
 });
 
-test("admin job form exposes home placement and participant capacity", () => {
+test("admin project form creates a draft with a brief and aptitude gate", () => {
   const markup = renderToStaticMarkup(createElement(JobCreateForm));
 
-  assert.match(markup, /name="showOnHome"/);
+  assert.match(markup, /name="taskBrief"/);
+  assert.match(markup, /name="aptitudeTest"/);
   assert.match(markup, /name="openings"/);
-  assert.match(markup, /Show on home/);
-  assert.match(markup, /up to four published active projects/);
+  assert.match(markup, /Create draft project/);
+  assert.match(markup, /Question 15/);
+});
+
+test("admin draft action explains the publish requirements", () => {
+  const markup = renderToStaticMarkup(
+    createElement(ProjectPublishAction, {
+      aptitudeQuestionCount: 12,
+      hasTaskBrief: false,
+      isActive: true,
+      jobId: "job-1",
+      showOnHome: false,
+    }),
+  );
+
+  assert.match(markup, /Draft project/);
+  assert.match(markup, /Brief missing/);
+  assert.match(markup, /Add the PDF brief and all 15 aptitude questions/);
 });
 
 test("admin can flag existing jobs and edit their remaining spots", () => {

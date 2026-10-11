@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 
 import { auth } from "@/auth";
+import { Role } from "@prisma/client";
+import { redirect } from "next/navigation";
 import { PortalSidebar } from "@/components/portal-sidebar";
 
 export const metadata: Metadata = {
@@ -45,6 +47,9 @@ const goals = [
 
 export default async function AboutUsPage() {
   const session = await auth();
+  if (session?.user?.role === Role.ADMIN) {
+    redirect("/admin");
+  }
   const userName = session?.user?.name || "Teddy";
 
   return (

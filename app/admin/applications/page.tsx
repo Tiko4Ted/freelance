@@ -3,7 +3,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { ApplicationActions } from "@/components/admin/application-actions";
-import { PortalSidebar } from "@/components/portal-sidebar";
 import { StatusBadge } from "@/components/status-badge";
 import { requireRole } from "@/lib/auth/session";
 import { AdminApplicationService } from "@/lib/services/admin-application-service";
@@ -21,7 +20,6 @@ export default async function AdminApplicationsPage() {
 
   return (
     <>
-      <PortalSidebar activeTab="home" isAuthenticated userName="Admin" />
       <main className="min-h-screen bg-brand-canvas pt-[72px] text-brand-ink lg:pl-64">
       <section className="border-b border-brand-sand bg-brand-ivory">
         <div className="mx-auto max-w-6xl px-6 py-8 md:px-8">

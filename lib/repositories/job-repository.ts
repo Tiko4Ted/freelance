@@ -18,6 +18,7 @@ const publicJobSelect = {
   postedAt: true,
   isHighDemand: true,
   showOnHome: true,
+  aptitudeTest: true,
   createdAt: true,
   updatedAt: true,
   skills: {
@@ -47,7 +48,7 @@ export type PublicJobCard = Prisma.JobGetPayload<{
 export const JobRepository = {
   listActive() {
     return prisma.job.findMany({
-      where: { isActive: true },
+      where: { isActive: true, showOnHome: true, openings: { gt: 0 } },
       orderBy: { postedAt: "desc" },
       select: publicJobSelect,
     });
@@ -55,7 +56,7 @@ export const JobRepository = {
 
   listActiveCards(skip = 0, take = 48) {
     return prisma.job.findMany({
-      where: { isActive: true },
+      where: { isActive: true, showOnHome: true, openings: { gt: 0 } },
       orderBy: { postedAt: "desc" },
       skip,
       take: take + 1,
@@ -79,7 +80,7 @@ export const JobRepository = {
 
   findActiveById(id: string) {
     return prisma.job.findFirst({
-      where: { id, isActive: true },
+      where: { id, isActive: true, showOnHome: true, openings: { gt: 0 } },
       select: publicJobSelect,
     });
   },

@@ -1,4 +1,5 @@
 import type { PayoutTrigger } from "@prisma/client";
+import { z } from "zod";
 
 export const APTITUDE_MIN_CORRECT_ANSWERS = 12;
 
@@ -7,6 +8,7 @@ export type AptitudeJob = {
   description: string;
   payoutType: PayoutTrigger | string;
   skills: { label: string }[];
+  aptitudeTest?: unknown;
 };
 
 export type AptitudeOption = {
@@ -30,6 +32,73 @@ export type AptitudeAnswer = {
   questionId: string;
   selectedOptionId: string;
 };
+
+export const aptitudeTestDefinitionSchema = z
+  .object({
+    passingCorrect: z.number().int().min(1).max(50),
+    questions: z
+      .array(
+        z.object({
+          id: z.string().trim().min(1).max(80),
+          prompt: z.string().trim().min(5).max(600),
+          options: z
+            .array(
+              z.object({
+                id: z.string().trim().min(1).max(20),
+                label: z.string().trim().min(1).max(300),
+              }),
+            )
+            .min(2)
+            .max(6),
+          correctOptionId: z.string().trim().min(1).max(20),
+        }),
+      )
+      .min(15)
+      .max(50),
+  })
+  .superRefine((test, context) => {
+    const questionIds = new Set<string>();
+
+    test.questions.forEach((question, index) => {
+      if (questionIds.has(question.id)) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["questions", index, "id"],
+          message: "Question IDs must be unique",
+        });
+      }
+      questionIds.add(question.id);
+
+      const optionIds = new Set(question.options.map((option) => option.id));
+      if (optionIds.size !== question.options.length) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["questions", index, "options"],
+          message: "Option IDs must be unique within a question",
+        });
+      }
+
+      if (!optionIds.has(question.correctOptionId)) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["questions", index, "correctOptionId"],
+          message: "Correct option must match one of the options",
+        });
+      }
+    });
+
+    if (test.passingCorrect > test.questions.length) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["passingCorrect"],
+        message: "Passing score cannot exceed the number of questions",
+      });
+    }
+  });
+
+export type AptitudeTestDefinition = z.infer<
+  typeof aptitudeTestDefinitionSchema
+>;
 
 const fallbackSkills = [
   "Quality assurance",
@@ -276,7 +345,48 @@ function getQuestionKey(job: AptitudeJob) {
   ];
 }
 
+function storedQuestions(job: AptitudeJob) {
+  const parsed = aptitudeTestDefinitionSchema.safeParse(job.aptitudeTest);
+  return parsed.success ? parsed.data.questions : null;
+}
+
+function publicQuestions(job: AptitudeJob) {
+  const value = job.aptitudeTest;
+
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const questions = Array.isArray(value)
+    ? value
+    : (value as { questions?: unknown }).questions;
+  if (!Array.isArray(questions)) {
+    return null;
+  }
+
+  const parsed = z
+    .array(
+      z.object({
+        id: z.string(),
+        prompt: z.string(),
+        options: z.array(z.object({ id: z.string(), label: z.string() })),
+      }),
+    )
+    .safeParse(questions);
+
+  return parsed.success ? parsed.data : null;
+}
+
 export function buildAptitudeTest(job: AptitudeJob): AptitudeQuestion[] {
+  const customQuestions = storedQuestions(job) ?? publicQuestions(job);
+  if (customQuestions) {
+    return customQuestions.map((question) => ({
+      id: question.id,
+      prompt: question.prompt,
+      options: question.options,
+    }));
+  }
+
   return getQuestionKey(job).map((question) => ({
     id: question.id,
     prompt: question.prompt,
@@ -285,7 +395,8 @@ export function buildAptitudeTest(job: AptitudeJob): AptitudeQuestion[] {
 }
 
 export function scoreAptitudeTest(job: AptitudeJob, answers: AptitudeAnswer[]) {
-  const questions = getQuestionKey(job);
+  const customQuestions = storedQuestions(job);
+  const questions = customQuestions ?? getQuestionKey(job);
   const answerMap = new Map(
     answers.map((answer) => [answer.questionId, answer.selectedOptionId]),
   );
@@ -294,11 +405,15 @@ export function scoreAptitudeTest(job: AptitudeJob, answers: AptitudeAnswer[]) {
   ).length;
   const totalQuestions = questions.length;
   const scorePercent = Math.round((correctCount / totalQuestions) * 100);
+  const passingCorrect =
+    customQuestions
+      ? aptitudeTestDefinitionSchema.parse(job.aptitudeTest).passingCorrect
+      : APTITUDE_MIN_CORRECT_ANSWERS;
 
   return {
     correctCount,
     totalQuestions,
     scorePercent,
-    passed: correctCount >= APTITUDE_MIN_CORRECT_ANSWERS,
+    passed: correctCount >= passingCorrect,
   };
 }
