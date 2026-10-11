@@ -15,7 +15,7 @@ export async function GET(_request: Request, context: RouteContext) {
     const { id } = await context.params;
     const material = await ApplicationService.getTaskMaterial(id, session.user.id);
 
-    return new NextResponse(material.content, {
+    return new NextResponse(new Uint8Array(material.content), {
       headers: {
         "Content-Disposition": `attachment; filename="${material.fileName}"`,
         "Content-Type": "application/pdf",

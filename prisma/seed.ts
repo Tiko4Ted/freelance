@@ -596,7 +596,7 @@ const baseDemoJobs: DemoJob[] = [
     hourlyMaxCents: 1800,
     postedDaysAgo: 0,
     isHighDemand: true,
-    showOnHome: false,
+    showOnHome: true,
     skills: [
       "AI output review",
       "Document comparison",

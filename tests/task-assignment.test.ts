@@ -107,13 +107,33 @@ test("builds downloadable and uploadable work samples for featured projects", ()
 
 test("builds image-backed task packets for all four home AI projects", () => {
   const roles = [
-    ["AI Search Relevance Evaluator", "ai-search-relevance-01.jpg", /Strong match/],
-    ["AI Conversation Quality Evaluator", "ai-conversation-quality-01.jpg", /visual_grounding/],
-    ["AI Response Quality Evaluator", "ai-response-quality-01.jpg", /instruction_following/],
-    ["AI Document Extraction & Quality Evaluator", "ai-document-extraction-01.jpg", /source_region/],
+    [
+      "AI Search Relevance Evaluator",
+      "ai-search-relevance-01.jpg",
+      "ai-search-relevance-evaluator-task-brief-with-response-tables.pdf",
+      /Strong match/,
+    ],
+    [
+      "AI Conversation Quality Evaluator",
+      "ai-conversation-quality-01.jpg",
+      "ai-conversation-quality-evaluator-task-brief-with-response-tables.pdf",
+      /visual_grounding/,
+    ],
+    [
+      "AI Response Quality Evaluator",
+      "ai-response-quality-01.jpg",
+      "ai-response-quality-evaluator-task-brief-with-response-tables.pdf",
+      /instruction_following/,
+    ],
+    [
+      "AI Document Extraction & Quality Evaluator",
+      "ai-document-extraction-01.jpg",
+      "ai-document-extraction-quality-evaluator-task-brief-with-response-tables.pdf",
+      /source_region/,
+    ],
   ] as const;
 
-  for (const [title, imageFile, expected] of roles) {
+  for (const [title, imageFile, packetFile, expected] of roles) {
     const assignment = buildTaskAssignment({
       id: `application-${title}`,
       candidateName: "Ada Candidate",
@@ -129,6 +149,7 @@ test("builds image-backed task packets for all four home AI projects", () => {
     });
     const content = assignment.sections.flatMap((section) => section.lines).join("\n");
 
+    assert.equal(assignment.taskPacketFileName, packetFile);
     assert.equal(assignment.imageAssets?.length, 1);
     assert.equal(assignment.imageAssets?.[0].fileName, imageFile);
     assert.equal(assignment.imageAssets?.[0].width, 640);

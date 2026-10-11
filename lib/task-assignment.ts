@@ -31,6 +31,7 @@ export type TaskAssignmentImage = {
 export type TaskAssignment = {
   title: string;
   fileBaseName: string;
+  taskPacketFileName?: string;
   sections: TaskAssignmentSection[];
   imageAssets?: TaskAssignmentImage[];
 };
@@ -45,6 +46,17 @@ type TaskTemplate = {
   reviewCriteria: string[];
   partnerPaymentNote?: string;
   imageAssets?: TaskAssignmentImage[];
+};
+
+const STANDARD_HOME_AI_PACKET_FILES: Record<string, string> = {
+  "AI Search Relevance Evaluator":
+    "ai-search-relevance-evaluator-task-brief-with-response-tables.pdf",
+  "AI Conversation Quality Evaluator":
+    "ai-conversation-quality-evaluator-task-brief-with-response-tables.pdf",
+  "AI Response Quality Evaluator":
+    "ai-response-quality-evaluator-task-brief-with-response-tables.pdf",
+  "AI Document Extraction & Quality Evaluator":
+    "ai-document-extraction-quality-evaluator-task-brief-with-response-tables.pdf",
 };
 
 function skillLabels(job: TaskAssignmentJob) {
@@ -459,6 +471,8 @@ function buildAiEvaluationTask(job: TaskAssignmentJob): TaskTemplate {
     taskPacket: [
       "AI evaluation packet: review all eight model outputs below.",
       "Required output columns: case_id, input_summary, model_output, decision, corrected_output, confidence, rationale.",
+      "Field guide: decision is Pass, Partial, or Fail; corrected_output is an evidence-bounded replacement; confidence is High, Medium, or Low; rationale is one sentence linking the decision to source evidence.",
+      "Complete one row per case. Keep the supplied case_id unchanged, quote only the relevant source evidence, and mark unsupported information as Unknown rather than guessing.",
       "AI-001 | Input: follow the project instructions | Model output: follows the instructions and cites the supplied source | Review focus: verify source support.",
       "AI-002 | Input: identify an uncertain detail | Model output: states the detail as a fact without evidence | Review focus: flag unsupported certainty.",
       "AI-003 | Input: preserve an important number or name | Model output: changes one source value | Review focus: compare every value with the source.",
@@ -1123,6 +1137,7 @@ export function buildTaskAssignment(
   return {
     title: `${application.job.title} Task Brief`,
     fileBaseName: `${slugify(application.job.title)}-task-brief`,
+    taskPacketFileName: STANDARD_HOME_AI_PACKET_FILES[application.job.title],
     imageAssets: template.imageAssets,
     sections: [
       {

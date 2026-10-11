@@ -36,6 +36,10 @@ function loadTaskImages(images: TaskAssignmentImage[] | undefined): PdfImage[] {
   }));
 }
 
+function loadTaskPacket(fileName: string): Buffer {
+  return readFileSync(join(process.cwd(), "public", "task-packets", fileName));
+}
+
 function parseReferralCookie(value: string | undefined): ReferralCookie | null {
   if (!value) {
     return null;
@@ -366,6 +370,13 @@ export const ApplicationService = {
     }
 
     const assignment = buildTaskAssignment(application);
+
+    if (assignment.taskPacketFileName) {
+      return {
+        fileName: assignment.taskPacketFileName,
+        content: loadTaskPacket(assignment.taskPacketFileName),
+      };
+    }
 
     return {
       fileName: `${assignment.fileBaseName}.pdf`,
