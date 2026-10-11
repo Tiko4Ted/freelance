@@ -2,7 +2,11 @@ import { Role } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 
-import { requireRole } from "@/lib/auth/session";
+import {
+  ForbiddenError,
+  UnauthorizedError,
+  requireRole,
+} from "@/lib/auth/session";
 import { AdminBulkOperationService } from "@/lib/services/admin-bulk-operation-service";
 import { adminBulkOperationSchema } from "@/lib/validation/admin";
 
@@ -28,6 +32,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ operation }, { status: 202 });
   } catch (error) {
+    if (error instanceof UnauthorizedError || error instanceof ForbiddenError) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     if (error instanceof ZodError) {
       return NextResponse.json(
         { error: "Invalid bulk operation", issues: error.flatten() },
