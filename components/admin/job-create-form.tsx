@@ -171,7 +171,7 @@ export function JobCreateForm() {
           Show on home
         </label>
         <p className="text-xs leading-5 text-brand-muted">
-          Home displays at most three flagged active jobs with openings left.
+          Home displays up to four published active projects with openings left.
         </p>
       </div>
       <button

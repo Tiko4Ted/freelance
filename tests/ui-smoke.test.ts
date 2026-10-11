@@ -9,6 +9,7 @@ import { ApplicationStatus } from "@prisma/client";
 import { ApplicationActions } from "../components/admin/application-actions";
 import { JobCreateForm } from "../components/admin/job-create-form";
 import { HomeProjectToggle } from "../components/admin/home-project-toggle";
+import { ProjectLifecycleActions } from "../components/admin/project-lifecycle-actions";
 import { ApplicationSubmissionPage } from "../components/application-feedback";
 import { HomeDashboardClient } from "../components/home-dashboard-client";
 import { HelpCenterClient } from "../components/help-center-client";
@@ -493,6 +494,7 @@ test("admin job form exposes home placement and participant capacity", () => {
   assert.match(markup, /name="showOnHome"/);
   assert.match(markup, /name="openings"/);
   assert.match(markup, /Show on home/);
+  assert.match(markup, /up to four published active projects/);
 });
 
 test("admin can flag existing jobs and edit their remaining spots", () => {
@@ -508,6 +510,30 @@ test("admin can flag existing jobs and edit their remaining spots", () => {
   assert.match(markup, /Remaining participant spots/);
   assert.match(markup, /Save spots/);
   assert.match(markup, /value="3"/);
+});
+
+test("admin can close a project or see its closed history state", () => {
+  const activeMarkup = renderToStaticMarkup(
+    createElement(ProjectLifecycleActions, {
+      jobId: "job-1",
+      isActive: true,
+      applicationCount: 2,
+    }),
+  );
+  const closedMarkup = renderToStaticMarkup(
+    createElement(ProjectLifecycleActions, {
+      jobId: "job-1",
+      isActive: false,
+      applicationCount: 2,
+    }),
+  );
+
+  assert.match(activeMarkup, /Close project/);
+  assert.match(activeMarkup, /2 applications currently linked/);
+  assert.match(activeMarkup, /Closes unfinished work and blocks task uploads/);
+  assert.match(closedMarkup, /Project closed/);
+  assert.match(closedMarkup, /fresh application pool/);
+  assert.doesNotMatch(closedMarkup, /Close project/);
 });
 
 test("dashboard renders flagged database projects as summary cards", () => {
