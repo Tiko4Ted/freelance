@@ -26,6 +26,7 @@ function applicationWhere(filter: BulkFilter): Prisma.ApplicationWhereInput {
       : new Date(Date.now() - filter.olderThanHours * 60 * 60 * 1_000);
 
   return {
+    job: { isActive: true, showOnHome: true },
     ...(filter.sourceStatus ? { status: filter.sourceStatus } : {}),
     ...(filter.jobId ? { jobId: filter.jobId } : {}),
     ...(cutoff ? { createdAt: { lte: cutoff } } : {}),
@@ -105,6 +106,7 @@ export const AdminBulkOperationService = {
 
   async listJobs() {
     return prisma.job.findMany({
+      where: { isActive: true, showOnHome: true },
       orderBy: { title: "asc" },
       select: { id: true, title: true, isActive: true },
     });

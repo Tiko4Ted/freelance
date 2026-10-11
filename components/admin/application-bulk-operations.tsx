@@ -173,9 +173,9 @@ export function ApplicationBulkOperations({
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-gold-strong">
             Operations queue
           </p>
-          <h2 className="mt-2 text-xl font-semibold text-brand-ink">Bulk application changes</h2>
+          <h2 className="mt-2 text-xl font-semibold text-brand-ink">Project status changes</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-brand-muted">
-            Preview the oldest matching applications, then approve, reject, close, or move them to any supported state. Scheduled changes run in the background.
+            Preview the oldest applications for a live project on <span className="font-semibold text-brand-ink">/home</span>, then approve, reject, close, or move them to another project state. Scheduled changes run in the background.
           </p>
         </div>
         <p className="max-w-xs text-xs leading-5 text-brand-muted">
@@ -220,7 +220,7 @@ export function ApplicationBulkOperations({
           </div>
 
           <label className="grid gap-2 text-sm font-semibold text-brand-ink">
-            Project filter
+            /home project
             <select
               className="h-11 min-w-0 rounded-lg border border-brand-sand bg-brand-canvas/50 px-3 font-normal outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
               onChange={(event) => {
@@ -229,9 +229,9 @@ export function ApplicationBulkOperations({
               }}
               value={jobId}
             >
-              <option value="">All projects</option>
+              <option value="">All live /home projects</option>
               {jobs.map((job) => (
-                <option key={job.id} value={job.id}>{job.title}{job.isActive ? "" : " (closed)"}</option>
+                <option key={job.id} value={job.id}>{job.title}</option>
               ))}
             </select>
           </label>
@@ -350,7 +350,7 @@ export function ApplicationBulkOperations({
                   <span className="rounded-full bg-brand-ivory px-2.5 py-1 text-xs font-semibold text-brand-muted">{operation.status}</span>
                 </div>
                 <p className="mt-2 break-words text-xs leading-5 text-brand-muted">
-                  {operation.jobTitle ?? "All projects"} · {operation.olderThanHours === null ? "Any age" : `older than ${operation.olderThanHours}h`} · limit {operation.maxItems} · scheduled {formatDate(operation.scheduledAt)}
+                  {operation.jobTitle ?? "All live /home projects"} · {operation.olderThanHours === null ? "Any age" : `older than ${operation.olderThanHours}h`} · limit {operation.maxItems} · scheduled {formatDate(operation.scheduledAt)}
                 </p>
                 <p className="mt-2 text-xs text-brand-muted">
                   {operation.changedCount} changed · {operation.processedCount}/{operation.matchedCount} processed{operation.failedCount ? ` · ${operation.failedCount} failed` : ""}

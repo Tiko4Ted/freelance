@@ -33,6 +33,12 @@ enum ApplicationStatus {
   CLOSED
 }
 
+enum KycReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 enum WithdrawalStatus {
   PENDING
   PROCESSING
@@ -51,6 +57,7 @@ enum WalletTransferType {
 }
 
 enum WalletTransferStatus {
+  PENDING
   COMPLETED
   FAILED
 }
@@ -214,8 +221,13 @@ model UserOnboarding {
   paymentDestination               String?
   paymentSetupAt                   DateTime?
   completedAt                      DateTime?
+  kycReviewStatus                  KycReviewStatus @default(PENDING)
+  kycReviewedAt                    DateTime?
+  kycReviewNote                    String?
   createdAt                        DateTime  @default(now())
   updatedAt                        DateTime  @updatedAt
+
+  @@index([kycReviewStatus, createdAt])
 }
 
 model Job {

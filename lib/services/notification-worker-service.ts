@@ -1,3 +1,4 @@
+import { KycReviewStatus } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { onboardingReviewAvailableAt } from "@/lib/onboarding-review";
 import {
@@ -143,6 +144,7 @@ async function getOnboardingReviewRecipient(
           ndaSignedAt: true,
           paymentSetupAt: true,
           phoneVerifiedAt: true,
+          kycReviewStatus: true,
         },
       },
     },
@@ -163,6 +165,10 @@ async function getOnboardingReviewRecipient(
     !user.payoutAccountReady
   ) {
     return { status: "stale" as const };
+  }
+
+  if (onboarding.kycReviewStatus !== KycReviewStatus.APPROVED) {
+    return { status: "awaiting-kyc" as const };
   }
 
   const availableAt = onboardingReviewAvailableAt(submittedAt);
@@ -205,6 +211,10 @@ export async function processEmailNotificationMessage(payload: unknown) {
 
       if (recipient.status === "early") {
         throw new Error("ONBOARDING_REVIEW_NOT_READY");
+      }
+
+      if (recipient.status === "awaiting-kyc") {
+        throw new PermanentNotificationError("ONBOARDING_KYC_NOT_APPROVED");
       }
 
       return EmailNotificationService.sendOnboardingApprovedEmail(

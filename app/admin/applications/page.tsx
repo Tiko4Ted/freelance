@@ -155,6 +155,9 @@ export default async function AdminApplicationsPage() {
                 <div className="min-w-0 rounded-xl border border-brand-sand bg-brand-canvas/45 p-4">
                   <ApplicationActions
                     applicationId={application.id}
+                    canChangeProjectStatus={
+                      application.job.isActive && application.job.showOnHome
+                    }
                     currentStatus={application.status}
                     hasPendingSubmission={Boolean(
                       application.taskSubmittedAt &&

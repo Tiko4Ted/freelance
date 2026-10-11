@@ -544,7 +544,8 @@ test("admin bulk operations expose preview, scheduling, and status changes", () 
     }),
   );
 
-  assert.match(markup, /Bulk application changes/);
+  assert.match(markup, /Project status changes/);
+  assert.match(markup, /\/home/);
   assert.match(markup, /Preview matches/);
   assert.match(markup, /Run after \(hours\)/);
   assert.match(markup, /Queue change/);
@@ -676,7 +677,7 @@ test("admin application controls render status and progress actions", () => {
   );
 
   assert.match(markup, /ACTIVE/);
-  assert.match(markup, />Save</);
+  assert.match(markup, /Save project status/);
   assert.match(markup, />Log</);
   assert.match(markup, /name="hoursLogged"/);
   assert.match(markup, /name="tasksCompleted"/);

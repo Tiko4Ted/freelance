@@ -61,6 +61,8 @@ function toApplicationResponse(application: {
     id: string;
     title: string;
     payoutType: string;
+    isActive: boolean;
+    showOnHome: boolean;
   };
   referral: {
     referrer: {
@@ -136,6 +138,8 @@ const applicationSelect = {
       id: true,
       title: true,
       payoutType: true,
+      isActive: true,
+      showOnHome: true,
     },
   },
   referral: {
@@ -189,8 +193,16 @@ export const AdminApplicationService = {
     const { application, previousStatus } = await prisma.$transaction(async (tx) => {
       const existingApplication = await tx.application.findUniqueOrThrow({
         where: { id },
-        select: { jobId: true, status: true },
+        select: {
+          jobId: true,
+          status: true,
+          job: { select: { isActive: true, showOnHome: true } },
+        },
       });
+
+      if (!existingApplication.job.isActive || !existingApplication.job.showOnHome) {
+        throw new Error("PROJECT_NOT_ON_HOME");
+      }
 
       if (
         existingApplication.status === ApplicationStatus.CLOSED &&

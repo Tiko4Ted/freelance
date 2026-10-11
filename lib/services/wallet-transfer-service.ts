@@ -1,4 +1,9 @@
-import { LedgerAccount, Prisma, WalletTransferType } from "@prisma/client";
+import {
+  LedgerAccount,
+  Prisma,
+  WalletTransferStatus,
+  WalletTransferType,
+} from "@prisma/client";
 
 import type { RequestContext } from "@/lib/audit/request-context";
 import { prisma } from "@/lib/db/prisma";
@@ -184,28 +189,20 @@ export const WalletTransferService = {
           userId,
           amountCents,
           type: WalletTransferType.HOLDING_TO_FUNDING,
+          status: WalletTransferStatus.PENDING,
           verificationId,
         },
         select: { id: true },
       });
 
-      await tx.ledgerEntry.createMany({
-        data: [
-          {
-            userId,
-            amountCents: -amountCents,
-            account: LedgerAccount.HOLDING,
-            reason: "HOLDING_TO_FUNDING_TRANSFER",
-            transferId: transfer.id,
-          },
-          {
-            userId,
-            amountCents,
-            account: LedgerAccount.FUNDING,
-            reason: "HOLDING_TO_FUNDING_TRANSFER",
-            transferId: transfer.id,
-          },
-        ],
+      await tx.ledgerEntry.create({
+        data: {
+          userId,
+          amountCents: -amountCents,
+          account: LedgerAccount.HOLDING,
+          reason: "HOLDING_TO_FUNDING_PENDING",
+          transferId: transfer.id,
+        },
       });
 
       const updatedUser = await tx.user.findUniqueOrThrow({
@@ -225,6 +222,7 @@ export const WalletTransferService = {
       return {
         holdingBalanceCents: updatedUser.holdingBalanceCents,
         fundingBalanceCents: updatedUser.fundingBalanceCents,
+        transferStatus: WalletTransferStatus.PENDING,
         freelanceVerification: updatedUser.freelanceVerification
           ? {
               freelanceIdCode:
@@ -234,6 +232,95 @@ export const WalletTransferService = {
             }
           : null,
       };
+    });
+  },
+
+  async listPendingTransfers() {
+    const transfers = await prisma.walletTransfer.findMany({
+      where: { status: WalletTransferStatus.PENDING },
+      orderBy: { createdAt: "asc" },
+      take: 100,
+      select: {
+        id: true,
+        amountCents: true,
+        type: true,
+        status: true,
+        createdAt: true,
+        user: { select: { id: true, name: true, email: true } },
+        verification: {
+          select: { freelanceIdCode: true, verifiedAt: true },
+        },
+      },
+    });
+
+    return transfers.map((transfer) => ({
+      id: transfer.id,
+      amountCents: transfer.amountCents,
+      type: transfer.type,
+      status: transfer.status,
+      createdAt: transfer.createdAt.toISOString(),
+      user: transfer.user,
+      verification: transfer.verification
+        ? {
+            freelanceIdCode: transfer.verification.freelanceIdCode,
+            verifiedAt: transfer.verification.verifiedAt.toISOString(),
+          }
+        : null,
+    }));
+  },
+
+  async reviewTransfer(id: string, status: WalletTransferStatus) {
+    if (
+      status !== WalletTransferStatus.COMPLETED &&
+      status !== WalletTransferStatus.FAILED
+    ) {
+      throw new Error("INVALID_TRANSFER_REVIEW_STATUS");
+    }
+
+    return prisma.$transaction(async (tx) => {
+      const transfer = await tx.walletTransfer.findUnique({
+        where: { id },
+        select: { id: true, userId: true, amountCents: true, status: true },
+      });
+
+      if (!transfer) {
+        throw new Error("TRANSFER_NOT_FOUND");
+      }
+
+      if (transfer.status !== WalletTransferStatus.PENDING) {
+        throw new Error("TRANSFER_ALREADY_REVIEWED");
+      }
+
+      const claimed = await tx.walletTransfer.updateMany({
+        where: { id, status: WalletTransferStatus.PENDING },
+        data: { status },
+      });
+
+      if (claimed.count !== 1) {
+        throw new Error("TRANSFER_ALREADY_REVIEWED");
+      }
+
+      const isApproved = status === WalletTransferStatus.COMPLETED;
+      await tx.user.update({
+        where: { id: transfer.userId },
+        data: isApproved
+          ? { fundingBalanceCents: { increment: transfer.amountCents } }
+          : { holdingBalanceCents: { increment: transfer.amountCents } },
+      });
+
+      await tx.ledgerEntry.create({
+        data: {
+          userId: transfer.userId,
+          amountCents: transfer.amountCents,
+          account: isApproved ? LedgerAccount.FUNDING : LedgerAccount.HOLDING,
+          reason: isApproved
+            ? "HOLDING_TO_FUNDING_TRANSFER"
+            : "HOLDING_TO_FUNDING_REVERSAL",
+          transferId: transfer.id,
+        },
+      });
+
+      return { id: transfer.id, status };
     });
   },
 };

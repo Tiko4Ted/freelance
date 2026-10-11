@@ -1,4 +1,9 @@
-import { ApplicationStatus, PayoutTrigger } from "@prisma/client";
+import {
+  ApplicationStatus,
+  KycReviewStatus,
+  PayoutTrigger,
+  WalletTransferStatus,
+} from "@prisma/client";
 import { z } from "zod";
 
 import { homeProjectPricingError } from "@/lib/home-project-pricing";
@@ -78,6 +83,15 @@ export const adminProgressSchema = z.object({
   tasksCompleted: z.coerce.number().int().min(0).optional(),
 });
 
+export const adminKycReviewSchema = z.object({
+  status: z.nativeEnum(KycReviewStatus),
+  note: z.string().trim().max(2_000).nullable().optional(),
+});
+
+export const adminWalletTransferReviewSchema = z.object({
+  status: z.enum([WalletTransferStatus.COMPLETED, WalletTransferStatus.FAILED]),
+});
+
 export const adminBulkOperationSchema = z.object({
   sourceStatus: z.nativeEnum(ApplicationStatus).nullable().optional(),
   targetStatus: z.nativeEnum(ApplicationStatus),
@@ -95,5 +109,9 @@ export type AdminCreateJobInput = z.infer<typeof adminCreateJobSchema>;
 export type AdminUpdateJobInput = z.infer<typeof adminUpdateJobSchema>;
 export type AdminStatusInput = z.infer<typeof adminStatusSchema>;
 export type AdminProgressInput = z.infer<typeof adminProgressSchema>;
+export type AdminKycReviewInput = z.infer<typeof adminKycReviewSchema>;
+export type AdminWalletTransferReviewInput = z.infer<
+  typeof adminWalletTransferReviewSchema
+>;
 export type AdminBulkOperationInput = z.infer<typeof adminBulkOperationSchema>;
 export type AdminEmailTestInput = z.infer<typeof adminEmailTestSchema>;

@@ -5,9 +5,11 @@ import { signOut } from "next-auth/react";
 import {
   BriefcaseBusiness,
   ClipboardCheck,
+  ArrowRightLeft,
   LayoutDashboard,
   LogOut,
   Menu,
+  ShieldCheck,
   X,
 } from "lucide-react";
 import { useState } from "react";
@@ -19,9 +21,11 @@ const items = [
   { label: "Operations", href: "/admin", icon: LayoutDashboard, id: "overview" },
   { label: "Projects", href: "/admin/jobs", icon: BriefcaseBusiness, id: "projects" },
   { label: "Applications", href: "/admin/applications", icon: ClipboardCheck, id: "applications" },
+  { label: "KYC approval", href: "/admin/kyc", icon: ShieldCheck, id: "kyc" },
+  { label: "Fund transfers", href: "/admin/transfers", icon: ArrowRightLeft, id: "transfers" },
 ] as const;
 
-function Navigation({ active, onNavigate }: { active: "overview" | "projects" | "applications"; onNavigate?: () => void }) {
+function Navigation({ active, onNavigate }: { active: "overview" | "projects" | "applications" | "kyc" | "transfers"; onNavigate?: () => void }) {
   return (
     <nav aria-label="Admin operations navigation" className="flex flex-col gap-1">
       {items.map((item) => {
@@ -56,6 +60,10 @@ export function AdminSidebar() {
     ? "projects"
     : pathname.startsWith("/admin/applications")
       ? "applications"
+      : pathname.startsWith("/admin/kyc")
+        ? "kyc"
+        : pathname.startsWith("/admin/transfers")
+          ? "transfers"
       : "overview";
 
   return (
