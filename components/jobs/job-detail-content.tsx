@@ -8,10 +8,6 @@ type JobDetailContentProps = {
   job: PublicJobListView;
 };
 
-function openingLabel(openings: number) {
-  return `${openings} ${openings === 1 ? "opening" : "openings"}`;
-}
-
 export function JobDetailContent({ applyHref, job }: JobDetailContentProps) {
   const detailCopy = buildJobDetailCopy(job);
   const payLabel = job.formattedPay ?? job.formattedPayout;
@@ -113,10 +109,6 @@ export function JobDetailContent({ applyHref, job }: JobDetailContentProps) {
               <div>
                 <dt className="text-xs font-medium text-brand-muted">Pay</dt>
                 <dd className="mt-1 font-semibold text-brand-ink">{payLabel}</dd>
-              </div>
-              <div>
-                <dt className="text-xs font-medium text-brand-muted">Openings</dt>
-                <dd className="mt-1 font-semibold text-brand-ink">{openingLabel(job.openings)}</dd>
               </div>
               <div>
                 <dt className="text-xs font-medium text-brand-muted">Engagement</dt>

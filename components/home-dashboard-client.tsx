@@ -1008,7 +1008,7 @@ export function HomeDashboardClient({
 
             <div className="border-t border-brand-sand px-5 py-4">
               <div className="mb-3 flex flex-wrap gap-2">
-                {["Payment status", "Can’t sign in", "Task question", "Safety concern"].map(
+                {["Payment status", "Withdrawal issue", "Why Freelance ID?", "Can’t sign in", "Task question", "Safety concern"].map(
                   (topic) => (
                     <button
                       className="rounded-full border border-brand-sand bg-brand-ivory px-3 py-1.5 text-xs font-medium text-brand-muted transition hover:border-brand-gold hover:bg-[#f2e8d7] hover:text-brand-ink"

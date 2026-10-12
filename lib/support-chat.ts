@@ -19,6 +19,7 @@ type SupportChatContext = {
 export type SupportTopic =
   | "account"
   | "application"
+  | "freelanceId"
   | "onboarding"
   | "payment"
   | "referral"
@@ -87,6 +88,76 @@ function safetyReply(context: SupportChatContext): SupportReply {
   };
 }
 
+function humanSupportReply(context: SupportChatContext): SupportReply {
+  return {
+    action: SUPPORT_ACTION,
+    text: pickText(
+      [
+        "Of course. Please use the support link below to reach a support specialist, then wait a little while for a response. Keep the relevant project, payment, or withdrawal status available, and do not share your password or verification codes.",
+        "I understand you would like to speak with a person. The support team can review the details more closely, so please use the link below and wait a little while for their reply. If this concerns a payment, include the amount, date, payment method, and exact status, but never send account secrets.",
+        "I can point you to human support. Please use the Contact support link below and wait a little while while the team reviews your request. They may need the exact error or status shown in the app, but they will never need your password or one-time verification code.",
+      ],
+      context,
+    ),
+    topic: context.lastTopic,
+  };
+}
+
+function freelanceIdReply(context: SupportChatContext): SupportReply {
+  return textReply(
+    [
+      "Your Freelance ID is a verified identity record for work and payments on the platform. We use it to recognise your digital freelance activity, meet applicable tax-compliance requirements, and help prevent fraud or money laundering through payment disbursements. It also lets us match approved earnings to the right person before a withdrawal is released.",
+      "The Freelance ID helps us confirm that a real, verified person is receiving platform earnings. It supports digital freelance recognition, tax-compliance records, and safeguards against fraud or money laundering in the disbursement process. That is why a verified Freelance ID may be required before funds can be transferred.",
+      "We request a Freelance ID because payments must be connected to the correct verified worker. It supports recognition of your freelance work, responsible tax-compliance checks, and payment-system controls designed to prevent fraud and money laundering. If your ID details do not match the account, a withdrawal may remain on hold until support resolves it.",
+    ],
+    context,
+    "freelanceId",
+  );
+}
+
+function paymentReply(message: string, context: SupportChatContext): SupportReply {
+  const withdrawal = includesAny(message, [
+    "withdraw",
+    "cash out",
+    "transfer out",
+    "payout request",
+  ]);
+  const failed = includesAny(message, ["failed", "rejected", "declined", "error"]);
+
+  if (withdrawal && failed) {
+    return textReply(
+      [
+        "I am sorry the withdrawal failed. Please check the exact status, amount, date, and payout method in Wallet. A failed withdrawal is reviewed before the funds are returned to your available balance; please do not submit duplicate requests while that review is in progress.",
+        "Let us trace the failed withdrawal carefully. Open Wallet and note the exact error, amount, date, and payout method. The original request should be reviewed first, and a failed payout is reversed back to your available balance after processing. Never send your password or verification code here.",
+      ],
+      context,
+      "payment",
+    );
+  }
+
+  if (withdrawal) {
+    return textReply(
+      [
+        "I can help with the withdrawal. A task payment first becomes part of your available wallet balance, then the withdrawal moves through its own status, such as pending, processing, paid, or failed. Please tell me the status, amount, date, and payout method shown in Wallet so I can explain the next step.",
+        "For a withdrawal issue, please check Wallet and share the exact status wording. Pending or processing means the request is still being handled; paid means the payout was completed; failed means it needs review. Do not create a second request until we understand the first one.",
+        "Let us separate the task payment from the withdrawal request. Was the work payment added to your wallet, and what status does the withdrawal show now? The amount, date, payout method, and exact error are enough for support—never share passwords or verification codes.",
+      ],
+      context,
+      "payment",
+    );
+  }
+
+  return textReply(
+    [
+      "I can help trace the payment. Approved task earnings are recorded in your wallet before a withdrawal is requested. Please tell me whether the issue is an unpaid task, a wallet balance that has not updated, or a withdrawal, along with the status, amount, and date shown in the app.",
+      "Let us look at the payment stage first. Is the work awaiting approval, approved but not in your wallet, or already part of a withdrawal request? The exact status and date will help identify the right next step.",
+      "I understand payment issues can be worrying. Please check the project status, wallet entry, and withdrawal history, then send the exact status wording and amount. Do not send your password, one-time code, or full payout credentials.",
+    ],
+    context,
+    "payment",
+  );
+}
+
 function followUpReply(context: SupportChatContext): SupportReply | null {
   const topic = context.lastTopic;
 
@@ -116,6 +187,10 @@ function followUpReply(context: SupportChatContext): SupportReply | null {
       context,
       "onboarding",
     );
+  }
+
+  if (topic === "freelanceId") {
+    return freelanceIdReply(context);
   }
 
   if (topic === "task") {
@@ -173,11 +248,28 @@ export function getSupportChatReply(
       "verification code",
       "password shared",
       "bank details",
-      "money missing",
       "suspicious",
     ])
   ) {
     return safetyReply(context);
+  }
+
+  if (
+    includesAny(message, [
+      "real person",
+      "real user",
+      "human",
+      "support agent",
+      "live agent",
+      "representative",
+      "someone from support",
+      "talk to support",
+      "speak to support",
+      "contact support",
+      "escalate",
+    ])
+  ) {
+    return humanSupportReply(context);
   }
 
   if (includesAny(message, ["hi", "hello", "hey", "good morning", "good afternoon"])) {
@@ -216,16 +308,37 @@ export function getSupportChatReply(
     );
   }
 
-  if (includesAny(message, ["pay", "paid", "payout", "wallet", "balance", "withdraw"])) {
-    return textReply(
-      [
-        "I can help trace that. Is it a balance that has not updated, a payment still under review, or a withdrawal that failed? Share the status, amount, and date shown in the app - never share account secrets.",
-        "Let us narrow down the payment issue before taking action. Is the money missing from your wallet, waiting in a withdrawal, or marked failed? The exact status and date will help me choose the right next step.",
-        "I can stay with this until we identify the handoff point. Tell me whether the payment was expected from a completed project, a wallet balance, or a withdrawal request, and what status you see now.",
-      ],
-      context,
-      "payment",
-    );
+  if (
+    includesAny(message, [
+      "freelance id",
+      "freelance identification",
+      "freelance identity",
+      "digital freelance recognition",
+      "tax compliance",
+      "tax-compliance",
+      "serial number",
+      "why do i need an id",
+      "why do i need the id",
+    ])
+  ) {
+    return freelanceIdReply(context);
+  }
+
+  if (
+    includesAny(message, [
+      "pay",
+      "paid",
+      "payout",
+      "wallet",
+      "balance",
+      "withdraw",
+      "cash out",
+      "money missing",
+      "money is missing",
+      "payment issue",
+    ])
+  ) {
+    return paymentReply(message, context);
   }
 
   if (includesAny(message, ["onboard", "identity", "phone verify", "verification", "review"])) {
