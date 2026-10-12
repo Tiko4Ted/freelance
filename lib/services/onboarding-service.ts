@@ -1,4 +1,4 @@
-import { Prisma, type UserOnboarding } from "@prisma/client";
+import { KycReviewStatus, Prisma, type UserOnboarding } from "@prisma/client";
 
 import { prisma } from "@/lib/db/prisma";
 import {
@@ -39,6 +39,8 @@ export type OnboardingStatus = {
   payoutAccountReady: boolean;
   completedAt: string | null;
   reviewAvailableAt: string | null;
+  kycReviewStatus: KycReviewStatus;
+  kycReviewedAt: string | null;
   legalComplete: boolean;
   phoneVerified: boolean;
   identityVerified: boolean;
@@ -95,7 +97,8 @@ function serializeStatus(user: UserWithOnboarding): OnboardingStatus {
     : null;
   const complete =
     requirementsComplete &&
-    isOnboardingReviewApproved(onboarding?.completedAt);
+    isOnboardingReviewApproved(onboarding?.completedAt) &&
+    onboarding?.kycReviewStatus === KycReviewStatus.APPROVED;
 
   return {
     ndaSignedAt: toIsoDate(onboarding?.ndaSignedAt),
@@ -114,6 +117,8 @@ function serializeStatus(user: UserWithOnboarding): OnboardingStatus {
     payoutAccountReady: user.payoutAccountReady,
     completedAt: toIsoDate(onboarding?.completedAt),
     reviewAvailableAt: toIsoDate(reviewAvailableAt),
+    kycReviewStatus: onboarding?.kycReviewStatus ?? KycReviewStatus.PENDING,
+    kycReviewedAt: toIsoDate(onboarding?.kycReviewedAt),
     legalComplete,
     phoneVerified,
     identityVerified,
@@ -524,6 +529,9 @@ export const OnboardingService = {
         identityDocumentType: input.documentType,
         identityDocumentLast4: null,
         identityVerifiedAt: new Date(),
+        kycReviewStatus: KycReviewStatus.PENDING,
+        kycReviewedAt: null,
+        kycReviewNote: null,
       },
     });
 

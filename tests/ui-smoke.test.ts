@@ -9,6 +9,10 @@ import { ApplicationStatus } from "@prisma/client";
 import { ApplicationActions } from "../components/admin/application-actions";
 import { JobCreateForm } from "../components/admin/job-create-form";
 import { HomeProjectToggle } from "../components/admin/home-project-toggle";
+import { ProjectLifecycleActions } from "../components/admin/project-lifecycle-actions";
+import { ProjectPricingEditor } from "../components/admin/project-pricing-editor";
+import { ProjectPublishAction } from "../components/admin/project-publish-action";
+import { ApplicationBulkOperations } from "../components/admin/application-bulk-operations";
 import { ApplicationSubmissionPage } from "../components/application-feedback";
 import { HomeDashboardClient } from "../components/home-dashboard-client";
 import { HelpCenterClient } from "../components/help-center-client";
@@ -309,6 +313,48 @@ test("dashboard UI renders application and payment state", () => {
   assert.doesNotMatch(markup, /href="\/jobs\/job-1\/apply"/);
 });
 
+test("dashboard distinguishes paid and failed projects", () => {
+  const markup = renderToStaticMarkup(
+    createElement(HomeDashboardClient, {
+      userName: "Ada",
+      paymentSummary: {
+        formattedAwaitingPayment: "$0.00",
+        formattedTasksCompleted: "1",
+      },
+      projects: [
+        {
+          id: "application-paid",
+          title: "Paid review",
+          description: "A completed review.",
+          status: "PAID",
+          statusLabel: "Paid",
+          payoutLabel: "$25.00 per task",
+          skills: [],
+          isApplied: true,
+          showOnHome: true,
+        },
+        {
+          id: "application-failed",
+          title: "Failed review",
+          description: "A review that did not pass.",
+          status: "REJECTED",
+          statusLabel: "Failed",
+          payoutLabel: "$25.00 per task",
+          skills: [],
+          isApplied: true,
+          showOnHome: true,
+        },
+      ],
+    }),
+  );
+
+  assert.match(markup, /Paid review/);
+  assert.match(markup, /Failed review/);
+  assert.match(markup, /bg-emerald-100 text-emerald-800/);
+  assert.match(markup, /bg-red-100 text-red-800/);
+  assert.doesNotMatch(markup, /Submitted for review/);
+});
+
 test("dashboard removes onboarding prompts after review approval", () => {
   const markup = renderToStaticMarkup(
     createElement(HomeDashboardClient, {
@@ -356,6 +402,39 @@ test("dashboard hides task materials and uploads for failed applications", () =>
   assert.doesNotMatch(markup, /Download materials/);
   assert.doesNotMatch(markup, /Upload completed work/);
   assert.doesNotMatch(markup, /task-file-application-failed/);
+});
+
+test("dashboard closes projects without exposing task controls", () => {
+  const markup = renderToStaticMarkup(
+    createElement(HomeDashboardClient, {
+      userName: "Ada",
+      paymentSummary: {
+        formattedAwaitingPayment: "$0.00",
+        formattedTasksCompleted: "0",
+      },
+      projects: [
+        {
+          id: "application-closed",
+          applicationId: "application-closed",
+          title: "AI Reviewer",
+          description: "Review AI responses.",
+          status: "CLOSED",
+          statusLabel: "Closed",
+          payoutLabel: "$25.00",
+          skills: ["Research"],
+          isApplied: true,
+          isClosed: true,
+          showOnHome: true,
+        },
+      ],
+    }),
+  );
+
+  assert.match(markup, /Closed/);
+  assert.match(markup, /This project is closed/);
+  assert.doesNotMatch(markup, /Download materials/);
+  assert.doesNotMatch(markup, /Upload completed work/);
+  assert.doesNotMatch(markup, /task-file-application-closed/);
 });
 
 test("dashboard shows applied projects without the task workspace during onboarding review", () => {
@@ -412,12 +491,66 @@ test("empty dashboard does not render demo projects or task workspace", () => {
   assert.doesNotMatch(markup, /Project details/);
 });
 
-test("admin job form exposes home placement and participant capacity", () => {
+test("admin project form creates a draft with a brief and aptitude gate", () => {
   const markup = renderToStaticMarkup(createElement(JobCreateForm));
 
-  assert.match(markup, /name="showOnHome"/);
+  assert.match(markup, /name="taskBrief"/);
+  assert.match(markup, /name="aptitudeTest"/);
   assert.match(markup, /name="openings"/);
-  assert.match(markup, /Show on home/);
+  assert.match(markup, /Create draft project/);
+  assert.match(markup, /Question 15/);
+});
+
+test("admin draft action explains the publish requirements", () => {
+  const markup = renderToStaticMarkup(
+    createElement(ProjectPublishAction, {
+      aptitudeQuestionCount: 12,
+      hasTaskBrief: false,
+      isActive: true,
+      jobId: "job-1",
+      publishedProjects: [],
+      showOnHome: false,
+    }),
+  );
+
+  assert.match(markup, /Draft project/);
+  assert.match(markup, /Brief missing/);
+  assert.match(markup, /Add the PDF brief and all 15 aptitude questions/);
+});
+
+test("admin pricing editor explains locked application rates", () => {
+  const markup = renderToStaticMarkup(
+    createElement(ProjectPricingEditor, {
+      applicationCount: 3,
+      currency: "USD",
+      isActive: true,
+      jobId: "job-1",
+      payoutAmountCents: 7500,
+      payoutType: "TASK_1",
+    }),
+  );
+
+  assert.match(markup, /Current rate: \$75\.00 per task/);
+  assert.match(markup, /New rate \(USD\)/);
+  assert.match(markup, /3 existing applications keep the rate locked/);
+  assert.match(markup, /Only new applicants use a changed price/);
+});
+
+test("admin bulk operations expose preview, scheduling, and status changes", () => {
+  const markup = renderToStaticMarkup(
+    createElement(ApplicationBulkOperations, {
+      jobs: [{ id: "job-1", title: "AI review", isActive: true }],
+      operations: [],
+    }),
+  );
+
+  assert.match(markup, /Project status changes/);
+  assert.match(markup, /\/home/);
+  assert.match(markup, /Preview matches/);
+  assert.match(markup, /Run after \(hours\)/);
+  assert.match(markup, /Queue change/);
+  assert.match(markup, /Approved \/ certified/);
+  assert.match(markup, /Closed \/ cancelled/);
 });
 
 test("admin can flag existing jobs and edit their remaining spots", () => {
@@ -433,6 +566,30 @@ test("admin can flag existing jobs and edit their remaining spots", () => {
   assert.match(markup, /Remaining participant spots/);
   assert.match(markup, /Save spots/);
   assert.match(markup, /value="3"/);
+});
+
+test("admin can close a project or see its closed history state", () => {
+  const activeMarkup = renderToStaticMarkup(
+    createElement(ProjectLifecycleActions, {
+      jobId: "job-1",
+      isActive: true,
+      applicationCount: 2,
+    }),
+  );
+  const closedMarkup = renderToStaticMarkup(
+    createElement(ProjectLifecycleActions, {
+      jobId: "job-1",
+      isActive: false,
+      applicationCount: 2,
+    }),
+  );
+
+  assert.match(activeMarkup, /Close project/);
+  assert.match(activeMarkup, /2 applications currently linked/);
+  assert.match(activeMarkup, /Closes unfinished work and blocks task uploads/);
+  assert.match(closedMarkup, /Project closed/);
+  assert.match(closedMarkup, /fresh application pool/);
+  assert.doesNotMatch(closedMarkup, /Close project/);
 });
 
 test("dashboard renders flagged database projects as summary cards", () => {
@@ -462,6 +619,8 @@ test("dashboard renders flagged database projects as summary cards", () => {
   );
 
   assert.match(markup, /Featured projects/);
+  assert.match(markup, /grid grid-cols-1 gap-4 md:grid-cols-2/);
+  assert.doesNotMatch(markup, /xl:grid-cols-4/);
   assert.match(markup, /AI Quality Review/);
   assert.match(markup, /\$50 per task/);
   assert.match(markup, /\+2K participants/);
@@ -518,7 +677,7 @@ test("admin application controls render status and progress actions", () => {
   );
 
   assert.match(markup, /ACTIVE/);
-  assert.match(markup, />Save</);
+  assert.match(markup, /Save project status/);
   assert.match(markup, />Log</);
   assert.match(markup, /name="hoursLogged"/);
   assert.match(markup, /name="tasksCompleted"/);

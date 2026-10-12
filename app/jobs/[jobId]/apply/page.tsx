@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { Role } from "@prisma/client";
 
 import { auth } from "@/auth";
 import { ApplicationForm } from "@/components/application-form";
@@ -84,6 +85,10 @@ export default async function ApplyPage({
     redirect(
       `/login?callbackUrl=${encodeURIComponent(applyHref(jobId, referralCode))}`,
     );
+  }
+
+  if (session.user.role === Role.ADMIN) {
+    redirect("/admin");
   }
 
   const [job, onboarding] = await Promise.all([

@@ -9,6 +9,7 @@ type ApplicationActionsProps = {
   hoursLogged: number;
   tasksCompleted: number;
   hasPendingSubmission?: boolean;
+  canChangeProjectStatus?: boolean;
 };
 
 const statuses = Object.values(ApplicationStatus);
@@ -19,6 +20,7 @@ export function ApplicationActions({
   hoursLogged,
   tasksCompleted,
   hasPendingSubmission = false,
+  canChangeProjectStatus = true,
 }: ApplicationActionsProps) {
   const [message, setMessage] = useState("");
 
@@ -92,25 +94,32 @@ export function ApplicationActions({
           Approve submitted work
         </button>
       ) : null}
-      <form className="flex gap-2" onSubmit={updateStatus}>
-        <select
-          className="h-10 min-w-40 rounded-lg border border-brand-sand bg-brand-canvas/50 px-2 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
-          defaultValue={currentStatus}
-          name="status"
-        >
-          {statuses.map((status) => (
-            <option key={status} value={status}>
-              {status}
-            </option>
-          ))}
-        </select>
-        <button
-          className="h-10 rounded-lg bg-brand-ink px-3 text-sm font-semibold text-brand-ivory transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold/40"
-          type="submit"
-        >
-          Save
-        </button>
-      </form>
+      {canChangeProjectStatus ? (
+        <form className="flex gap-2" onSubmit={updateStatus}>
+          <select
+            aria-label="Project status"
+            className="h-10 min-w-40 rounded-lg border border-brand-sand bg-brand-canvas/50 px-2 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
+            defaultValue={currentStatus}
+            name="status"
+          >
+            {statuses.map((status) => (
+              <option key={status} value={status}>
+                {status}
+              </option>
+            ))}
+          </select>
+          <button
+            className="h-10 rounded-lg bg-brand-ink px-3 text-sm font-semibold text-brand-ivory transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold/40"
+            type="submit"
+          >
+            Save project status
+          </button>
+        </form>
+      ) : (
+        <p className="rounded-lg bg-brand-canvas px-3 py-2 text-xs leading-5 text-brand-muted">
+          Project status changes are available only for projects currently shown on /home.
+        </p>
+      )}
       <form className="grid gap-2 md:grid-cols-[1fr_1fr_auto]" onSubmit={updateProgress}>
         <input
           className="h-10 rounded-lg border border-brand-sand bg-brand-canvas/50 px-2 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"

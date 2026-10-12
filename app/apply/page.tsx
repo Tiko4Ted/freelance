@@ -1,4 +1,6 @@
 import { headers } from "next/headers";
+import { Role } from "@prisma/client";
+import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { PortalSidebar } from "@/components/portal-sidebar";
 import { JobBoard } from "@/components/jobs/job-board";
@@ -40,6 +42,9 @@ export default async function ApplyPage({ searchParams }: ApplyPageProps) {
   ]);
 
   const referralCode = params.ref ?? params.referralCode;
+  if (session?.user?.role === Role.ADMIN) {
+    redirect("/admin");
+  }
   const lookupKey = getLookupKey(headerStore);
   const [jobPage, referralContext] = await Promise.all([
     JobService.listActiveJobCards(),

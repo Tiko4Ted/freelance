@@ -36,6 +36,10 @@ function loadTaskImages(images: TaskAssignmentImage[] | undefined): PdfImage[] {
   }));
 }
 
+function loadTaskPacket(fileName: string): Buffer {
+  return readFileSync(join(process.cwd(), "public", "task-packets", fileName));
+}
+
 function parseReferralCookie(value: string | undefined): ReferralCookie | null {
   if (!value) {
     return null;
@@ -146,6 +150,7 @@ export const ApplicationService = {
             payoutType: true,
             showOnHome: true,
             isAiTask: true,
+            aptitudeTest: true,
             skills: {
               select: {
                 label: true,
@@ -351,6 +356,8 @@ export const ApplicationService = {
             payoutType: true,
             showOnHome: true,
             isAiTask: true,
+            taskBriefContent: true,
+            taskBriefFileName: true,
             skills: {
               select: {
                 label: true,
@@ -365,7 +372,21 @@ export const ApplicationService = {
       throw new Error("APPLICATION_NOT_FOUND");
     }
 
+    if (application.job.taskBriefContent) {
+      return {
+        fileName: application.job.taskBriefFileName ?? "project-brief.pdf",
+        content: application.job.taskBriefContent,
+      };
+    }
+
     const assignment = buildTaskAssignment(application);
+
+    if (assignment.taskPacketFileName) {
+      return {
+        fileName: assignment.taskPacketFileName,
+        content: loadTaskPacket(assignment.taskPacketFileName),
+      };
+    }
 
     return {
       fileName: `${assignment.fileBaseName}.pdf`,

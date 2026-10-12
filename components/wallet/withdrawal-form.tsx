@@ -100,7 +100,10 @@ export function WithdrawalForm({
     }
 
     setVerified(true);
-    setState({ status: "success", message: "Funds moved to Funding" });
+    setState({
+      status: "success",
+      message: "Transfer submitted for admin approval",
+    });
     window.location.reload();
     return true;
   }
@@ -146,7 +149,7 @@ export function WithdrawalForm({
       return;
     }
 
-    setState({ status: "submitting", message: "Moving funds to Funding" });
+    setState({ status: "submitting", message: "Submitting transfer for review" });
     await postTransfer({ amountCents });
   }
 

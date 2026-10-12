@@ -63,6 +63,7 @@ const statusLabels: Record<ApplicationStatus, string> = {
   PAID: "Paid",
   EXPIRED: "Expired",
   REJECTED: "Not selected",
+  CLOSED: "Closed",
 };
 
 const statusMessages: Record<ApplicationStatus, string> = {
@@ -83,6 +84,8 @@ const statusMessages: Record<ApplicationStatus, string> = {
     "This application has expired. You can still browse other available projects.",
   REJECTED:
     "This application was not selected. You can continue applying to other projects.",
+  CLOSED:
+    "This project is closed. Task uploads and payment eligibility are no longer available.",
 };
 
 function appUrl() {

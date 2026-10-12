@@ -30,6 +30,13 @@ enum ApplicationStatus {
   PAID
   EXPIRED
   REJECTED
+  CLOSED
+}
+
+enum KycReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 enum WithdrawalStatus {
@@ -50,6 +57,7 @@ enum WalletTransferType {
 }
 
 enum WalletTransferStatus {
+  PENDING
   COMPLETED
   FAILED
 }
@@ -58,6 +66,13 @@ enum NotificationJobStatus {
   PENDING
   PROCESSING
   SENT
+  FAILED
+}
+
+enum AdminBulkOperationStatus {
+  SCHEDULED
+  PROCESSING
+  COMPLETED
   FAILED
 }
 
@@ -120,6 +135,7 @@ model User {
   annotationAssignments       AnnotationAssignment[]
   annotationSubmissions       AnnotationSubmission[]               @relation("AnnotationSubmissions")
   annotationReviews           AnnotationReview[]                   @relation("AnnotationReviews")
+  adminBulkOperations         AdminBulkOperation[]
 
   @@index([role])
   @@index([referredById])
@@ -151,6 +167,31 @@ model NotificationJob {
   @@index([kind, status])
 }
 
+model AdminBulkOperation {
+  id              String                    @id @default(uuid())
+  createdById     String
+  createdBy       User                      @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  sourceStatus    ApplicationStatus?
+  targetStatus    ApplicationStatus
+  jobId           String?
+  job             Job?                      @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  olderThanHours  Int?
+  maxItems        Int                       @default(100)
+  scheduledAt     DateTime
+  status          AdminBulkOperationStatus  @default(SCHEDULED)
+  matchedCount    Int                       @default(0)
+  processedCount  Int                       @default(0)
+  changedCount    Int                       @default(0)
+  failedCount     Int                       @default(0)
+  lastError       String?
+  completedAt     DateTime?
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+
+  @@index([status, scheduledAt])
+  @@index([createdAt])
+}
+
 model UserOnboarding {
   userId                           String    @id
   user                             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -180,8 +221,13 @@ model UserOnboarding {
   paymentDestination               String?
   paymentSetupAt                   DateTime?
   completedAt                      DateTime?
+  kycReviewStatus                  KycReviewStatus @default(PENDING)
+  kycReviewedAt                    DateTime?
+  kycReviewNote                    String?
   createdAt                        DateTime  @default(now())
   updatedAt                        DateTime  @updatedAt
+
+  @@index([kycReviewStatus, createdAt])
 }
 
 model Job {
@@ -201,13 +247,18 @@ model Job {
   isHighDemand      Boolean       @default(false)
   showOnHome        Boolean       @default(false)
   isAiTask          Boolean       @default(true)
+  taskBriefFileName String?
+  taskBriefMimeType String?
+  taskBriefContent  Bytes?
+  aptitudeTest      Json?
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
   applications      Application[]
   referrals         Referral[]
   skills            JobSkill[]
-  annotationProject AnnotationProject?
+  annotationProject  AnnotationProject?
+  adminBulkOperations AdminBulkOperation[]
 
   @@index([isActive])
   @@index([showOnHome, isActive, postedAt])

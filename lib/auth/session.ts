@@ -41,7 +41,13 @@ export function loginRedirectUrl(callbackUrl: string) {
 
 export async function requirePageSession(callbackUrl: string) {
   try {
-    return await requireSession();
+    const session = await requireSession();
+
+    if (session.user.role === Role.ADMIN) {
+      redirect("/admin");
+    }
+
+    return session;
   } catch (error) {
     if (error instanceof UnauthorizedError) {
       redirect(loginRedirectUrl(callbackUrl));

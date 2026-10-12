@@ -1,3 +1,4 @@
+import { buildAptitudeTest } from "@/lib/aptitude-test";
 import type {
   PublicJob,
   PublicJobCard,
@@ -117,6 +118,7 @@ function toPublicJob(job: PublicJob) {
   return {
     ...toPublicJobValues(job),
     description: job.description,
+    aptitudeTest: buildAptitudeTest(job),
   };
 }
 
@@ -125,7 +127,7 @@ function toPublicJobCard(job: PublicJobCard) {
 }
 
 export type PublicJobView = ReturnType<typeof toPublicJob>;
-export type PublicJobListView = Omit<PublicJobView, "description"> & {
+export type PublicJobListView = Omit<PublicJobView, "description" | "aptitudeTest"> & {
   description?: string;
 };
 

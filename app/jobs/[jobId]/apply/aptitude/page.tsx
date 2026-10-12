@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { Role } from "@prisma/client";
 
 import { auth } from "@/auth";
 import { AptitudeTestForm } from "@/components/aptitude-test-form";
@@ -62,6 +63,10 @@ export default async function AptitudePage({
     redirect(
       `/login?callbackUrl=${encodeURIComponent(aptitudeHref(jobId, referralCode))}`,
     );
+  }
+
+  if (session.user.role === Role.ADMIN) {
+    redirect("/admin");
   }
 
   const [job, onboarding] = await Promise.all([

@@ -36,7 +36,10 @@ function formatProjectPayout(
 }
 
 function projectStatusLabel(status: string, submittedAt?: Date | null) {
-  if (submittedAt) {
+  if (
+    submittedAt &&
+    (status === "CERTIFYING" || status === "CERTIFIED")
+  ) {
     return "Submitted for review";
   }
 
@@ -50,6 +53,7 @@ function projectStatusLabel(status: string, submittedAt?: Date | null) {
     PAID: "Paid",
     EXPIRED: "Expired",
     REJECTED: "Failed",
+    CLOSED: "Closed",
   };
 
   return labels[status] ?? status;
@@ -104,6 +108,7 @@ export default async function HomePage() {
                 payoutAmountCents: true,
                 payoutType: true,
                 showOnHome: true,
+                isActive: true,
                 isAiTask: true,
                 annotationProject: { select: { id: true } },
                 skills: {
@@ -140,10 +145,12 @@ export default async function HomePage() {
                 hasTaskAccess &&
                 !application.taskSubmittedAt
                   ? "Onboarding review pending"
-                  : projectStatusLabel(
-                      application.status,
-                      application.taskSubmittedAt,
-                    ),
+                  : !application.job.isActive
+                    ? "Closed"
+                    : projectStatusLabel(
+                        application.status,
+                        application.taskSubmittedAt,
+                      ),
               payoutLabel: formatProjectPayout(
                 application.lockedPayoutCents ??
                   application.job.payoutAmountCents,
@@ -153,6 +160,8 @@ export default async function HomePage() {
               canSubmit,
               isSubmitted: Boolean(application.taskSubmittedAt),
               submittedFileName: application.taskSubmissionFileName,
+              isClosed:
+                application.status === "CLOSED" || !application.job.isActive,
               briefHref: taskAvailable
                 ? `/api/v1/applications/${application.id}/task-material`
                 : undefined,

@@ -1,5 +1,7 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { Role } from "@prisma/client";
 
+import { auth } from "@/auth";
 import { JobDetailContent } from "@/components/jobs/job-detail-content";
 import { JobDetailShell } from "@/components/jobs/job-detail-shell";
 import { JobService } from "@/lib/services/job-service";
@@ -39,6 +41,10 @@ export default async function JobDetailPage({
   searchParams,
 }: JobDetailPageProps) {
   const [{ jobId }, query] = await Promise.all([params, searchParams]);
+  const session = await auth();
+  if (session?.user?.role === Role.ADMIN) {
+    redirect("/admin");
+  }
   const referralCode = query.ref ?? query.referralCode;
   const job = await JobService.getActiveJob(jobId);
 

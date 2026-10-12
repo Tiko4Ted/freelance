@@ -36,6 +36,20 @@ export async function PATCH(request: Request, context: RouteContext) {
       );
     }
 
+    if (error instanceof Error && error.message === "APPLICATION_CLOSED") {
+      return NextResponse.json(
+        { error: "Closed applications cannot be reopened" },
+        { status: 409 },
+      );
+    }
+
+    if (error instanceof Error && error.message === "PROJECT_NOT_ON_HOME") {
+      return NextResponse.json(
+        { error: "Project status changes are limited to projects currently shown on /home" },
+        { status: 409 },
+      );
+    }
+
     return NextResponse.json(
       { error: "Unable to update application status" },
       { status: 500 },
