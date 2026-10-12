@@ -14,6 +14,30 @@ test("support chat gives a focused payment follow-up", () => {
   assert.match(followUp.text, /awaiting payment|approved|failed/i);
 });
 
+test("support chat explains the purpose of a Freelance ID professionally", () => {
+  const reply = getSupportChatReply("Why do I need a Freelance ID for payment?");
+
+  assert.equal(reply.topic, "freelanceId");
+  assert.match(reply.text, /digital freelance|tax-compliance|money laundering/i);
+  assert.match(reply.text, /verified|payment/i);
+});
+
+test("support chat guides a user reporting a withdrawal failure", () => {
+  const reply = getSupportChatReply("My withdrawal failed and the money is missing");
+
+  assert.equal(reply.topic, "payment");
+  assert.match(reply.text, /failed withdrawal|failed payout|available balance/i);
+  assert.doesNotMatch(reply.text, /security concern|change your password/i);
+});
+
+test("support chat asks users to wait when they request a human", () => {
+  const reply = getSupportChatReply("Can I speak to a real person about my payment?");
+
+  assert.equal(reply.action?.href, "/help-center#contact-support");
+  assert.match(reply.text, /support (specialist|team)|support team/i);
+  assert.match(reply.text, /wait a little while/i);
+});
+
 test("support chat uses project context for task questions", () => {
   const reply = getSupportChatReply("I cannot upload my work", {
     projectTitle: "Document Quality Review",
