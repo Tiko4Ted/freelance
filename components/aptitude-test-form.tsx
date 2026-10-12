@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { ChevronDown, ClipboardCheck, Minus, Plus, X } from "lucide-react";
+import { ClipboardCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import {
@@ -23,75 +23,6 @@ type AptitudeTestFormProps = {
   aptitudeTest: AptitudeQuestion[];
   jobId: string;
 };
-
-const toolOptions = [
-  "Salesforce",
-  "HubSpot",
-  "Freshdesk",
-  "Intercom",
-  "Apollo",
-  "Crayon",
-  "Close",
-  "Salesloft",
-  "Shopify",
-  "Funnel",
-];
-
-function NumberStepper({
-  label,
-  name,
-  value,
-  min,
-  max,
-  onChange,
-}: {
-  label: string;
-  name: string;
-  value: number;
-  min: number;
-  max: number;
-  onChange: (value: number) => void;
-}) {
-  function setBoundedValue(nextValue: number) {
-    onChange(Math.min(max, Math.max(min, nextValue)));
-  }
-
-  return (
-    <div>
-      <label className="text-[12px] font-medium text-brand-ink" htmlFor={name}>
-        {label}
-      </label>
-      <div className="mt-2 grid h-10 grid-cols-[2.5rem_1fr_2.5rem] items-center rounded border border-brand-sand bg-brand-canvas/50 focus-within:border-brand-gold focus-within:ring-1 focus-within:ring-brand-gold">
-        <button
-          aria-label={`Decrease ${label}`}
-          className="mx-auto inline-flex h-7 w-7 items-center justify-center rounded bg-brand-ivory text-brand-gold-strong transition hover:bg-[#f2e8d7] focus:outline-none focus:ring-2 focus:ring-brand-gold/30"
-          onClick={() => setBoundedValue(value - 1)}
-          type="button"
-        >
-          <Minus aria-hidden="true" className="h-3.5 w-3.5" />
-        </button>
-        <input
-          className="h-full min-w-0 bg-transparent text-center text-[14px] font-semibold text-brand-ink outline-none"
-          id={name}
-          max={max}
-          min={min}
-          name={name}
-          onChange={(event) => setBoundedValue(Number(event.target.value))}
-          type="number"
-          value={value}
-        />
-        <button
-          aria-label={`Increase ${label}`}
-          className="mx-auto inline-flex h-7 w-7 items-center justify-center rounded bg-brand-ivory text-brand-gold-strong transition hover:bg-[#f2e8d7] focus:outline-none focus:ring-2 focus:ring-brand-gold/30"
-          onClick={() => setBoundedValue(value + 1)}
-          type="button"
-        >
-          <Plus aria-hidden="true" className="h-3.5 w-3.5" />
-        </button>
-      </div>
-    </div>
-  );
-}
 
 function readStoredDraft(jobId: string): StoredApplicationDraft | null {
   const rawDraft = sessionStorage.getItem(applicationDraftStorageKey(jobId));
@@ -125,11 +56,6 @@ export function AptitudeTestForm({
 }: AptitudeTestFormProps) {
   const router = useRouter();
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [startAvailabilityDays, setStartAvailabilityDays] = useState(1);
-  const [expectedHourlyRateUsd, setExpectedHourlyRateUsd] = useState(1);
-  const [weeklyAvailabilityHours, setWeeklyAvailabilityHours] = useState(1);
-  const [strongestTools, setStrongestTools] = useState<string[]>([]);
-  const [toolsOpen, setToolsOpen] = useState(false);
   const [draftMissing, setDraftMissing] = useState(false);
   const [state, setState] = useState<SubmitState>({
     status: "idle",
@@ -140,15 +66,6 @@ export function AptitudeTestForm({
   const answeredCount = aptitudeTest.filter((question) => answers[question.id])
     .length;
   const isComplete = answeredCount === aptitudeTest.length;
-
-  function toggleTool(tool: string) {
-    setStrongestTools((currentTools) =>
-      currentTools.includes(tool)
-        ? currentTools.filter((item) => item !== tool)
-        : [...currentTools, tool],
-    );
-    setToolsOpen(false);
-  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -180,10 +97,6 @@ export function AptitudeTestForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...draft,
-          startAvailabilityDays,
-          expectedHourlyRateUsd,
-          weeklyAvailabilityHours,
-          strongestTools,
           aptitudeAnswers: aptitudeTest.map((question) => ({
             questionId: question.id,
             selectedOptionId: answers[question.id],
@@ -288,112 +201,6 @@ export function AptitudeTestForm({
             {answeredCount}/{aptitudeTest.length}
           </span>
         </div>
-
-        <section className="mt-5 rounded border border-brand-sand bg-brand-canvas/60 p-4">
-          <h2 className="text-[18px] font-semibold leading-[1.35] text-brand-ink">
-            Application questions
-          </h2>
-
-          <div className="mt-5 space-y-5">
-            <NumberStepper
-              label="Q1. How soon can you start the work? (in days)"
-              max={365}
-              min={0}
-              name="startAvailabilityDays"
-              onChange={setStartAvailabilityDays}
-              value={startAvailabilityDays}
-            />
-
-            <div>
-              <label
-                className="text-[12px] font-medium text-brand-ink"
-                htmlFor="expectedHourlyRateUsd"
-              >
-                Q2. What is your expected hourly rate in USD?
-              </label>
-              <div className="mt-2 flex h-10 overflow-hidden rounded border border-brand-sand bg-brand-ivory focus-within:border-brand-gold focus-within:ring-1 focus-within:ring-brand-gold">
-                <input
-                  className="min-w-0 flex-1 bg-transparent px-3 text-[14px] outline-none"
-                  id="expectedHourlyRateUsd"
-                  min={1}
-                  name="expectedHourlyRateUsd"
-                  onChange={(event) =>
-                    setExpectedHourlyRateUsd(
-                      Math.max(1, Number(event.target.value)),
-                    )
-                  }
-                  type="number"
-                  value={expectedHourlyRateUsd}
-                />
-                <span className="flex items-center px-3 text-[13px] font-medium text-brand-ink">
-                  /hour
-                </span>
-              </div>
-            </div>
-
-            <NumberStepper
-              label="Q3. How many hours per week are you available to work?"
-              max={168}
-              min={1}
-              name="weeklyAvailabilityHours"
-              onChange={setWeeklyAvailabilityHours}
-              value={weeklyAvailabilityHours}
-            />
-
-            <div className="relative">
-              <p className="text-[12px] font-medium leading-[1.45] text-brand-ink">
-                Q4. Which of the following tools do you have the strongest
-                hands-on experience with?
-              </p>
-              <button
-                className="mt-2 flex min-h-16 w-full items-center gap-2 rounded border border-brand-sand bg-brand-ivory px-3 py-2 text-left text-[12px] text-brand-ink focus:outline-none focus:ring-2 focus:ring-brand-gold/30"
-                onClick={() => setToolsOpen((isOpen) => !isOpen)}
-                type="button"
-              >
-                <span className="flex flex-1 flex-wrap gap-x-4 gap-y-2">
-                  {strongestTools.length ? (
-                    strongestTools.map((tool) => (
-                      <span className="inline-flex items-center gap-2" key={tool}>
-                        {tool}
-                        <span
-                          aria-hidden="true"
-                          className="text-[15px] font-semibold leading-none text-brand-ink"
-                        >
-                          x
-                        </span>
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-brand-muted">Select options...</span>
-                  )}
-                </span>
-                <X aria-hidden="true" className="h-4 w-4 text-brand-muted" />
-                <ChevronDown
-                  aria-hidden="true"
-                  className="h-4 w-4 text-brand-muted"
-                />
-              </button>
-              {toolsOpen ? (
-                <div className="absolute left-0 right-0 z-10 mt-1 grid max-h-44 grid-cols-2 gap-1 overflow-y-auto rounded border border-brand-sand bg-brand-ivory p-2 shadow-brand-card">
-                  {toolOptions.map((tool) => (
-                    <button
-                      className={
-                        strongestTools.includes(tool)
-                          ? "rounded bg-[#f2e8d7] px-2 py-1.5 text-left text-[12px] font-medium text-brand-gold-strong"
-                          : "rounded px-2 py-1.5 text-left text-[12px] text-brand-muted hover:bg-brand-canvas"
-                      }
-                      key={tool}
-                      onClick={() => toggleTool(tool)}
-                      type="button"
-                    >
-                      {tool}
-                    </button>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-          </div>
-        </section>
 
         <div className="mt-5 grid gap-4">
           {aptitudeTest.map((question, index) => (
