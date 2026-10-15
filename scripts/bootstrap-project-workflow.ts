@@ -4,7 +4,7 @@ import path from "node:path";
 import { PrismaClient, ProjectTaskStatus, PayoutTrigger } from "@prisma/client";
 
 const prisma = new PrismaClient();
-const pdfRoot = "C:/Users/ATACAMA/Downloads/ai-task-review-pdfs";
+const pdfRoot = path.join(process.cwd(), "public", "task-packets");
 
 const oldHomeTitles = [
   "AI Search Relevance Evaluator - Fresh Application Round",
