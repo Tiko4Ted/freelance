@@ -19,6 +19,8 @@ import type { AptitudeQuestion } from "@/lib/aptitude-test";
 
 type AptitudeTestFormProps = {
   applicationHref: string;
+  attemptId: string;
+  attemptNumber: number;
   automaticApproval: boolean;
   aptitudeTest: AptitudeQuestion[];
   jobId: string;
@@ -50,6 +52,8 @@ function readStoredDraft(jobId: string): StoredApplicationDraft | null {
 
 export function AptitudeTestForm({
   applicationHref,
+  attemptId,
+  attemptNumber,
   automaticApproval,
   aptitudeTest,
   jobId,
@@ -97,6 +101,7 @@ export function AptitudeTestForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...draft,
+          aptitudeAttemptId: attemptId,
           aptitudeAnswers: aptitudeTest.map((question) => ({
             questionId: question.id,
             selectedOptionId: answers[question.id],
@@ -125,7 +130,7 @@ export function AptitudeTestForm({
         message: autoApproved
           ? `Your aptitude score was ${score}%, so your application was automatically approved and the task is now available on your home page.`
           : failed
-            ? `Your aptitude score was ${score}%. You did not pass this project's aptitude test, so the project is marked as failed and its task materials remain unavailable.`
+            ? `Your aptitude score was ${score}%. This was attempt ${attemptNumber} of 3. You did not pass this project's aptitude test, so the project is marked as failed and its task materials remain unavailable. You will be notified by email when you can retry after 72 hours.`
           : `Your aptitude score was ${score ?? "recorded"}%. Your application is pending manual review before the task unlocks.`,
       });
     } catch {
@@ -189,7 +194,7 @@ export function AptitudeTestForm({
                 Task aptitude test
               </h1>
               <p className="mt-1 max-w-[620px] text-[13px] leading-[1.55] text-brand-muted">
-                Answer all 15 role-related questions. A minimum score of 12 out
+                Answer all 15 role-related questions. This is attempt {attemptNumber} of 3. A minimum score of 12 out
                 of 15{" "}
                 {automaticApproval
                   ? "automatically approves you for this task."

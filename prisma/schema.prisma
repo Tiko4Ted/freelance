@@ -84,6 +84,11 @@ enum NotificationJobStatus {
   FAILED
 }
 
+enum AptitudeAttemptStatus {
+  IN_PROGRESS
+  SUBMITTED
+}
+
 enum AdminBulkOperationStatus {
   SCHEDULED
   PROCESSING
@@ -145,6 +150,7 @@ model User {
   onboarding                  UserOnboarding?
   freelanceVerificationAudits FreelanceIdentityVerificationAudit[]
   applications                Application[]
+  aptitudeAttempts            AptitudeAttempt[]
   emailVerificationToken      EmailVerificationToken?
   annotationProfile           AnnotationProfile?
   annotationAssignments       AnnotationAssignment[]
@@ -276,10 +282,40 @@ model Job {
   annotationProject  AnnotationProject?
   adminBulkOperations AdminBulkOperation[]
   projectTasks        ProjectTask[]
+  aptitudeAttempts    AptitudeAttempt[]
 
   @@index([isActive])
   @@index([showOnHome, isActive, postedAt])
   @@index([postedAt])
+}
+
+model AptitudeAttempt {
+  id                String               @id @default(uuid())
+  jobId             String
+  job               Job                  @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  applicantUserId   String?
+  applicant         User?                @relation(fields: [applicantUserId], references: [id], onDelete: SetNull)
+  applicationId     String?
+  application       Application?         @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+  candidateEmail    String
+  attemptNumber     Int
+  testVersionId     String
+  status            AptitudeAttemptStatus @default(IN_PROGRESS)
+  answers           Json?
+  correctAnswers    Int?
+  questionCount     Int?
+  scorePercent      Int?
+  passed            Boolean?
+  startedAt         DateTime             @default(now())
+  submittedAt       DateTime?
+  retryAvailableAt  DateTime?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  @@unique([jobId, candidateEmail, attemptNumber])
+  @@index([jobId, candidateEmail, status])
+  @@index([applicantUserId, jobId, createdAt])
+  @@index([retryAvailableAt, status])
 }
 
 model JobSkill {
@@ -335,6 +371,7 @@ model Application {
   ledgerEntries         LedgerEntry[]
   annotationAssignments AnnotationAssignment[]
   taskAssignments       ProjectTaskAssignment[]
+  aptitudeAttempts      AptitudeAttempt[]
 
   @@unique([applicantUserId, jobId])
   @@unique([candidateEmail, jobId])

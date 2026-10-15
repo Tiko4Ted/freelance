@@ -14,7 +14,10 @@ import type {
   AdminCreateJobInput,
   AdminUpdateJobInput,
 } from "@/lib/validation/admin";
-import { aptitudeTestDefinitionSchema } from "@/lib/aptitude-test";
+import {
+  aptitudeTestBankSchema,
+  aptitudeTestDefinitionSchema,
+} from "@/lib/aptitude-test";
 
 const adminJobInclude = {
   skills: {
@@ -49,6 +52,7 @@ function toJobResponse(job: {
 }) {
   const { _count, taskBriefContent, aptitudeTest, ...jobData } = job;
   const parsedAptitude = aptitudeTestDefinitionSchema.safeParse(aptitudeTest);
+  const parsedBank = aptitudeTestBankSchema.safeParse(aptitudeTest);
 
   return {
     ...jobData,
@@ -56,7 +60,9 @@ function toJobResponse(job: {
     hasTaskBrief: Boolean(taskBriefContent?.length),
     aptitudeQuestionCount: parsedAptitude.success
       ? parsedAptitude.data.questions.length
-      : 0,
+      : parsedBank.success
+        ? parsedBank.data.versions[0]?.questions.length ?? 0
+        : 0,
     postedAt: job.postedAt.toISOString(),
     createdAt: job.createdAt.toISOString(),
     updatedAt: job.updatedAt.toISOString(),
@@ -95,7 +101,10 @@ async function assertPublishable(
     throw new Error("PROJECT_BRIEF_REQUIRED");
   }
 
-  if (!aptitudeTestDefinitionSchema.safeParse(job.aptitudeTest).success) {
+  if (
+    !aptitudeTestDefinitionSchema.safeParse(job.aptitudeTest).success &&
+    !aptitudeTestBankSchema.safeParse(job.aptitudeTest).success
+  ) {
     throw new Error("APTITUDE_TEST_REQUIRED");
   }
 

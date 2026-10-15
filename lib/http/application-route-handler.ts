@@ -98,6 +98,27 @@ export function createApplicationPostHandler(
         );
       }
 
+      if (error instanceof Error && error.message === "APTITUDE_RETRY_NOT_AVAILABLE") {
+        return NextResponse.json(
+          { error: "You can retry the aptitude test after the 72-hour waiting period" },
+          { status: 429 },
+        );
+      }
+
+      if (error instanceof Error && error.message === "APTITUDE_ATTEMPTS_EXHAUSTED") {
+        return NextResponse.json(
+          { error: "The maximum of 3 aptitude attempts has been reached for this email" },
+          { status: 403 },
+        );
+      }
+
+      if (error instanceof Error && error.message === "APTITUDE_ATTEMPT_INVALID") {
+        return NextResponse.json(
+          { error: "This aptitude attempt is no longer valid. Start a new attempt from the project page" },
+          { status: 409 },
+        );
+      }
+
       return NextResponse.json(
         { error: "Unable to submit application" },
         { status: 500 },
