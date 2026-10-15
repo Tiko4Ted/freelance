@@ -75,6 +75,10 @@ async function assertPublishable(
       showOnHome: true,
       taskBriefContent: true,
       aptitudeTest: true,
+      projectTasks: {
+        where: { status: "OPEN" },
+        select: { id: true, taskBriefContent: true },
+      },
     },
   });
 
@@ -86,7 +90,8 @@ async function assertPublishable(
     throw new Error("PROJECT_CLOSED");
   }
 
-  if (!job.taskBriefContent?.length) {
+  const hasProjectTaskBrief = job.projectTasks.some((task) => task.taskBriefContent?.length);
+  if (!job.taskBriefContent?.length && !hasProjectTaskBrief) {
     throw new Error("PROJECT_BRIEF_REQUIRED");
   }
 
@@ -102,7 +107,7 @@ async function assertPublishable(
     },
   });
 
-  if (replaceJobId && publishedCount < 4) {
+  if (replaceJobId && publishedCount < 2) {
     throw new Error("PROJECT_REPLACEMENT_NOT_NEEDED");
   }
 
@@ -118,7 +123,7 @@ async function assertPublishable(
   }
 
   if (!job.showOnHome) {
-    if (publishedCount >= 4 && !replaceJobId) {
+    if (publishedCount >= 2 && !replaceJobId) {
       throw new Error("HOME_PROJECT_LIMIT_REACHED");
     }
   }
@@ -149,6 +154,15 @@ async function closeJobWithinTransaction(tx: Prisma.TransactionClient, id: strin
       },
     },
     select: { id: true, status: true },
+  });
+
+  await tx.projectTask.updateMany({
+    where: { projectId: id, status: "OPEN" },
+    data: { status: "CLOSED" },
+  });
+  await tx.projectTaskAssignment.updateMany({
+    where: { task: { projectId: id }, status: "IN_PROGRESS" },
+    data: { status: "CANCELLED" },
   });
 
   if (applicationsToClose.length) {

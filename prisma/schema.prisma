@@ -33,6 +33,21 @@ enum ApplicationStatus {
   CLOSED
 }
 
+enum ProjectTaskStatus {
+  DRAFT
+  OPEN
+  CLOSED
+}
+
+enum ProjectTaskAssignmentStatus {
+  IN_PROGRESS
+  SUBMITTED
+  APPROVED
+  REJECTED
+  PAID
+  CANCELLED
+}
+
 enum KycReviewStatus {
   PENDING
   APPROVED
@@ -136,6 +151,7 @@ model User {
   annotationSubmissions       AnnotationSubmission[]               @relation("AnnotationSubmissions")
   annotationReviews           AnnotationReview[]                   @relation("AnnotationReviews")
   adminBulkOperations         AdminBulkOperation[]
+  projectTaskReviews          ProjectTaskAssignment[] @relation("ProjectTaskReviews")
 
   @@index([role])
   @@index([referredById])
@@ -259,6 +275,7 @@ model Job {
   skills            JobSkill[]
   annotationProject  AnnotationProject?
   adminBulkOperations AdminBulkOperation[]
+  projectTasks        ProjectTask[]
 
   @@index([isActive])
   @@index([showOnHome, isActive, postedAt])
@@ -317,6 +334,7 @@ model Application {
 
   ledgerEntries         LedgerEntry[]
   annotationAssignments AnnotationAssignment[]
+  taskAssignments       ProjectTaskAssignment[]
 
   @@unique([applicantUserId, jobId])
   @@unique([candidateEmail, jobId])
@@ -324,6 +342,57 @@ model Application {
   @@index([candidateEmail])
   @@index([status])
   @@index([payoutDeadline])
+}
+
+model ProjectTask {
+  id                String            @id @default(uuid())
+  projectId         String
+  project           Job               @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title             String
+  description       String
+  payoutAmountCents Int
+  currency          String            @default("USD")
+  status            ProjectTaskStatus @default(DRAFT)
+  sequence          Int
+  taskBriefFileName String?
+  taskBriefMimeType String?
+  taskBriefContent  Bytes?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  assignments ProjectTaskAssignment[]
+
+  @@unique([projectId, sequence])
+  @@index([projectId, status])
+}
+
+model ProjectTaskAssignment {
+  id                    String                       @id @default(uuid())
+  taskId                String
+  task                  ProjectTask                  @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  applicationId         String
+  application           Application                  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  status                ProjectTaskAssignmentStatus @default(IN_PROGRESS)
+  claimedAt             DateTime                     @default(now())
+  submittedAt           DateTime?
+  submissionFileName    String?
+  submissionFileContent Bytes?
+  submissionMimeType    String?
+  submissionNotes       String?
+  reviewedAt            DateTime?
+  reviewedById          String?
+  reviewedBy            User?                        @relation("ProjectTaskReviews", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewNotes           String?
+  paymentApprovedAt     DateTime?
+  paymentAmountCents    Int?
+  createdAt             DateTime                     @default(now())
+  updatedAt             DateTime                     @updatedAt
+
+  ledgerEntry LedgerEntry?
+
+  @@unique([taskId, applicationId])
+  @@index([applicationId, status])
+  @@index([taskId, status])
 }
 
 model AnnotationProfile {
@@ -541,6 +610,8 @@ model LedgerEntry {
   withdrawal    Withdrawal?     @relation(fields: [withdrawalId], references: [id])
   transferId    String?
   transfer      WalletTransfer? @relation(fields: [transferId], references: [id])
+  taskAssignmentId String? @unique
+  taskAssignment   ProjectTaskAssignment? @relation(fields: [taskAssignmentId], references: [id], onDelete: SetNull)
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
 

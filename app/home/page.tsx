@@ -116,6 +116,20 @@ export default async function HomePage() {
                     label: true,
                   },
                 },
+                projectTasks: {
+                  orderBy: { sequence: "asc" },
+                  select: {
+                    id: true,
+                    title: true,
+                    description: true,
+                    payoutAmountCents: true,
+                    currency: true,
+                    status: true,
+                    assignments: {
+                      select: { id: true, applicationId: true, status: true, submittedAt: true, submissionFileName: true },
+                    },
+                  },
+                },
               },
             },
           },
@@ -128,6 +142,26 @@ export default async function HomePage() {
             );
             const taskAvailable = onboarding.complete && hasTaskAccess;
             const canSubmit = taskAvailable && !application.taskSubmittedAt;
+
+            const tasks = application.job.projectTasks.map((task) => {
+              const assignment = task.assignments.find((candidate) => candidate.applicationId === application.id);
+              const assignmentStatus = assignment?.status;
+              const taskAccess = onboarding.complete && hasTaskAccess;
+              const hasActiveAssignment = application.job.projectTasks.some((candidate) => candidate.assignments.some((candidateAssignment) => candidateAssignment.applicationId === application.id && candidateAssignment.status === "IN_PROGRESS"));
+              return {
+                id: task.id,
+                title: task.title,
+                description: task.description,
+                payoutLabel: formatCurrency(task.payoutAmountCents),
+                status: task.status,
+                assignmentId: assignment?.id,
+                assignmentStatus,
+                submittedFileName: assignment?.submissionFileName,
+                briefHref: taskAccess && assignment?.status === "IN_PROGRESS" ? `/api/v1/project-task-assignments/${assignment.id}/material` : undefined,
+                canClaim: taskAccess && task.status === "OPEN" && !assignment && !hasActiveAssignment,
+                canSubmit: taskAccess && task.status === "OPEN" && assignment?.status === "IN_PROGRESS",
+              };
+            });
 
             return {
               id: application.id,
@@ -170,6 +204,7 @@ export default async function HomePage() {
                 : undefined,
               isApplied: true,
               showOnHome: application.job.showOnHome,
+              tasks,
             };
           }),
         )

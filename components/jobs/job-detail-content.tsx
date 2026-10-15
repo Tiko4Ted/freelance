@@ -17,7 +17,7 @@ export function JobDetailContent({ applyHref, job }: JobDetailContentProps) {
       <header className="grid gap-8 border-b border-brand-sand/80 py-8 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-end lg:gap-12">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-gold-strong">
-            Role details
+            Project details
           </p>
           <h1 className="mt-4 max-w-3xl text-4xl font-semibold leading-[1.02] tracking-[-0.045em] text-brand-ink sm:text-5xl">
             {job.title}
@@ -43,17 +43,17 @@ export function JobDetailContent({ applyHref, job }: JobDetailContentProps) {
             Ready to apply?
           </p>
           <p className="mt-3 text-lg font-semibold leading-tight">
-            Start with your details, then complete the aptitude test.
+            Take one aptitude test to unlock the project task queue.
           </p>
           <Link
             className="mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-[10px] bg-brand-gold-light px-4 text-sm font-semibold text-brand-ink transition hover:bg-brand-gold active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-brand-gold-light/30"
             href={applyHref}
           >
-            Apply for this role
+            Apply to this project
             <ArrowUpRight aria-hidden="true" className="h-4 w-4" />
           </Link>
           <p className="mt-3 text-xs leading-5 text-brand-gold-light/70">
-            You can review the role before submitting your application.
+            Each task has its own brief, price, and review outcome.
           </p>
         </aside>
       </header>
@@ -69,7 +69,7 @@ export function JobDetailContent({ applyHref, job }: JobDetailContentProps) {
 
           <section className="mt-10 border-t border-brand-sand/80 pt-7">
             <h2 className="text-2xl font-semibold tracking-[-0.03em] text-brand-ink">
-              Scope of work
+              Project scope
             </h2>
             <ul className="mt-5 space-y-4">
               {detailCopy.scope.map((item) => (
@@ -80,6 +80,21 @@ export function JobDetailContent({ applyHref, job }: JobDetailContentProps) {
               ))}
             </ul>
           </section>
+
+          {job.tasks?.length ? (
+            <section className="mt-10 border-t border-brand-sand/80 pt-7">
+              <h2 className="text-2xl font-semibold tracking-[-0.03em] text-brand-ink">Task queue</h2>
+              <p className="mt-3 max-w-[68ch] text-sm leading-6 text-brand-muted">Complete one task at a time. You may begin another task after you submit the current one for review.</p>
+              <div className="mt-5 divide-y divide-brand-sand/70 border-y border-brand-sand/70">
+                {job.tasks.map((task, index) => (
+                  <div className="flex items-center justify-between gap-4 py-3 text-sm" key={task.id}>
+                    <span className="font-medium text-brand-ink">{String(index + 1).padStart(2, "0")} · {task.title}</span>
+                    <span className="shrink-0 font-semibold text-brand-gold-strong">{new Intl.NumberFormat("en-US", { style: "currency", currency: task.currency, maximumFractionDigits: 0 }).format(task.payoutAmountCents / 100)}</span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : null}
 
           <section className="mt-10 border-t border-brand-sand/80 pt-7">
             <h2 className="text-2xl font-semibold tracking-[-0.03em] text-brand-ink">
@@ -136,7 +151,7 @@ export function JobDetailContent({ applyHref, job }: JobDetailContentProps) {
           className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-[10px] bg-brand-ink px-4 text-sm font-semibold text-brand-ivory transition hover:bg-[var(--color-action-hover)] active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-brand-gold/20"
           href={applyHref}
         >
-          Apply for this role
+          Apply to this project
           <ArrowUpRight aria-hidden="true" className="h-4 w-4" />
         </Link>
       </div>

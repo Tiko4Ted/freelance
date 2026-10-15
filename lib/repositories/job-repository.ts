@@ -30,6 +30,19 @@ const publicJobSelect = {
       label: "asc",
     },
   },
+  projectTasks: {
+    where: { status: "OPEN" },
+    orderBy: { sequence: "asc" },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      payoutAmountCents: true,
+      currency: true,
+      status: true,
+      sequence: true,
+    },
+  },
 } satisfies Prisma.JobSelect;
 
 const publicJobCardSelect = {

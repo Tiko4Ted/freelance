@@ -1,0 +1,17 @@
+import { NextResponse } from "next/server";
+
+import { requireSession } from "@/lib/auth/session";
+import { ProjectTaskService } from "@/lib/services/project-task-service";
+
+type RouteContext = { params: Promise<{ id: string }> };
+
+export async function GET(_request: Request, context: RouteContext) {
+  try {
+    const session = await requireSession();
+    const { id } = await context.params;
+    const material = await ProjectTaskService.getMaterial(id, session.user.id);
+    return new NextResponse(new Uint8Array(material.content), { headers: { "Content-Disposition": `attachment; filename="${material.fileName}"`, "Content-Type": "application/pdf" } });
+  } catch {
+    return NextResponse.json({ error: "Unable to download task material" }, { status: 404 });
+  }
+}

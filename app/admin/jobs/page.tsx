@@ -6,6 +6,7 @@ import { JobCreateForm } from "@/components/admin/job-create-form";
 import { ProjectLifecycleActions } from "@/components/admin/project-lifecycle-actions";
 import { ProjectPricingEditor } from "@/components/admin/project-pricing-editor";
 import { ProjectPublishAction } from "@/components/admin/project-publish-action";
+import { ProjectTaskManager } from "@/components/admin/project-task-manager";
 import { requireRole } from "@/lib/auth/session";
 import { AdminJobService } from "@/lib/services/admin-job-service";
 
@@ -133,6 +134,7 @@ export default async function AdminJobsPage() {
                       jobId={job.id}
                     />
                   </div>
+                  <ProjectTaskManager projectId={job.id} />
                 </div>
               </div>
             </article>
