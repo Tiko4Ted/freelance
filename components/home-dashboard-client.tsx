@@ -19,6 +19,7 @@ import {
   CheckCircle2,
   UserRound,
 } from "lucide-react";
+import { ProjectTaskList, type DashboardTask } from "@/components/project-task-list";
 
 import {
   getSupportChatReply,
@@ -48,6 +49,7 @@ type DashboardProject = {
   isApplied?: boolean;
   showOnHome?: boolean;
   isClosed?: boolean;
+  tasks?: DashboardTask[];
 };
 
 const MAX_TASK_SUBMISSION_BYTES = 4 * 1024 * 1024;
@@ -535,6 +537,22 @@ export function HomeDashboardClient({
                   submissionStatus === "submitting";
                 const projectUploadError =
                   uploadFeedbackProjectId === project.id ? uploadError : null;
+
+                if (project.tasks?.length) {
+                  return (
+                    <article className="col-span-full rounded-[18px] border border-brand-gold/40 bg-brand-ivory p-5 text-left shadow-brand-card" key={project.id}>
+                      <div className="flex flex-wrap items-start justify-between gap-4">
+                        <div>
+                          <div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-[var(--color-accent-soft)] px-2.5 py-1 text-xs font-semibold text-brand-gold-strong">Project workspace</span><span className="text-xs font-semibold text-emerald-700">{project.tasks.filter((task) => task.status === "OPEN").length} open tasks</span></div>
+                          <h3 className="mt-3 text-xl font-semibold tracking-[-0.03em] text-brand-ink">{project.title}</h3>
+                          <p className="mt-1 max-w-2xl text-sm leading-6 text-brand-muted">{project.description}</p>
+                        </div>
+                        <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusPillClass(project.status)}`}>{project.statusLabel}</span>
+                      </div>
+                      <ProjectTaskList tasks={project.tasks} />
+                    </article>
+                  );
+                }
 
                 return (
                   <article

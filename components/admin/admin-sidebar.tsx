@@ -5,6 +5,7 @@ import { signOut } from "next-auth/react";
 import {
   BriefcaseBusiness,
   ClipboardCheck,
+  FileCheck2,
   ArrowRightLeft,
   LayoutDashboard,
   LogOut,
@@ -21,11 +22,12 @@ const items = [
   { label: "Operations", href: "/admin", icon: LayoutDashboard, id: "overview" },
   { label: "Projects", href: "/admin/jobs", icon: BriefcaseBusiness, id: "projects" },
   { label: "Applications", href: "/admin/applications", icon: ClipboardCheck, id: "applications" },
+  { label: "Task submissions", href: "/admin/task-submissions", icon: FileCheck2, id: "task-submissions" },
   { label: "KYC approval", href: "/admin/kyc", icon: ShieldCheck, id: "kyc" },
   { label: "Fund transfers", href: "/admin/transfers", icon: ArrowRightLeft, id: "transfers" },
 ] as const;
 
-function Navigation({ active, onNavigate }: { active: "overview" | "projects" | "applications" | "kyc" | "transfers"; onNavigate?: () => void }) {
+function Navigation({ active, onNavigate }: { active: "overview" | "projects" | "applications" | "task-submissions" | "kyc" | "transfers"; onNavigate?: () => void }) {
   return (
     <nav aria-label="Admin operations navigation" className="flex flex-col gap-1">
       {items.map((item) => {
@@ -58,8 +60,10 @@ export function AdminSidebar() {
   const pathname = usePathname();
   const active = pathname.startsWith("/admin/jobs")
     ? "projects"
-    : pathname.startsWith("/admin/applications")
-      ? "applications"
+      : pathname.startsWith("/admin/applications")
+        ? "applications"
+        : pathname.startsWith("/admin/task-submissions")
+          ? "task-submissions"
       : pathname.startsWith("/admin/kyc")
         ? "kyc"
         : pathname.startsWith("/admin/transfers")

@@ -109,6 +109,8 @@ function toPublicJobValues(job: PublicJobValueSource) {
       id: skill.id,
       label: skill.label,
     })),
+    tasks: job.projectTasks,
+    taskCount: job.projectTasks.length,
     createdAt: job.createdAt.toISOString(),
     updatedAt: job.updatedAt.toISOString(),
   };
@@ -127,8 +129,10 @@ function toPublicJobCard(job: PublicJobCard) {
 }
 
 export type PublicJobView = ReturnType<typeof toPublicJob>;
-export type PublicJobListView = Omit<PublicJobView, "description" | "aptitudeTest"> & {
+export type PublicJobListView = Omit<PublicJobView, "description" | "aptitudeTest" | "tasks" | "taskCount"> & {
   description?: string;
+  tasks?: PublicJobView["tasks"];
+  taskCount?: number;
 };
 
 // Keep the first navigation light; additional roles are loaded on demand by

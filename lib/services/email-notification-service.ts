@@ -499,6 +499,25 @@ async function sendSafely(message: EmailMessage) {
   }
 }
 
+function buildProjectTaskSubmittedEmail(input: {
+  to: string;
+  name: string;
+  taskTitle: string;
+  projectTitle: string;
+}) {
+  const greeting = input.name ? `Hi ${input.name},` : "Hi,";
+  return {
+    to: input.to,
+    subject: `Task submitted for review: ${input.taskTitle}`,
+    text: [greeting, "", `Your submission for ${input.taskTitle} in ${input.projectTitle} is now under review.`, "We will notify you when the review is complete."].join("\n"),
+    html: layoutHtml({
+      heading: "Task submitted for review",
+      preview: `${input.taskTitle} is now under review.`,
+      body: `<p style="margin:0;font-size:15px;line-height:1.7;color:#334155">${escapeHtml(greeting)}</p><p style="margin:16px 0 0;font-size:15px;line-height:1.7;color:#334155">Your submission for <strong>${escapeHtml(input.taskTitle)}</strong> in ${escapeHtml(input.projectTitle)} is now under review. We will notify you when the review is complete.</p>`,
+    }),
+  } satisfies EmailMessage;
+}
+
 async function getApplication(applicationId: string) {
   return prisma.application.findUnique({
     where: { id: applicationId },
@@ -613,6 +632,15 @@ export const EmailNotificationService = {
     }
 
     await sendSafely(buildApplicationSubmittedEmail(application));
+  },
+
+  async notifyProjectTaskSubmitted(input: {
+    to: string;
+    name: string;
+    taskTitle: string;
+    projectTitle: string;
+  }) {
+    await sendSafely(buildProjectTaskSubmittedEmail(input));
   },
 
   async notifyUsersOfNewJob(job: NotificationJob) {

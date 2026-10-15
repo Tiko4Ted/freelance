@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { HelpCenterClient } from "@/components/help-center-client";
 
+export const dynamic = "force-dynamic";
+
 type HelpCenterCategoryPageProps = {
   params: Promise<{
     categoryId: string;
