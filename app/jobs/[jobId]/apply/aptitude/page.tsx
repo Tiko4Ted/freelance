@@ -4,7 +4,12 @@ import { Role } from "@prisma/client";
 import { auth } from "@/auth";
 import { AptitudeTestForm } from "@/components/aptitude-test-form";
 import { PortalSidebar } from "@/components/portal-sidebar";
-import { buildAptitudeTest } from "@/lib/aptitude-test";
+import {
+  AptitudeGateError,
+  AptitudeService,
+  APTITUDE_MAX_ATTEMPTS,
+  APTITUDE_RETRY_DELAY_HOURS,
+} from "@/lib/services/aptitude-service";
 import { JobService } from "@/lib/services/job-service";
 import { OnboardingService } from "@/lib/services/onboarding-service";
 
@@ -82,7 +87,26 @@ export default async function AptitudePage({
     redirect("/onboarding");
   }
 
-  const aptitudeTest = buildAptitudeTest(job);
+  let attempt: Awaited<ReturnType<typeof AptitudeService.getOrCreateAttempt>> | null = null;
+  let gateMessage: string | null = null;
+
+  try {
+    attempt = await AptitudeService.getOrCreateAttempt(job.id, {
+      id: session.user.id,
+      email: session.user.email ?? "",
+    });
+  } catch (error) {
+    if (error instanceof AptitudeGateError) {
+      gateMessage =
+        error.code === "APTITUDE_RETRY_NOT_AVAILABLE"
+          ? `You have used an aptitude attempt for this project. You can try again after ${error.retryAvailableAt?.toLocaleString() ?? "the retry window"}. We will email you when the ${APTITUDE_RETRY_DELAY_HOURS}-hour waiting period ends.`
+          : error.code === "APTITUDE_ATTEMPTS_EXHAUSTED"
+            ? `You have reached the ${APTITUDE_MAX_ATTEMPTS}-attempt limit for this project. Further aptitude attempts are blocked for this email address.`
+            : "You have already passed this project's aptitude test. Open your home page to continue.";
+    } else {
+      throw error;
+    }
+  }
 
   return (
     <>
@@ -113,12 +137,21 @@ export default async function AptitudePage({
         </header>
 
         <section className="py-8">
-          <AptitudeTestForm
-            applicationHref={applyHref(job.id, referralCode)}
-            automaticApproval={job.showOnHome}
-            aptitudeTest={aptitudeTest}
-            jobId={job.id}
-          />
+          {gateMessage ? (
+            <section className="rounded-lg border border-brand-sand bg-brand-ivory p-6 text-brand-ink shadow-brand-card">
+              <h2 className="text-xl font-semibold">Aptitude test unavailable</h2>
+              <p className="mt-3 text-sm leading-6 text-brand-muted">{gateMessage}</p>
+            </section>
+          ) : attempt ? (
+            <AptitudeTestForm
+              applicationHref={applyHref(job.id, referralCode)}
+              attemptId={attempt.id}
+              attemptNumber={attempt.attemptNumber}
+              automaticApproval={job.showOnHome}
+              aptitudeTest={attempt.questions}
+              jobId={job.id}
+            />
+          ) : null}
         </section>
         </div>
       </main>

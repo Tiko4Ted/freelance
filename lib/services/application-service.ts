@@ -4,7 +4,12 @@ import { join } from "node:path";
 
 import { scoreAptitudeTest } from "@/lib/aptitude-test";
 import { prisma } from "@/lib/db/prisma";
+import { NotificationQueue } from "@/lib/queues/notification-queue";
 import { createSimplePdf, type PdfImage } from "@/lib/pdf/simple-pdf";
+import {
+  APTITUDE_MAX_ATTEMPTS,
+  APTITUDE_RETRY_DELAY_MS,
+} from "@/lib/services/aptitude-service";
 import { EmailNotificationService } from "@/lib/services/email-notification-service";
 import { OnboardingService } from "@/lib/services/onboarding-service";
 import {
@@ -194,15 +199,55 @@ export const ApplicationService = {
           throw new Error("ONBOARDING_DETAILS_REQUIRED");
         }
 
-        const aptitudeResult = scoreAptitudeTest(job, input.aptitudeAnswers);
+        const aptitudeAttempt = input.aptitudeAttemptId
+          ? await tx.aptitudeAttempt.findFirst({
+              where: {
+                id: input.aptitudeAttemptId,
+                jobId: job.id,
+                applicantUserId: applicant.id,
+                candidateEmail: normalizedEmail,
+                status: "IN_PROGRESS",
+              },
+              select: {
+                id: true,
+                attemptNumber: true,
+                testVersionId: true,
+              },
+            })
+          : null;
 
-        const applicationStatus = job.showOnHome
-          ? aptitudeResult.passed
+        if (input.aptitudeAttemptId && !aptitudeAttempt) {
+          throw new Error("APTITUDE_ATTEMPT_INVALID");
+        }
+
+        const aptitudeResult = scoreAptitudeTest(
+          job,
+          input.aptitudeAnswers,
+          aptitudeAttempt?.testVersionId,
+        );
+        const applicationStatus = aptitudeResult.passed
+          ? job.showOnHome
             ? ApplicationStatus.CERTIFIED
-            : ApplicationStatus.REJECTED
-          : ApplicationStatus.APPLIED;
+            : ApplicationStatus.APPLIED
+          : ApplicationStatus.REJECTED;
+        const existingApplication = await tx.application.findFirst({
+          where: {
+            OR: [
+              { applicantUserId: applicant.id, jobId: job.id },
+              { candidateEmail: normalizedEmail, jobId: job.id },
+            ],
+          },
+          select: { id: true, status: true, referralId: true },
+        });
 
-        if (applicationStatus === ApplicationStatus.CERTIFIED) {
+        if (existingApplication && existingApplication.status !== ApplicationStatus.REJECTED) {
+          throw new Error("APPLICATION_ALREADY_EXISTS");
+        }
+
+        if (
+          applicationStatus === ApplicationStatus.CERTIFIED &&
+          existingApplication?.status !== ApplicationStatus.CERTIFIED
+        ) {
           const reservation = await tx.job.updateMany({
             where: {
               id: job.id,
@@ -225,7 +270,7 @@ export const ApplicationService = {
           create: { email: normalizedEmail },
         });
 
-        let referralId: string | undefined;
+        let referralId: string | null | undefined = existingApplication?.referralId;
 
         const referrer = parsedReferral?.jobId === job.id
           ? await tx.user.findUnique({
@@ -239,7 +284,7 @@ export const ApplicationService = {
               })
             : null;
 
-        if (referrer) {
+        if (referrer && !existingApplication) {
 
           if (referrer?.id === applicant.id || referrer?.email === normalizedEmail) {
             throw new Error("SELF_REFERRAL");
@@ -258,8 +303,7 @@ export const ApplicationService = {
           }
         }
 
-        return tx.application.create({
-          data: {
+        const applicationData = {
             applicantUserId: applicant.id,
             jobId: job.id,
             candidateEmail: normalizedEmail,
@@ -284,8 +328,8 @@ export const ApplicationService = {
             status: applicationStatus,
             lockedPayoutCents: job.payoutAmountCents,
             referralId,
-          },
-          select: {
+          };
+        const applicationSelect = {
             id: true,
             jobId: true,
             candidateEmail: true,
@@ -310,13 +354,60 @@ export const ApplicationService = {
             lockedPayoutCents: true,
             referralId: true,
             createdAt: true,
-          },
-        });
+          } as const;
+        const application = existingApplication
+          ? await tx.application.update({
+              where: { id: existingApplication.id },
+              data: applicationData,
+              select: applicationSelect,
+            })
+          : await tx.application.create({
+              data: applicationData,
+              select: applicationSelect,
+            });
+
+        let retryAvailableAt: Date | null = null;
+        if (aptitudeAttempt) {
+          retryAvailableAt = aptitudeResult.passed || aptitudeAttempt.attemptNumber >= APTITUDE_MAX_ATTEMPTS
+            ? null
+            : new Date(Date.now() + APTITUDE_RETRY_DELAY_MS);
+          await tx.aptitudeAttempt.update({
+            where: { id: aptitudeAttempt.id },
+            data: {
+              applicationId: application.id,
+              answers: input.aptitudeAnswers,
+              correctAnswers: aptitudeResult.correctCount,
+              questionCount: aptitudeResult.totalQuestions,
+              scorePercent: aptitudeResult.scorePercent,
+              passed: aptitudeResult.passed,
+              status: "SUBMITTED",
+              submittedAt: new Date(),
+              retryAvailableAt,
+            },
+          });
+        }
+
+        return {
+          application,
+          retryAvailableAt,
+          attemptNumber: aptitudeAttempt?.attemptNumber ?? null,
+          shouldScheduleRetry: Boolean(aptitudeAttempt && retryAvailableAt),
+        };
       });
 
-      await EmailNotificationService.notifyApplicationSubmitted(application.id);
+      await EmailNotificationService.notifyApplicationSubmitted(application.application.id);
 
-      return toApplicationResponse(application);
+      if (application.shouldScheduleRetry && application.attemptNumber) {
+        try {
+          await NotificationQueue.enqueueAptitudeRetry({
+            attemptId: input.aptitudeAttemptId!,
+          });
+        } catch (error) {
+          console.error("Unable to schedule aptitude retry email", error);
+        }
+      }
+
+      return toApplicationResponse(application.application);
     } catch (error) {
       if (isUniqueConstraintError(error)) {
         throw new Error("APPLICATION_ALREADY_EXISTS");

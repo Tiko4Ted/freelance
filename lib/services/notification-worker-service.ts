@@ -8,6 +8,7 @@ import {
   type PhoneVerificationMessage,
 } from "@/lib/queues/notification-queue";
 import { EmailNotificationService } from "@/lib/services/email-notification-service";
+import { APTITUDE_MAX_ATTEMPTS } from "@/lib/services/aptitude-service";
 import { MobileSasaSmsService } from "@/lib/services/mobile-sasa-sms-service";
 
 const MAX_JOB_ATTEMPTS = 5;
@@ -221,6 +222,40 @@ export async function processEmailNotificationMessage(payload: unknown) {
         { name: recipient.name, to: recipient.email },
         message.jobId,
       );
+    }
+
+    if (message.type === "aptitude-retry") {
+      const attempt = await prisma.aptitudeAttempt.findUnique({
+        where: { id: message.attemptId },
+        select: {
+          attemptNumber: true,
+          candidateEmail: true,
+          retryAvailableAt: true,
+          status: true,
+          passed: true,
+          job: { select: { id: true, title: true } },
+          applicant: { select: { name: true } },
+        },
+      });
+
+      if (
+        !attempt ||
+        attempt.status !== "SUBMITTED" ||
+        attempt.passed ||
+        !attempt.retryAvailableAt ||
+        attempt.retryAvailableAt > new Date() ||
+        attempt.attemptNumber >= APTITUDE_MAX_ATTEMPTS
+      ) {
+        throw new PermanentNotificationError("STALE_APTITUDE_RETRY");
+      }
+
+      return EmailNotificationService.sendAptitudeRetryEmail({
+        to: attempt.candidateEmail,
+        name: attempt.applicant?.name ?? "",
+        projectTitle: attempt.job.title,
+        jobId: attempt.job.id,
+        attemptNumber: attempt.attemptNumber,
+      });
     }
 
     return EmailNotificationService.sendSignedLegalDocumentEmail(

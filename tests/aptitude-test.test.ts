@@ -4,11 +4,17 @@ import test from "node:test";
 import { PayoutTrigger } from "@prisma/client";
 
 import {
+  aptitudeTestBankSchema,
   buildAptitudeTest,
+  getAptitudeTestVersions,
   scoreAptitudeTest,
   type AptitudeAnswer,
   type AptitudeJob,
 } from "../lib/aptitude-test";
+import {
+  buildHailmaryAptitudeBank,
+  validateAptitudeTestBank,
+} from "../lib/aptitude-test-bank";
 
 const questionIds = [
   "role-focus",
@@ -77,4 +83,63 @@ test("does not auto-approve applicants who answer fewer than 12 correctly", () =
   assert.equal(result.correctCount, 11);
   assert.equal(result.scorePercent, 73);
   assert.equal(result.passed, false);
+});
+
+test("builds 20 aptitude versions with globally unique IDs and prompts", () => {
+  const bank = buildHailmaryAptitudeBank();
+  const summary = validateAptitudeTestBank(bank);
+
+  assert.equal(summary.versionCount, 20);
+  assert.equal(summary.questionCount, 300);
+  assert.equal(summary.promptCount, 300);
+  assert.equal(bank.passingCorrect, 12);
+  assert.deepEqual(
+    bank.versions.map((version) => version.questions.length),
+    Array.from({ length: 20 }, () => 15),
+  );
+});
+
+test("Hailmary upgrades a legacy single-test record to the version bank", () => {
+  const versions = getAptitudeTestVersions({
+    title: "Project Hailmary",
+    description: "legacy record",
+    payoutType: PayoutTrigger.TASK_1,
+    skills: [],
+    aptitudeTest: {
+      passingCorrect: 12,
+      questions: [],
+    },
+  });
+
+  assert.equal(versions.length, 20);
+  assert.equal(new Set(versions.map((version) => version.id)).size, 20);
+});
+
+test("each aptitude version scores with the same 12-of-15 limit", () => {
+  const bank = buildHailmaryAptitudeBank();
+  const job: AptitudeJob = {
+    title: "Project Hailmary",
+    description: "Evidence-grounded AI quality review",
+    payoutType: PayoutTrigger.TASK_1,
+    skills: [{ label: "Image-grounded review" }],
+    aptitudeTest: bank,
+  };
+
+  for (const version of bank.versions) {
+    const answers = version.questions.map((question, index) => ({
+      questionId: question.id,
+      selectedOptionId: index < 12 ? "a" : "b",
+    }));
+    const result = scoreAptitudeTest(job, answers, version.id);
+    assert.equal(result.totalQuestions, 15);
+    assert.equal(result.correctCount, 12);
+    assert.equal(result.passed, true);
+  }
+});
+
+test("the bank schema rejects duplicate prompts before they can be published", () => {
+  const bank = buildHailmaryAptitudeBank();
+  bank.versions[1].questions[0].prompt = bank.versions[0].questions[0].prompt;
+
+  assert.equal(aptitudeTestBankSchema.safeParse(bank).success, false);
 });

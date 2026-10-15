@@ -1,6 +1,8 @@
 import type { PayoutTrigger } from "@prisma/client";
 import { z } from "zod";
 
+import { buildHailmaryAptitudeBank } from "@/lib/aptitude-test-bank";
+
 export const APTITUDE_MIN_CORRECT_ANSWERS = 12;
 
 export type AptitudeJob = {
@@ -33,29 +35,27 @@ export type AptitudeAnswer = {
   selectedOptionId: string;
 };
 
-export const aptitudeTestDefinitionSchema = z
-  .object({
-    passingCorrect: z.number().int().min(1).max(50),
-    questions: z
-      .array(
-        z.object({
-          id: z.string().trim().min(1).max(80),
-          prompt: z.string().trim().min(5).max(600),
-          options: z
-            .array(
-              z.object({
-                id: z.string().trim().min(1).max(20),
-                label: z.string().trim().min(1).max(300),
-              }),
-            )
-            .min(2)
-            .max(6),
-          correctOptionId: z.string().trim().min(1).max(20),
-        }),
-      )
-      .min(15)
-      .max(50),
-  })
+const aptitudeQuestionSchema = z.object({
+  id: z.string().trim().min(1).max(80),
+  prompt: z.string().trim().min(5).max(600),
+  options: z
+    .array(
+      z.object({
+        id: z.string().trim().min(1).max(20),
+        label: z.string().trim().min(1).max(300),
+      }),
+    )
+    .min(2)
+    .max(6),
+  correctOptionId: z.string().trim().min(1).max(20),
+});
+
+const aptitudeTestDefinitionObjectSchema = z.object({
+  passingCorrect: z.number().int().min(1).max(50),
+  questions: z.array(aptitudeQuestionSchema).min(15).max(50),
+});
+
+export const aptitudeTestDefinitionSchema = aptitudeTestDefinitionObjectSchema
   .superRefine((test, context) => {
     const questionIds = new Set<string>();
 
@@ -94,6 +94,69 @@ export const aptitudeTestDefinitionSchema = z
         message: "Passing score cannot exceed the number of questions",
       });
     }
+  });
+
+const aptitudeTestVersionSchema = z.object({
+  id: z.string().trim().min(1).max(80),
+  questions: z.array(aptitudeQuestionSchema).min(15).max(50),
+});
+
+export const aptitudeTestBankSchema = z
+  .object({
+    passingCorrect: z.number().int().min(1).max(50),
+    versions: z.array(aptitudeTestVersionSchema).min(1).max(100),
+  })
+  .superRefine((bank, context) => {
+    const versionIds = new Set<string>();
+    const questionIds = new Set<string>();
+    const prompts = new Set<string>();
+
+    bank.versions.forEach((version, versionIndex) => {
+      if (versionIds.has(version.id)) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["versions", versionIndex, "id"],
+          message: "Aptitude version IDs must be unique",
+        });
+      }
+      versionIds.add(version.id);
+
+      if (bank.passingCorrect > version.questions.length) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["versions", versionIndex, "questions"],
+          message: "Passing score cannot exceed the number of questions",
+        });
+      }
+
+      version.questions.forEach((question, questionIndex) => {
+        if (questionIds.has(question.id)) {
+          context.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["versions", versionIndex, "questions", questionIndex, "id"],
+            message: "Question IDs must be unique across all aptitude versions",
+          });
+        }
+        if (prompts.has(question.prompt)) {
+          context.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["versions", versionIndex, "questions", questionIndex, "prompt"],
+            message: "Question prompts must be unique across all aptitude versions",
+          });
+        }
+        questionIds.add(question.id);
+        prompts.add(question.prompt);
+
+        const optionIds = new Set(question.options.map((option) => option.id));
+        if (optionIds.size !== question.options.length || !optionIds.has(question.correctOptionId)) {
+          context.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["versions", versionIndex, "questions", questionIndex, "options"],
+            message: "Every question needs unique options and a valid correct answer",
+          });
+        }
+      });
+    });
   });
 
 export type AptitudeTestDefinition = z.infer<
@@ -345,40 +408,47 @@ function getQuestionKey(job: AptitudeJob) {
   ];
 }
 
-function storedQuestions(job: AptitudeJob) {
+function storedDefinition(job: AptitudeJob) {
   const parsed = aptitudeTestDefinitionSchema.safeParse(job.aptitudeTest);
-  return parsed.success ? parsed.data.questions : null;
-}
-
-function publicQuestions(job: AptitudeJob) {
-  const value = job.aptitudeTest;
-
-  if (!value || typeof value !== "object") {
-    return null;
-  }
-
-  const questions = Array.isArray(value)
-    ? value
-    : (value as { questions?: unknown }).questions;
-  if (!Array.isArray(questions)) {
-    return null;
-  }
-
-  const parsed = z
-    .array(
-      z.object({
-        id: z.string(),
-        prompt: z.string(),
-        options: z.array(z.object({ id: z.string(), label: z.string() })),
-      }),
-    )
-    .safeParse(questions);
-
   return parsed.success ? parsed.data : null;
 }
 
-export function buildAptitudeTest(job: AptitudeJob): AptitudeQuestion[] {
-  const customQuestions = storedQuestions(job) ?? publicQuestions(job);
+function storedBank(job: AptitudeJob) {
+  const parsed = aptitudeTestBankSchema.safeParse(job.aptitudeTest);
+  return parsed.success ? parsed.data : null;
+}
+
+export function getAptitudeTestVersions(job: AptitudeJob) {
+  if (job.title.trim().toLowerCase() === "project hailmary") {
+    const bank = buildHailmaryAptitudeBank();
+    return bank.versions.map((version) => ({
+      id: version.id,
+      questions: version.questions,
+      passingCorrect: bank.passingCorrect,
+    }));
+  }
+
+  const bank = storedBank(job);
+  if (bank) {
+    return bank.versions.map((version) => ({
+      id: version.id,
+      questions: version.questions,
+      passingCorrect: bank.passingCorrect,
+    }));
+  }
+
+  const definition = storedDefinition(job);
+  if (definition) {
+    return [{ id: "default", questions: definition.questions, passingCorrect: definition.passingCorrect }];
+  }
+
+  return [{ id: "generated", questions: getQuestionKey(job), passingCorrect: APTITUDE_MIN_CORRECT_ANSWERS }];
+}
+
+export function buildAptitudeTest(job: AptitudeJob, versionId?: string): AptitudeQuestion[] {
+  const versions = getAptitudeTestVersions(job);
+  const selectedVersion = versions.find((version) => version.id === versionId) ?? versions[0];
+  const customQuestions = selectedVersion.questions;
   if (customQuestions) {
     return customQuestions.map((question) => ({
       id: question.id,
@@ -387,16 +457,13 @@ export function buildAptitudeTest(job: AptitudeJob): AptitudeQuestion[] {
     }));
   }
 
-  return getQuestionKey(job).map((question) => ({
-    id: question.id,
-    prompt: question.prompt,
-    options: question.options,
-  }));
+  return [];
 }
 
-export function scoreAptitudeTest(job: AptitudeJob, answers: AptitudeAnswer[]) {
-  const customQuestions = storedQuestions(job);
-  const questions = customQuestions ?? getQuestionKey(job);
+export function scoreAptitudeTest(job: AptitudeJob, answers: AptitudeAnswer[], versionId?: string) {
+  const versions = getAptitudeTestVersions(job);
+  const selectedVersion = versions.find((version) => version.id === versionId) ?? versions[0];
+  const questions = selectedVersion.questions;
   const answerMap = new Map(
     answers.map((answer) => [answer.questionId, answer.selectedOptionId]),
   );
@@ -405,10 +472,7 @@ export function scoreAptitudeTest(job: AptitudeJob, answers: AptitudeAnswer[]) {
   ).length;
   const totalQuestions = questions.length;
   const scorePercent = Math.round((correctCount / totalQuestions) * 100);
-  const passingCorrect =
-    customQuestions
-      ? aptitudeTestDefinitionSchema.parse(job.aptitudeTest).passingCorrect
-      : APTITUDE_MIN_CORRECT_ANSWERS;
+  const passingCorrect = selectedVersion.passingCorrect;
 
   return {
     correctCount,
@@ -417,3 +481,5 @@ export function scoreAptitudeTest(job: AptitudeJob, answers: AptitudeAnswer[]) {
     passed: correctCount >= passingCorrect,
   };
 }
+
+export { buildHailmaryAptitudeBank };

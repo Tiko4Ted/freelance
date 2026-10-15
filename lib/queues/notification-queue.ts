@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { prisma } from "@/lib/db/prisma";
 import { ONBOARDING_REVIEW_DELAY_SECONDS } from "@/lib/onboarding-review";
+import { APTITUDE_RETRY_DELAY_HOURS } from "@/lib/services/aptitude-service";
 
 export const EMAIL_NOTIFICATION_TOPIC = "email-notifications";
 export const PHONE_VERIFICATION_TOPIC = "phone-verifications";
@@ -34,6 +35,10 @@ export const emailNotificationMessageSchema = z.discriminatedUnion("type", [
     type: z.literal("onboarding-review"),
     userId: z.string().uuid(),
     submittedAt: z.string().datetime(),
+  }),
+  jobEnvelopeSchema.extend({
+    type: z.literal("aptitude-retry"),
+    attemptId: z.string().uuid(),
   }),
 ]);
 
@@ -158,6 +163,18 @@ export function createNotificationQueue(
         payload: input,
         retentionSeconds: 600,
         topic: PHONE_VERIFICATION_TOPIC,
+      });
+    },
+
+    enqueueAptitudeRetry(input: {
+      attemptId: string;
+    }) {
+      return enqueue<EmailNotificationMessage>({
+        delaySeconds: APTITUDE_RETRY_DELAY_HOURS * 60 * 60,
+        kind: "aptitude-retry",
+        payload: { type: "aptitude-retry", ...input },
+        retentionSeconds: 7 * 24 * 60 * 60,
+        topic: EMAIL_NOTIFICATION_TOPIC,
       });
     },
   };

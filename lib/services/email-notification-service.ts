@@ -379,6 +379,42 @@ export function buildApplicationSubmittedEmail(
   };
 }
 
+export function buildAptitudeRetryEmail(input: {
+  to: string;
+  name: string;
+  projectTitle: string;
+  jobId: string;
+  attemptNumber: number;
+}) {
+  const applyUrl = `${appUrl()}/jobs/${input.jobId}/apply/aptitude`;
+  const greeting = input.name.trim() ? `Hi ${input.name.trim()},` : "Hi,";
+  const subject = `You can retry the ${input.projectTitle} aptitude test`;
+  const text = [
+    greeting,
+    "",
+    `Your 72-hour waiting period has ended. You may now retry the aptitude test for ${input.projectTitle}.`,
+    `This will be attempt ${input.attemptNumber + 1} of 3, and you may receive a different test version automatically.`,
+    "",
+    `Retry here: ${applyUrl}`,
+  ].join("\n");
+
+  return {
+    to: input.to,
+    subject,
+    text,
+    html: layoutHtml({
+      heading: "Your aptitude retry is available",
+      preview: `The 72-hour waiting period for ${input.projectTitle} has ended.`,
+      body: `
+        <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#334155">${escapeHtml(greeting)}</p>
+        <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#334155">Your 72-hour waiting period has ended. You may now retry the aptitude test for <strong>${escapeHtml(input.projectTitle)}</strong>.</p>
+        <p style="margin:0 0 22px;font-size:15px;line-height:1.7;color:#334155">This will be attempt <strong>${input.attemptNumber + 1} of 3</strong>. A different test version may be assigned automatically.</p>
+        <p style="margin:0">${buttonHtml(applyUrl, "Retry aptitude test")}</p>
+      `,
+    }),
+  };
+}
+
 export function buildApplicationStatusEmail(
   application: NotificationApplication,
   previousStatus?: ApplicationStatus,
@@ -632,6 +668,16 @@ export const EmailNotificationService = {
     }
 
     await sendSafely(buildApplicationSubmittedEmail(application));
+  },
+
+  async sendAptitudeRetryEmail(input: {
+    to: string;
+    name: string;
+    projectTitle: string;
+    jobId: string;
+    attemptNumber: number;
+  }) {
+    await sendSafely(buildAptitudeRetryEmail(input));
   },
 
   async notifyProjectTaskSubmitted(input: {
