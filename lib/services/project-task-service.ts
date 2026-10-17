@@ -10,6 +10,9 @@ import { isOnboardingReviewApproved } from "@/lib/onboarding-review";
 import { EmailNotificationService } from "@/lib/services/email-notification-service";
 import type { TaskSubmissionInput } from "@/lib/validation/task-submission";
 
+export const PROJECT_TASK_AUTO_REVIEW_DELAY_MS = 2 * 60 * 60 * 1000;
+export const PROJECT_TASK_AUTO_REVIEW_BATCH_SIZE = 100;
+
 const eligibleApplicationStatuses = [
   "CERTIFIED",
   "MATCHED",
@@ -227,6 +230,126 @@ export const ProjectTaskService = {
     });
   },
 
+  async autoReviewDueSubmissions(
+    now = new Date(),
+    limit = PROJECT_TASK_AUTO_REVIEW_BATCH_SIZE,
+  ) {
+    const cutoff = new Date(now.getTime() - PROJECT_TASK_AUTO_REVIEW_DELAY_MS);
+    const assignments = await prisma.projectTaskAssignment.findMany({
+      where: {
+        status: ProjectTaskAssignmentStatus.SUBMITTED,
+        submittedAt: { not: null, lte: cutoff },
+      },
+      orderBy: [{ submittedAt: "asc" }, { id: "asc" }],
+      take: limit,
+      select: { id: true },
+    });
+
+    const results: Array<{ assignmentId: string; result: string }> = [];
+
+    for (const assignment of assignments) {
+      try {
+        await this.approve(
+          assignment.id,
+          null,
+          "Automatically approved after the review window elapsed.",
+        );
+        results.push({ assignmentId: assignment.id, result: "APPROVED" });
+      } catch (error) {
+        if (error instanceof Error && error.message === "TASK_ALREADY_REVIEWED") {
+          results.push({ assignmentId: assignment.id, result: "ALREADY_REVIEWED" });
+          continue;
+        }
+
+        if (error instanceof Error && error.message === "TASK_AUTO_REVIEW_NOT_ELIGIBLE") {
+          results.push({ assignmentId: assignment.id, result: "MANUAL_REVIEW_REQUIRED" });
+          continue;
+        }
+
+        throw error;
+      }
+    }
+
+    return results;
+  },
+
+  async approve(id: string, reviewerId: string | null, notes?: string) {
+    return prisma.$transaction(async (tx) => {
+      const assignment = await tx.projectTaskAssignment.findUnique({
+        where: { id },
+        include: { task: true, application: true },
+      });
+
+      if (!assignment || !assignment.submittedAt) {
+        throw new Error("TASK_REVIEW_NOT_FOUND");
+      }
+
+      if (assignment.status !== ProjectTaskAssignmentStatus.SUBMITTED) {
+        throw new Error("TASK_ALREADY_REVIEWED");
+      }
+
+      if (!assignment.application.applicantUserId) {
+        throw new Error("TASK_USER_REQUIRED");
+      }
+
+      if (
+        reviewerId === null &&
+        (!assignment.submissionFileContent?.length ||
+          !assignment.submissionFileName?.trim())
+      ) {
+        throw new Error("TASK_AUTO_REVIEW_NOT_ELIGIBLE");
+      }
+
+      const claimed = await tx.projectTaskAssignment.updateMany({
+        where: {
+          id,
+          status: ProjectTaskAssignmentStatus.SUBMITTED,
+        },
+        data: {
+          status: ProjectTaskAssignmentStatus.APPROVED,
+          reviewedAt: new Date(),
+          reviewedById: reviewerId,
+          reviewNotes: notes ?? null,
+          paymentApprovedAt: new Date(),
+          paymentAmountCents: assignment.task.payoutAmountCents,
+        },
+      });
+
+      if (claimed.count !== 1) {
+        throw new Error("TASK_ALREADY_REVIEWED");
+      }
+
+      await tx.ledgerEntry.create({
+        data: {
+          userId: assignment.application.applicantUserId,
+          amountCents: assignment.task.payoutAmountCents,
+          account: LedgerAccount.HOLDING,
+          reason: `PROJECT_TASK_PAYOUT_HOLDING_${assignment.id}`,
+          applicationId: assignment.applicationId,
+          taskAssignmentId: assignment.id,
+        },
+      });
+
+      await tx.user.update({
+        where: { id: assignment.application.applicantUserId },
+        data: {
+          holdingBalanceCents: {
+            increment: assignment.task.payoutAmountCents,
+          },
+        },
+      });
+
+      await tx.application.update({
+        where: { id: assignment.applicationId },
+        data: { tasksCompleted: { increment: 1 } },
+      });
+
+      return tx.projectTaskAssignment.findUniqueOrThrow({
+        where: { id },
+      });
+    });
+  },
+
   async review(id: string, adminId: string, decision: "approve" | "reject", notes?: string) {
     return prisma.$transaction(async (tx) => {
       const assignment = await tx.projectTaskAssignment.findUnique({
@@ -234,17 +357,45 @@ export const ProjectTaskService = {
         include: { task: true, application: true },
       });
       if (!assignment || !assignment.submittedAt) throw new Error("TASK_REVIEW_NOT_FOUND");
-      if (decision === "reject") {
-        return tx.projectTaskAssignment.update({ where: { id }, data: { status: ProjectTaskAssignmentStatus.REJECTED, reviewedAt: new Date(), reviewedById: adminId, reviewNotes: notes ?? null } });
+      if (assignment.status !== ProjectTaskAssignmentStatus.SUBMITTED) {
+        throw new Error("TASK_ALREADY_REVIEWED");
       }
+
+      if (decision === "reject") {
+        const rejected = await tx.projectTaskAssignment.updateMany({
+          where: { id, status: ProjectTaskAssignmentStatus.SUBMITTED },
+          data: {
+            status: ProjectTaskAssignmentStatus.REJECTED,
+            reviewedAt: new Date(),
+            reviewedById: adminId,
+            reviewNotes: notes ?? null,
+          },
+        });
+        if (rejected.count !== 1) throw new Error("TASK_ALREADY_REVIEWED");
+        return tx.projectTaskAssignment.findUniqueOrThrow({ where: { id } });
+      }
+
       if (!assignment.application.applicantUserId) throw new Error("TASK_USER_REQUIRED");
-      if (assignment.status !== ProjectTaskAssignmentStatus.SUBMITTED) throw new Error("TASK_ALREADY_REVIEWED");
       const amount = assignment.task.payoutAmountCents;
+      const claimed = await tx.projectTaskAssignment.updateMany({
+        where: { id, status: ProjectTaskAssignmentStatus.SUBMITTED },
+        data: {
+          status: ProjectTaskAssignmentStatus.APPROVED,
+          reviewedAt: new Date(),
+          reviewedById: adminId,
+          reviewNotes: notes ?? null,
+          paymentApprovedAt: new Date(),
+          paymentAmountCents: amount,
+        },
+      });
+      if (claimed.count !== 1) throw new Error("TASK_ALREADY_REVIEWED");
+
       await tx.ledgerEntry.create({
         data: { userId: assignment.application.applicantUserId, amountCents: amount, account: LedgerAccount.HOLDING, reason: `PROJECT_TASK_PAYOUT_HOLDING_${assignment.id}`, applicationId: assignment.applicationId, taskAssignmentId: assignment.id },
       });
       await tx.user.update({ where: { id: assignment.application.applicantUserId }, data: { holdingBalanceCents: { increment: amount } } });
-      return tx.projectTaskAssignment.update({ where: { id }, data: { status: ProjectTaskAssignmentStatus.APPROVED, reviewedAt: new Date(), reviewedById: adminId, reviewNotes: notes ?? null, paymentApprovedAt: new Date(), paymentAmountCents: amount } });
+      await tx.application.update({ where: { id: assignment.applicationId }, data: { tasksCompleted: { increment: 1 } } });
+      return tx.projectTaskAssignment.findUniqueOrThrow({ where: { id } });
     });
   },
 };

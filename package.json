@@ -16,6 +16,7 @@
     "db:seed:annotations": "tsx prisma/seed-annotation-workflow.ts",
     "db:validate": "prisma validate",
     "jobs:payout-eligibility": "tsx workers/payout-eligibility.ts",
+    "jobs:task-review": "tsx workers/task-review.ts",
     "jobs:withdrawals": "tsx workers/withdrawals.ts"
   },
   "dependencies": {

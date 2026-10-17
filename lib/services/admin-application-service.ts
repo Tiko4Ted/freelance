@@ -29,6 +29,9 @@ const capacityStatuses = new Set<ApplicationStatus>([
   ApplicationStatus.PAID,
 ]);
 
+export const APPLICATION_AUTO_REVIEW_DELAY_MS = 2 * 60 * 60 * 1000;
+export const APPLICATION_AUTO_REVIEW_BATCH_SIZE = 100;
+
 function toApplicationResponse(application: {
   id: string;
   candidateName: string;
@@ -268,6 +271,7 @@ export const AdminApplicationService = {
           taskSubmittedAt: true,
           applicantUserId: true,
           lockedPayoutCents: true,
+          tasksCompleted: true,
           job: { select: { payoutType: true } },
         },
       });
@@ -334,6 +338,9 @@ export const AdminApplicationService = {
         where: { id },
         data: {
           status: nextStatus,
+          ...(existingApplication.tasksCompleted === 0
+            ? { tasksCompleted: { increment: 1 } }
+            : {}),
           ...activationData,
         },
         select: applicationSelect,
@@ -351,6 +358,40 @@ export const AdminApplicationService = {
     );
 
     return toApplicationResponse(application);
+  },
+
+  async autoApproveDueTaskSubmissions(
+    now = new Date(),
+    limit = APPLICATION_AUTO_REVIEW_BATCH_SIZE,
+  ) {
+    const cutoff = new Date(now.getTime() - APPLICATION_AUTO_REVIEW_DELAY_MS);
+    const applications = await prisma.application.findMany({
+      where: {
+        status: { in: [ApplicationStatus.CERTIFYING, ApplicationStatus.CERTIFIED] },
+        taskSubmittedAt: { not: null, lte: cutoff },
+        taskSubmissionFileName: { not: null },
+        taskSubmissionFileContent: { not: null },
+      },
+      orderBy: [{ taskSubmittedAt: "asc" }, { id: "asc" }],
+      take: limit,
+      select: { id: true },
+    });
+
+    const results: Array<{ applicationId: string; result: string }> = [];
+    for (const application of applications) {
+      try {
+        await this.approveTaskSubmission(application.id);
+        results.push({ applicationId: application.id, result: "APPROVED" });
+      } catch (error) {
+        if (error instanceof Error && error.message === "TASK_SUBMISSION_NOT_PENDING") {
+          results.push({ applicationId: application.id, result: "ALREADY_REVIEWED" });
+          continue;
+        }
+        throw error;
+      }
+    }
+
+    return results;
   },
 
   async logProgress(id: string, input: AdminProgressInput) {
