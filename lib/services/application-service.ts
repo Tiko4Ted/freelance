@@ -543,7 +543,6 @@ export const ApplicationService = {
         taskSubmissionMimeType: file?.mimeType,
         taskSubmissionNotes: input.notes.trim(),
         taskSubmittedAt: new Date(),
-        tasksCompleted: 1,
       },
     });
 
