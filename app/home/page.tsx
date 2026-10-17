@@ -244,9 +244,9 @@ export default async function HomePage() {
         isAuthenticated={Boolean(userId)}
         userName={userName}
       />
-      <main className="flex-1 overflow-y-auto px-5 pb-6 pt-20 md:px-10 md:pb-8 md:pt-24 lg:pl-64">
+      <main className="flex-1 overflow-y-auto px-5 pb-6 pt-20 md:px-10 md:pb-8 md:pt-20 lg:pl-64">
         <div className="mx-auto max-w-[1180px]">
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-brand-sand/70 pb-2">
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-brand-sand/70 pb-1">
             <span className="hidden text-xs font-medium text-brand-muted sm:block">
               Trinity-AI
             </span>

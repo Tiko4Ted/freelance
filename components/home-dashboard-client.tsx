@@ -283,9 +283,8 @@ export function HomeDashboardClient({
   };
 
   return (
-    <div className="home-dashboard flex flex-col items-start gap-6 lg:flex-row lg:gap-8">
-      {/* Main Left Column */}
-      <div className="min-w-0 flex-1 space-y-6">
+    <div className="home-dashboard flex flex-col gap-5">
+      <div className="w-full min-w-0 space-y-5">
         {!onboardingComplete ? (
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#fde68a] bg-[#fffbeb] px-5 py-3.5 shadow-sm">
         <div className="flex items-center gap-2.5">
@@ -306,21 +305,108 @@ export function HomeDashboardClient({
       </div>
         ) : null}
 
-      {/* Greeting & Refer Button */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="min-w-0">
-          <h1 className="text-lg font-semibold tracking-[-0.045em] text-slate-600 md:text-xl">
-            Welcome back, {userName}
-          </h1>
+      <section className="grid items-stretch gap-4 xl:grid-cols-[minmax(0,1fr)_280px]">
+        <div className="rounded-[18px] border border-brand-sand bg-brand-ivory px-5 py-5 shadow-brand-card md:px-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-gold-strong">
+                Your workspace
+              </p>
+              <h1 className="mt-1 text-2xl font-semibold tracking-[-0.045em] text-brand-ink md:text-[28px]">
+                Welcome back, {userName}
+              </h1>
+              <p className="mt-1.5 text-sm text-brand-muted">
+                Keep moving on current work or find your next role.
+              </p>
+            </div>
+            <Link
+              href="/wallet"
+              className="inline-flex shrink-0 items-center gap-1.5 text-xs font-semibold text-brand-gold-strong transition hover:text-brand-ink hover:underline"
+            >
+              View wallet
+              <ChevronRight className="h-3.5 w-3.5" strokeWidth={2} />
+            </Link>
+          </div>
+
+          <div className="mt-5 grid grid-cols-2 gap-4 border-t border-brand-sand/70 pt-4 sm:max-w-md">
+            <div>
+              <p className="flex items-center gap-1.5 text-xs text-brand-muted">
+                Tasks completed
+                <Clock className="h-3.5 w-3.5" strokeWidth={2} />
+              </p>
+              <p className="mt-1 text-xl font-semibold tracking-[-0.03em] text-brand-ink">
+                {paymentSummary.formattedTasksCompleted}
+              </p>
+            </div>
+            <div>
+              <p className="flex items-center gap-1.5 text-xs text-brand-muted">
+                Awaiting payment
+                <Wallet className="h-3.5 w-3.5" strokeWidth={2} />
+              </p>
+              <p className="mt-1 text-xl font-semibold tracking-[-0.03em] text-brand-gold-strong">
+                {paymentSummary.formattedAwaitingPayment}
+              </p>
+            </div>
+          </div>
         </div>
-        <Link
-          href="/referral"
-          className="inline-flex items-center gap-2 rounded-[10px] border border-brand-sand bg-brand-ivory px-4 py-2.5 text-sm font-semibold text-brand-ink shadow-sm transition hover:border-brand-gold/60 hover:bg-[var(--color-accent-soft)] active:scale-[0.98]"
-        >
-          <UserPlus className="h-4 w-4 text-slate-700" strokeWidth={2} />
-          <span>Refer &amp; Earn</span>
-        </Link>
-      </div>
+
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+          <div className="rounded-[18px] border border-brand-gold/40 bg-[var(--color-accent-soft)] p-4 shadow-brand-card">
+            <div className="flex items-start gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-ivory/80">
+                <UserPlus className="h-4 w-4 text-brand-gold-strong" strokeWidth={2} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-gold-strong">
+                  Refer &amp; Earn
+                </p>
+                <p className="mt-1 text-sm font-semibold text-brand-ink">
+                  Earn up to $300
+                </p>
+                <Link
+                  href="/referral"
+                  className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-brand-gold-strong hover:text-brand-ink hover:underline"
+                >
+                  Open referral details
+                  <ChevronRight className="h-3.5 w-3.5" strokeWidth={2} />
+                </Link>
+                <button
+                  type="button"
+                  onClick={copyReferralLink}
+                  disabled={!referralLink}
+                  className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-brand-ink hover:text-brand-gold-strong disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <Copy className="h-3.5 w-3.5" strokeWidth={2} />
+                  {referralCopied ? "Copied" : "Copy link"}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-[18px] border border-brand-sand bg-brand-ivory p-4 shadow-brand-card">
+            <div className="flex items-start gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-ink">
+                <span className="text-xs font-bold text-brand-gold-light">VS</span>
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-muted">
+                  Try Versus
+                </p>
+                <p className="mt-1 line-clamp-2 text-xs leading-5 text-brand-muted">
+                  Compare AI responses and find what works best.
+                </p>
+                <Link
+                  href="/apply"
+                  className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-brand-gold-strong hover:text-brand-ink hover:underline"
+                >
+                  Try now
+                  <ChevronRight className="h-3.5 w-3.5" strokeWidth={2} />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {!onboardingComplete ? (
         <section className="space-y-3">
@@ -362,13 +448,13 @@ export function HomeDashboardClient({
       ) : null}
 
       {featuredProjects.length ? (
-        <section className="space-y-4">
+        <section className="space-y-3">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-gold-strong">
                 Open roles
               </p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-brand-ink">
+              <h2 className="mt-1 text-xl font-semibold tracking-[-0.03em] text-brand-ink md:text-2xl">
                 Featured projects
               </h2>
             </div>
@@ -379,9 +465,9 @@ export function HomeDashboardClient({
               View all roles
             </Link>
           </div>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             {featuredProjects.map((project) => {
-              const cardClassName = `flex min-h-[190px] flex-col justify-between rounded-[18px] border bg-brand-ivory p-5 text-left shadow-brand-card ${
+              const cardClassName = `flex min-h-[168px] flex-col justify-between rounded-[18px] border bg-brand-ivory p-4 text-left shadow-brand-card ${
                 project.isApplied
                   ? "border-brand-gold/50"
                   : "group border-brand-sand transition hover:-translate-y-0.5 hover:border-brand-gold/60 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-brand-gold"
@@ -404,16 +490,16 @@ export function HomeDashboardClient({
                         <ChevronRight className="h-5 w-5 shrink-0 text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-brand-gold-strong" />
                       )}
                     </div>
-                    <p className="mt-2 line-clamp-3 text-sm leading-6 text-brand-muted">
+                    <p className="mt-2 line-clamp-2 text-sm leading-5 text-brand-muted">
                       {project.description}
                     </p>
                     {project.formattedPay ? (
-                      <p className="mt-3 text-sm font-semibold text-brand-ink">
+                      <p className="mt-2 text-sm font-semibold text-brand-ink">
                         Pay: {project.formattedPay}
                       </p>
                     ) : null}
                     {project.participantCountLabel ? (
-                      <div className="mt-3 flex items-center gap-2">
+                      <div className="mt-2 flex items-center gap-2">
                         <div aria-hidden="true" className="flex -space-x-2">
                           {[
                             "bg-[#d7c7aa] text-[#5d482f]",
@@ -437,7 +523,7 @@ export function HomeDashboardClient({
                       </div>
                     ) : null}
                   </div>
-                  <div className="mt-5 flex flex-wrap items-center gap-1.5">
+                  <div className="mt-4 flex flex-wrap items-center gap-1.5">
                     {project.skills.slice(0, 2).map((skill) => (
                       <span
                         className="rounded-full bg-[var(--color-accent-soft)] px-2.5 py-1 text-[11px] font-semibold text-brand-gold-strong"
@@ -865,115 +951,6 @@ export function HomeDashboardClient({
           </div>
         </section>
       </div>
-
-      {/* Right Column Sidebar */}
-      <aside className="w-full shrink-0 space-y-6 lg:w-[320px]">
-        {/* Payments Summary Card */}
-        <div className="overflow-hidden rounded-2xl border border-brand-sand bg-brand-ivory shadow-sm">
-          <div className="border-b border-brand-sand bg-[#f1ebdf] p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5 text-sm font-medium text-slate-500">
-                <Wallet className="h-4 w-4 text-slate-400" />
-                Payments
-              </div>
-              <Link
-                href="/wallet"
-                className="text-xs font-semibold text-brand-gold-strong transition hover:text-brand-ink hover:underline"
-              >
-                Wallet
-              </Link>
-            </div>
-          </div>
-
-          <div className="p-6">
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-1">
-              <div>
-                <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                  Total tasks
-                  <Clock className="h-3.5 w-3.5" />
-                </div>
-                <div className="mt-1 text-2xl font-bold text-brand-ink">
-                  {paymentSummary.formattedTasksCompleted}
-                </div>
-              </div>
-              <div>
-                <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                  Expected earnings
-                  <Wallet className="h-3.5 w-3.5" />
-                </div>
-                <div className="mt-1 text-2xl font-bold text-brand-gold-strong">
-                  {paymentSummary.formattedAwaitingPayment}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Refer Card */}
-        <div className="rounded-2xl border border-brand-sand bg-brand-ivory p-5 shadow-sm">
-          <div className="flex gap-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#f2e8d7]">
-              <UserPlus className="h-5 w-5 text-brand-gold-strong" />
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-slate-900">
-                Refer and earn up to $300
-              </h3>
-              <p className="mt-1 text-xs leading-relaxed text-slate-500">
-                Earn money by inviting others to the platform.{" "}
-                <Link
-                  href="/help-center/policies"
-                  className="font-medium text-slate-700 hover:underline"
-                >
-                  View terms
-                </Link>
-              </p>
-              <button
-                type="button"
-                onClick={copyReferralLink}
-                disabled={!referralLink}
-                className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-brand-sand bg-brand-ivory py-2 text-xs font-semibold text-brand-ink shadow-sm transition hover:border-brand-gold/60 hover:bg-[#f2e8d7] disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {referralCopied ? (
-                  <>
-                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-                    Copied!
-                  </>
-                ) : (
-                  <>
-                    <Copy className="h-3.5 w-3.5" />
-                    Copy referral link
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Try Versus Card */}
-        <div className="rounded-2xl border border-brand-sand bg-brand-ivory p-5 shadow-sm">
-          <div className="flex gap-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-900">
-              <span className="text-sm font-bold text-brand-gold-light">VS</span>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-slate-900">
-                Try Versus
-              </h3>
-              <p className="mt-1 text-xs leading-relaxed text-slate-500">
-                Get free access to premium AI models and compare which responses work best for you
-              </p>
-              <Link
-                href="/apply"
-                className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-xl border border-brand-sand bg-brand-ivory py-2 text-xs font-semibold text-brand-ink shadow-sm transition hover:border-brand-gold/60 hover:bg-[#f2e8d7]"
-              >
-                Try now
-                <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </aside>
 
       <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
         {helpOpen ? (
