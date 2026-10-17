@@ -184,6 +184,12 @@ Production:
 - Database: Neon PostgreSQL
 - Status: deployed and smoke-tested
 
+Task review scheduling:
+
+- The protected `/api/cron/task-review` route processes submissions at least two hours old.
+- The 15-minute trigger runs from GitHub Actions because Vercel Hobby permits only daily Cron Jobs.
+- Configure the same randomly generated `CRON_SECRET` as a Vercel Production environment variable and a GitHub Actions repository secret.
+
 ## Public Jobs
 
 Implemented:

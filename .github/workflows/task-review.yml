@@ -1,0 +1,23 @@
+name: Task review scheduler
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  task-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Trigger production task review
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          test -n "$CRON_SECRET"
+          curl --fail-with-body --silent --show-error \
+            --retry 3 --retry-delay 5 \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "https://freelance-nu-swart.vercel.app/api/cron/task-review"
