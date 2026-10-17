@@ -12,7 +12,7 @@ import {
 test("approved project tasks credit payment and increment completed tasks once", async () => {
   const originalTransaction = prisma.$transaction;
   const originalFindMany = prisma.projectTaskAssignment.findMany;
-  let status = ProjectTaskAssignmentStatus.SUBMITTED;
+  let status: ProjectTaskAssignmentStatus = ProjectTaskAssignmentStatus.SUBMITTED;
   let ledgerEntries = 0;
   let holdingBalance = 0;
   let completedTasks = 0;
