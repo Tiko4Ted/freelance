@@ -67,22 +67,31 @@ export function ProjectTaskList({ tasks }: { tasks: DashboardTask[] }) {
           const active = task.assignmentStatus === "IN_PROGRESS";
           const closed = task.status !== "OPEN";
           return (
-            <div className="grid gap-3 py-4 sm:grid-cols-[auto_1fr_auto] sm:items-center" key={task.id}>
+            <div
+              className={`grid gap-3 py-4 sm:grid-cols-[auto_1fr_auto] sm:items-center ${
+                submitted
+                  ? "bg-emerald-50/40"
+                  : active
+                    ? "bg-[var(--color-accent-soft)]/30"
+                    : ""
+              }`}
+              key={task.id}
+            >
               <div className={`flex h-8 w-8 items-center justify-center rounded-full border text-xs font-bold ${submitted ? "border-emerald-300 bg-emerald-50 text-emerald-700" : active ? "border-brand-gold bg-[var(--color-accent-soft)] text-brand-gold-strong" : "border-brand-sand text-brand-muted"}`}>
                 {submitted ? <Check className="h-4 w-4" /> : closed ? <LockKeyhole className="h-3.5 w-3.5" /> : active ? <Circle className="h-3.5 w-3.5 fill-current" /> : String(index + 1).padStart(2, "0")}
               </div>
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                   <h5 className="font-semibold text-brand-ink">{task.title}</h5>
-                  <span className="text-xs font-semibold text-brand-gold-strong">{task.payoutLabel}</span>
+                  <span className="text-xs font-semibold text-emerald-800">{task.payoutLabel}</span>
                 </div>
                 <p className="mt-1 text-sm leading-5 text-brand-muted">{task.description}</p>
-                {submitted ? <p className="mt-1 text-xs font-semibold text-emerald-700">Submitted and awaiting review{task.submittedFileName ? ` · ${task.submittedFileName}` : ""}</p> : active ? <p className="mt-1 text-xs font-semibold text-brand-gold-strong">In progress · finish and upload this task to continue</p> : closed ? <p className="mt-1 text-xs font-semibold text-brand-muted">Closed by the project team</p> : null}
+                {submitted ? <p className="mt-1 text-xs font-semibold text-emerald-700">Submitted and awaiting review{task.submittedFileName ? `. ${task.submittedFileName}` : ""}</p> : active ? <p className="mt-1 text-xs font-semibold text-brand-gold-strong">In progress. Finish and upload this task to continue.</p> : closed ? <p className="mt-1 text-xs font-semibold text-brand-muted">Closed by the project team.</p> : null}
               </div>
               <div className="flex flex-wrap gap-2 sm:justify-end">
                 {task.briefHref ? <a className="inline-flex h-9 items-center gap-1.5 rounded-[10px] border border-brand-sand px-3 text-xs font-semibold text-brand-ink hover:border-brand-gold/60 hover:bg-[var(--color-accent-soft)]" download href={task.briefHref}><Download className="h-3.5 w-3.5" />Brief</a> : null}
-                {task.canClaim ? <button className="h-9 rounded-[10px] bg-brand-ink px-3 text-xs font-semibold text-white hover:bg-brand-gold-strong disabled:opacity-50" disabled={busyId === task.id} onClick={() => claim(task.id)} type="button">{busyId === task.id ? "Starting..." : "Start task"}</button> : null}
-                {task.canSubmit ? <label className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-[10px] border border-brand-gold/60 bg-[var(--color-accent-soft)] px-3 text-xs font-semibold text-brand-ink hover:border-brand-gold"><Upload className="h-3.5 w-3.5" />{busyId === task.id ? "Uploading..." : "Upload answer"}<input className="sr-only" type="file" accept=".pdf,.doc,.docx,.txt,.csv,.xls,.xlsx,.zip,.png,.jpg,.jpeg" onChange={(event) => { const file = event.target.files?.[0] ?? null; event.currentTarget.value = ""; void submit(task, file); }} /></label> : null}
+                {task.canClaim ? <button className="h-9 rounded-[10px] bg-brand-ink px-3 text-xs font-semibold text-brand-ivory hover:bg-brand-gold-strong disabled:opacity-50" disabled={busyId === task.id} onClick={() => claim(task.id)} type="button">{busyId === task.id ? "Starting..." : "Start task"}</button> : null}
+                {task.canSubmit ? <label className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-[10px] border border-emerald-300 bg-emerald-50 px-3 text-xs font-semibold text-emerald-800 hover:border-emerald-400 hover:bg-emerald-100"><Upload className="h-3.5 w-3.5" />{busyId === task.id ? "Uploading..." : "Upload answer"}<input className="sr-only" type="file" accept=".pdf,.doc,.docx,.txt,.csv,.xls,.xlsx,.zip,.png,.jpg,.jpeg" onChange={(event) => { const file = event.target.files?.[0] ?? null; event.currentTarget.value = ""; void submit(task, file); }} /></label> : null}
               </div>
             </div>
           );
