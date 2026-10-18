@@ -56,11 +56,11 @@ const MAX_TASK_SUBMISSION_BYTES = 4 * 1024 * 1024;
 
 function statusPillClass(status: string) {
   if (status === "PAID") {
-    return "border border-emerald-200 bg-emerald-100 text-emerald-800";
+    return "bg-emerald-100 text-emerald-800";
   }
 
   if (status === "PAYOUT_ELIGIBLE") {
-    return "border border-emerald-200 bg-emerald-50 text-emerald-700";
+    return "bg-emerald-50 text-emerald-700";
   }
 
   if (status === "REJECTED") {
@@ -74,33 +74,12 @@ function statusPillClass(status: string) {
   return "bg-[var(--color-accent-soft)] text-brand-gold-strong";
 }
 
-function projectSurfaceClass(status: string) {
-  if (status === "PAID" || status === "PAYOUT_ELIGIBLE") {
-    return "border-emerald-200 bg-emerald-50/30";
-  }
-
-  if (status === "REJECTED") {
-    return "border-red-200 bg-red-50/30";
-  }
-
-  if (status === "CLOSED") {
-    return "border-slate-200 bg-slate-50";
-  }
-
-  return "border-brand-gold/50 bg-brand-ivory";
-}
-
 function projectStatusText(project: DashboardProject, hasSubmitted: boolean) {
   const finalStatuses = ["PAID", "PAYOUT_ELIGIBLE", "REJECTED", "CLOSED"];
 
   return hasSubmitted && !finalStatuses.includes(project.status)
     ? "Submitted for review"
     : project.statusLabel;
-}
-
-function hasPositiveAmount(amount: string) {
-  const numericAmount = Number(amount.replace(/[^0-9.-]/g, ""));
-  return Number.isFinite(numericAmount) && numericAmount > 0;
 }
 
 type FeaturedProject = {
@@ -188,9 +167,6 @@ export function HomeDashboardClient({
   const visibleProjects = projects.filter(
     (project) => project.showOnHome !== false,
   );
-  const hasAwaitingPayment = hasPositiveAmount(
-    paymentSummary.formattedAwaitingPayment,
-  );
   const [activeTab, setActiveTab] = useState<"projects" | "applications">(
     "projects",
   );
@@ -211,7 +187,7 @@ export function HomeDashboardClient({
   const [supportMessages, setSupportMessages] = useState<SupportChatMessage[]>([
     {
       from: "support",
-      text: "Hi. What are you trying to sort out today? I can help with a task, application, payment, or account issue.",
+      text: "Hi — what are you trying to sort out today? I can help with a task, application, payment, or account issue.",
     },
   ]);
   const [supportTopic, setSupportTopic] = useState<SupportTopic>();
@@ -329,7 +305,7 @@ export function HomeDashboardClient({
       </div>
         ) : null}
 
-      <section className="grid items-stretch gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(340px,0.78fr)]">
+      <section className="grid items-stretch gap-4 xl:grid-cols-[minmax(0,1fr)_280px]">
         <div className="rounded-[18px] border border-brand-sand bg-brand-ivory px-5 py-5 shadow-brand-card md:px-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
@@ -343,12 +319,19 @@ export function HomeDashboardClient({
                 Keep moving on current work or find your next role.
               </p>
             </div>
+            <Link
+              href="/wallet"
+              className="inline-flex shrink-0 items-center gap-1.5 text-xs font-semibold text-brand-gold-strong transition hover:text-brand-ink hover:underline"
+            >
+              View wallet
+              <ChevronRight className="h-3.5 w-3.5" strokeWidth={2} />
+            </Link>
           </div>
 
-          <div className="mt-6 grid grid-cols-2 gap-4 border-t border-brand-sand/70 pt-4 sm:max-w-md">
+          <div className="mt-5 grid grid-cols-2 gap-4 border-t border-brand-sand/70 pt-4 sm:max-w-md">
             <div>
               <p className="flex items-center gap-1.5 text-xs text-brand-muted">
-                Total tasks
+                Tasks completed
                 <Clock className="h-3.5 w-3.5" strokeWidth={2} />
               </p>
               <p className="mt-1 text-xl font-semibold tracking-[-0.03em] text-brand-ink">
@@ -357,89 +340,18 @@ export function HomeDashboardClient({
             </div>
             <div>
               <p className="flex items-center gap-1.5 text-xs text-brand-muted">
-                Open roles
-                <ChevronRight className="h-3.5 w-3.5" strokeWidth={2} />
+                Awaiting payment
+                <Wallet className="h-3.5 w-3.5" strokeWidth={2} />
               </p>
               <p className="mt-1 text-xl font-semibold tracking-[-0.03em] text-brand-gold-strong">
-                {featuredProjects.length}
+                {paymentSummary.formattedAwaitingPayment}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="grid gap-3">
-          <Link
-            href="/wallet"
-            className={`group rounded-[18px] border p-5 shadow-brand-card transition hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-brand-canvas ${
-              hasAwaitingPayment
-                ? "border-emerald-200 bg-emerald-50/80 hover:border-emerald-300 hover:bg-emerald-50"
-                : "border-brand-sand bg-brand-ivory hover:border-brand-gold/60"
-            }`}
-          >
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex items-start gap-3">
-                <div
-                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
-                    hasAwaitingPayment
-                      ? "bg-emerald-100 text-emerald-700"
-                      : "bg-[var(--color-accent-soft)] text-brand-gold-strong"
-                  }`}
-                >
-                  <Wallet className="h-5 w-5" strokeWidth={2} />
-                </div>
-                <div>
-                  <p
-                    className={`text-xs font-semibold uppercase tracking-[0.14em] ${
-                      hasAwaitingPayment
-                        ? "text-emerald-700"
-                        : "text-brand-muted"
-                    }`}
-                  >
-                    Awaiting payment
-                  </p>
-                  <p
-                    className={`mt-1 text-3xl font-semibold tracking-[-0.05em] ${
-                      hasAwaitingPayment
-                        ? "text-emerald-800"
-                        : "text-brand-ink"
-                    }`}
-                  >
-                    {paymentSummary.formattedAwaitingPayment}
-                  </p>
-                </div>
-              </div>
-              <ChevronRight
-                className={`h-5 w-5 shrink-0 transition group-hover:translate-x-0.5 ${
-                  hasAwaitingPayment
-                    ? "text-emerald-600"
-                    : "text-slate-400"
-                }`}
-                strokeWidth={2}
-              />
-            </div>
-            <p
-              className={`mt-4 max-w-sm text-sm leading-5 ${
-                hasAwaitingPayment ? "text-emerald-800/80" : "text-brand-muted"
-              }`}
-            >
-              {hasAwaitingPayment
-                ? "Your completed work is moving through review."
-                : "Your first completed payment will appear here."}
-            </p>
-            <span
-              className={`mt-4 inline-flex items-center gap-1 text-xs font-semibold ${
-                hasAwaitingPayment
-                  ? "text-emerald-800"
-                  : "text-brand-gold-strong"
-              }`}
-            >
-              Open wallet
-              <ChevronRight className="h-3.5 w-3.5" strokeWidth={2} />
-            </span>
-          </Link>
-
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-[18px] border border-brand-gold/40 bg-[var(--color-accent-soft)] p-4 shadow-brand-card">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+          <div className="rounded-[18px] border border-brand-gold/40 bg-[var(--color-accent-soft)] p-4 shadow-brand-card">
             <div className="flex items-start gap-3">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-ivory/80">
                 <UserPlus className="h-4 w-4 text-brand-gold-strong" strokeWidth={2} />
@@ -451,12 +363,6 @@ export function HomeDashboardClient({
                 <p className="mt-1 text-sm font-semibold text-brand-ink">
                   Earn up to $300
                 </p>
-                <Link
-                  href="/help-center/policies"
-                  className="mt-1 inline-flex text-[11px] font-medium text-brand-muted hover:text-brand-ink hover:underline"
-                >
-                  View terms
-                </Link>
                 <Link
                   href="/referral"
                   className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-brand-gold-strong hover:text-brand-ink hover:underline"
@@ -471,13 +377,13 @@ export function HomeDashboardClient({
                   className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-brand-ink hover:text-brand-gold-strong disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <Copy className="h-3.5 w-3.5" strokeWidth={2} />
-                  {referralCopied ? "Copied!" : "Copy referral link"}
+                  {referralCopied ? "Copied" : "Copy link"}
                 </button>
               </div>
             </div>
-            </div>
+          </div>
 
-            <div className="rounded-[18px] border border-brand-sand bg-brand-ivory p-4 shadow-brand-card">
+          <div className="rounded-[18px] border border-brand-sand bg-brand-ivory p-4 shadow-brand-card">
             <div className="flex items-start gap-3">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-ink">
                 <span className="text-xs font-bold text-brand-gold-light">VS</span>
@@ -497,7 +403,6 @@ export function HomeDashboardClient({
                   <ChevronRight className="h-3.5 w-3.5" strokeWidth={2} />
                 </Link>
               </div>
-            </div>
             </div>
           </div>
         </div>
@@ -560,11 +465,11 @@ export function HomeDashboardClient({
               View all roles
             </Link>
           </div>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             {featuredProjects.map((project) => {
-              const cardClassName = `flex min-h-[168px] flex-col justify-between rounded-[18px] border p-4 text-left shadow-brand-card ${
+              const cardClassName = `flex min-h-[168px] flex-col justify-between rounded-[18px] border bg-brand-ivory p-4 text-left shadow-brand-card ${
                 project.isApplied
-                  ? "border-emerald-200 bg-emerald-50/30"
+                  ? "border-brand-gold/50"
                   : "group border-brand-sand transition hover:-translate-y-0.5 hover:border-brand-gold/60 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-brand-gold"
               }`;
               const cardContent = (
@@ -589,7 +494,7 @@ export function HomeDashboardClient({
                       {project.description}
                     </p>
                     {project.formattedPay ? (
-                      <p className="mt-2 text-sm font-semibold text-emerald-800">
+                      <p className="mt-2 text-sm font-semibold text-brand-ink">
                         Pay: {project.formattedPay}
                       </p>
                     ) : null}
@@ -656,7 +561,7 @@ export function HomeDashboardClient({
       ) : null}
 
       {/* Tabs: Projects / Applications */}
-      <div className="border-t border-brand-sand/70 pt-4">
+      <div className="pt-2">
         <div className="inline-flex rounded-full border border-brand-sand bg-[#e7e3da] p-1">
           <button
             type="button"
@@ -686,8 +591,8 @@ export function HomeDashboardClient({
       {activeTab === "projects" ? (
         <>
           {/* Your projects Header */}
-          <section className="space-y-4 border-l-2 border-emerald-200 pl-4 md:pl-5">
-            <div className="flex flex-wrap items-center justify-between gap-3">
+          <section className="space-y-4">
+            <div className="flex items-center justify-between">
               <h2 className="text-2xl font-semibold tracking-[-0.03em] text-brand-ink">
                 Your projects{" "}
                 <span className="font-normal text-slate-400">
@@ -721,7 +626,7 @@ export function HomeDashboardClient({
 
                 if (project.tasks?.length) {
                   return (
-                    <article className={`col-span-full rounded-[18px] border p-5 text-left shadow-brand-card ${projectSurfaceClass(project.status)}`} key={project.id}>
+                    <article className="col-span-full rounded-[18px] border border-brand-gold/40 bg-brand-ivory p-5 text-left shadow-brand-card" key={project.id}>
                       <div className="flex flex-wrap items-start justify-between gap-4">
                         <div>
                           <div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-[var(--color-accent-soft)] px-2.5 py-1 text-xs font-semibold text-brand-gold-strong">Project workspace</span><span className="text-xs font-semibold text-emerald-700">{project.tasks.filter((task) => task.status === "OPEN").length} open tasks</span></div>
@@ -737,8 +642,10 @@ export function HomeDashboardClient({
 
                 return (
                   <article
-                    className={`flex min-h-[160px] flex-col justify-between rounded-[18px] border p-5 text-left shadow-brand-card transition hover:shadow-md focus:outline-none focus:ring-2 focus:ring-brand-gold ${projectSurfaceClass(project.status)} ${
-                      isApplied ? "" : "hover:border-brand-gold/60"
+                    className={`flex min-h-[160px] flex-col justify-between rounded-[18px] border bg-brand-ivory p-5 text-left shadow-brand-card transition hover:shadow-md focus:outline-none focus:ring-2 focus:ring-brand-gold ${
+                      isApplied
+                        ? "border-brand-gold/50"
+                        : "border-brand-sand hover:border-brand-gold/60"
                     }`}
                     key={project.id}
                   >
@@ -763,7 +670,7 @@ export function HomeDashboardClient({
                       >
                         {projectStatusText(project, hasSubmitted)}
                       </span>
-                      <span className="font-medium text-emerald-800">
+                      <span className="font-medium text-slate-600">
                         {project.payoutLabel}
                       </span>
                       {isApplied ? (
@@ -905,7 +812,7 @@ export function HomeDashboardClient({
           </section>
         </>
       ) : (
-          <section className="space-y-4 border-l-2 border-brand-gold/50 pl-4 md:pl-5">
+          <section className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 className="text-2xl font-semibold tracking-[-0.03em] text-brand-ink">
                 Your applications{" "}
@@ -959,7 +866,7 @@ export function HomeDashboardClient({
                       </div>
 
                       <div className="flex shrink-0 items-center gap-3 sm:flex-col sm:items-end">
-                        <span className="text-sm font-semibold text-emerald-800">
+                        <span className="text-sm font-semibold text-slate-700">
                           {application.payoutLabel}
                         </span>
                         {application.isClosed ? (
@@ -1004,7 +911,7 @@ export function HomeDashboardClient({
           </section>
         )}
 
-        <section className="space-y-4 border-t border-brand-sand/70 pt-6">
+        <section className="space-y-4 pt-2">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <h2 className="text-lg font-bold text-brand-ink">
@@ -1029,13 +936,7 @@ export function HomeDashboardClient({
                 className="group border-b border-brand-sand/70 last:border-b-0"
                 key={faq.question}
               >
-                <summary
-                  className={`flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-left text-sm font-semibold text-brand-ink transition [&::-webkit-details-marker]:hidden ${
-                    faq.question.includes("money")
-                      ? "hover:bg-emerald-50/70"
-                      : "hover:bg-[#f2e8d7]"
-                  }`}
-                >
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-left text-sm font-semibold text-brand-ink transition hover:bg-[#f2e8d7] [&::-webkit-details-marker]:hidden">
                   <span>{faq.question}</span>
                   <ChevronDown
                     className="h-4 w-4 shrink-0 text-slate-400 transition-transform group-open:rotate-180"
@@ -1102,14 +1003,10 @@ export function HomeDashboardClient({
 
             <div className="border-t border-brand-sand px-5 py-4">
               <div className="mb-3 flex flex-wrap gap-2">
-                {["Payment status", "Withdrawal issue", "Why Freelance ID?", "Can't sign in", "Task question", "Safety concern"].map(
+                {["Payment status", "Withdrawal issue", "Why Freelance ID?", "Can’t sign in", "Task question", "Safety concern"].map(
                   (topic) => (
                     <button
-                      className={`rounded-full border bg-brand-ivory px-3 py-1.5 text-xs font-medium transition ${
-                        topic === "Payment status"
-                          ? "border-emerald-200 text-emerald-800 hover:border-emerald-300 hover:bg-emerald-50"
-                          : "border-brand-sand text-brand-muted hover:border-brand-gold hover:bg-[#f2e8d7] hover:text-brand-ink"
-                      }`}
+                      className="rounded-full border border-brand-sand bg-brand-ivory px-3 py-1.5 text-xs font-medium text-brand-muted transition hover:border-brand-gold hover:bg-[#f2e8d7] hover:text-brand-ink"
                       key={topic}
                       onClick={() => setSupportMessage(topic)}
                       type="button"
