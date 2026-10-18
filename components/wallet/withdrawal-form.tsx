@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { ChevronDown } from "lucide-react";
 
 type FormState =
   | { status: "idle"; message: string }
@@ -67,6 +68,7 @@ export function WithdrawalForm({
   const [pendingTransferAmount, setPendingTransferAmount] = useState(0);
   const [verified, setVerified] = useState(isFreelanceVerified);
   const [payoutMethod, setPayoutMethod] = useState<PayoutMethod>("MPESA");
+  const [isOpen, setIsOpen] = useState(false);
 
   async function postTransfer(payload: Record<string, unknown>) {
     let response: Response;
@@ -201,108 +203,140 @@ export function WithdrawalForm({
 
   return (
     <div className="space-y-4">
-      <form
-        aria-busy={state.status === "submitting"}
-        className="space-y-2"
-        onSubmit={requestTransfer}
-      >
-        <div>
-          <h3 className="text-sm font-semibold text-brand-ink">
-            Move approved earnings
-          </h3>
-          <p className="mt-1 text-xs leading-5 text-brand-muted">
-            Transfer an amount from Holding to Funding after verification.
-          </p>
-        </div>
-        <div>
-          <label
-            className="text-sm font-medium text-brand-ink"
-            htmlFor="transferAmountDollars"
+      <div className="rounded-xl border border-brand-sand/80 bg-brand-canvas/50 p-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold text-brand-ink">Transfer funds</p>
+            <p className="mt-1 text-xs leading-5 text-brand-muted">
+              Move pending earnings into your withdrawal wallet.
+            </p>
+          </div>
+          <button
+            aria-controls="wallet-actions"
+            aria-expanded={isOpen}
+            className="inline-flex h-9 shrink-0 items-center gap-2 rounded-lg bg-brand-ink px-3 text-xs font-semibold text-brand-ivory transition hover:bg-[#35392c] active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold focus-visible:ring-offset-2"
+            onClick={() => setIsOpen((open) => !open)}
+            type="button"
           >
-            Transfer amount
-          </label>
-          <input
-            className="mt-1 h-9 w-full rounded-lg border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold disabled:cursor-not-allowed disabled:bg-brand-sand/50"
-            disabled={state.status === "submitting"}
-            id="transferAmountDollars"
-            min={1}
-            name="transferAmountDollars"
-            placeholder={`Amount, min $${MIN_TRANSFER_DOLLARS}`}
-            required
-            step="1"
-            type="number"
-          />
+            {isOpen ? "Close" : "Transfer funds"}
+            <ChevronDown
+              aria-hidden="true"
+              className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`}
+            />
+          </button>
         </div>
-        <button
-          className="inline-flex h-9 w-full items-center justify-center rounded-lg border border-brand-sand bg-brand-ivory px-4 text-sm font-semibold text-brand-ink transition hover:border-brand-gold hover:bg-[#f2e8d7] hover:text-brand-gold-strong disabled:cursor-not-allowed disabled:opacity-50"
-          disabled={state.status === "submitting"}
-          type="submit"
-        >
-          {state.status === "submitting" ? "Checking wallet..." : "Move to Funding"}
-        </button>
-      </form>
+      </div>
 
-      <form
-        aria-busy={state.status === "submitting"}
-        className="space-y-2 border-t border-brand-sand/70 pt-4"
-        onSubmit={requestWithdrawal}
-      >
-        <div>
-          <h3 className="text-sm font-semibold text-brand-ink">
-            Request a withdrawal
-          </h3>
-          <p className="mt-1 text-xs leading-5 text-brand-muted">
-            Funding is available for payout requests once the minimum is met.
-          </p>
+      {isOpen ? (
+        <div className="space-y-4" id="wallet-actions">
+          <form
+            aria-busy={state.status === "submitting"}
+            className="space-y-2"
+            onSubmit={requestTransfer}
+          >
+            <div>
+              <h3 className="text-sm font-semibold text-brand-ink">
+                Move pending balance
+              </h3>
+              <p className="mt-1 text-xs leading-5 text-brand-muted">
+                Transfer from Pending to your withdrawal wallet after verification.
+              </p>
+            </div>
+            <div>
+              <label
+                className="text-sm font-medium text-brand-ink"
+                htmlFor="transferAmountDollars"
+              >
+                Transfer amount
+              </label>
+              <input
+                className="mt-1 h-9 w-full rounded-lg border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold disabled:cursor-not-allowed disabled:bg-brand-sand/50"
+                disabled={state.status === "submitting"}
+                id="transferAmountDollars"
+                min={1}
+                name="transferAmountDollars"
+                placeholder={`Amount, min $${MIN_TRANSFER_DOLLARS}`}
+                required
+                step="1"
+                type="number"
+              />
+            </div>
+            <button
+              className="inline-flex h-9 w-full items-center justify-center rounded-lg border border-brand-sand bg-brand-ivory px-4 text-sm font-semibold text-brand-ink transition hover:border-brand-gold hover:bg-[var(--color-accent-soft)] hover:text-brand-gold-strong disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={state.status === "submitting"}
+              type="submit"
+            >
+              {state.status === "submitting" ? "Checking wallet..." : "Move to withdrawal wallet"}
+            </button>
+          </form>
+
+          <form
+            aria-busy={state.status === "submitting"}
+            className="space-y-2 border-t border-brand-sand/70 pt-4"
+            onSubmit={requestWithdrawal}
+          >
+            <div>
+              <h3 className="text-sm font-semibold text-brand-ink">
+                Request a payout
+              </h3>
+              <p className="mt-1 text-xs leading-5 text-brand-muted">
+                Use your withdrawal wallet once it reaches the $10 minimum.
+              </p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-brand-ink" htmlFor="amountDollars">
+                Payout amount
+              </label>
+              <input
+                className="mt-1 h-9 w-full rounded-lg border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold disabled:cursor-not-allowed disabled:bg-brand-sand/50"
+                disabled={fundingBalanceCents < 1000 || state.status === "submitting"}
+                id="amountDollars"
+                max={Math.floor(fundingBalanceCents / 100)}
+                min={10}
+                name="amountDollars"
+                placeholder="Amount (min $10)"
+                required
+                step="1"
+                type="number"
+              />
+            </div>
+            <label className="text-sm font-medium text-brand-ink" htmlFor="payoutMethod">
+              Payout method
+            </label>
+            <select
+              className="h-9 w-full rounded-lg border border-brand-sand bg-brand-ivory px-3 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
+              id="payoutMethod"
+              name="payoutMethod"
+              onChange={(event) => setPayoutMethod(event.target.value as PayoutMethod)}
+              value={payoutMethod}
+            >
+              {payoutMethods.map((method) => (
+                <option key={method.value} value={method.value}>
+                  {method.label}
+                </option>
+              ))}
+            </select>
+            <label className="text-sm font-medium text-brand-ink" htmlFor="destinationDetails">
+              Payout destination
+            </label>
+            <input
+              className="h-9 w-full rounded-lg border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold disabled:cursor-not-allowed disabled:bg-brand-sand/50"
+              disabled={fundingBalanceCents < 1000 || state.status === "submitting"}
+              id="destinationDetails"
+              name="destinationDetails"
+              placeholder={destinationPlaceholders[payoutMethod]}
+              required
+            />
+            <button
+              className="inline-flex h-9 w-full items-center justify-center rounded-lg bg-brand-ink px-4 text-sm font-semibold text-brand-ivory transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold/40 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={fundingBalanceCents < 1000 || state.status === "submitting"}
+              type="submit"
+            >
+              Request payout
+            </button>
+          </form>
         </div>
-        <div>
-          <label className="text-sm font-medium text-brand-ink" htmlFor="amountDollars">
-            Withdraw from Funding
-          </label>
-          <input
-            className="mt-1 h-9 w-full rounded-lg border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold disabled:cursor-not-allowed disabled:bg-brand-sand/50"
-            disabled={fundingBalanceCents < 1000 || state.status === "submitting"}
-            id="amountDollars"
-            max={Math.floor(fundingBalanceCents / 100)}
-            min={10}
-            name="amountDollars"
-            placeholder="Amount (min $10)"
-            required
-            step="1"
-            type="number"
-          />
-        </div>
-        <label className="text-sm font-medium text-brand-ink" htmlFor="payoutMethod">
-          Payout method
-        </label>
-        <select
-          className="h-9 w-full rounded-lg border border-brand-sand bg-brand-ivory px-3 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
-          id="payoutMethod"
-          name="payoutMethod"
-          onChange={(event) => setPayoutMethod(event.target.value as PayoutMethod)}
-          value={payoutMethod}
-        >
-          {payoutMethods.map((method) => (
-            <option key={method.value} value={method.value}>
-              {method.label}
-            </option>
-          ))}
-        </select>
-        <input
-          className="h-9 w-full rounded-lg border border-brand-sand bg-brand-canvas/50 px-3 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold disabled:cursor-not-allowed disabled:bg-brand-sand/50"
-          disabled={fundingBalanceCents < 1000 || state.status === "submitting"}
-          name="destinationDetails"
-          placeholder={destinationPlaceholders[payoutMethod]}
-          required
-        />
-        <button
-          className="inline-flex h-9 w-full items-center justify-center rounded-lg bg-brand-ink px-4 text-sm font-semibold text-brand-ivory transition hover:bg-[#35392c] focus:outline-none focus:ring-2 focus:ring-brand-gold/40 disabled:cursor-not-allowed disabled:opacity-50"
-          disabled={fundingBalanceCents < 1000 || state.status === "submitting"}
-          type="submit"
-        >
-          Request withdrawal
-        </button>
-      </form>
+      ) : null}
 
       {state.message ? (
         <p
