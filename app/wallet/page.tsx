@@ -51,18 +51,18 @@ function formatRecordLabel(value: string) {
 function getWalletPulse(wallet: Awaited<ReturnType<typeof LedgerService.getWallet>>) {
   if (wallet.fundingBalanceCents > 0) {
     return {
-      badge: "Ready to withdraw",
+      badge: "Ready for payout",
       description:
-        "Your withdrawal wallet has a balance. Open Transfer funds when you are ready to choose a payout method.",
+        "Your Funding wallet has a balance. Open Transfer funds when you are ready to choose a payout method.",
       tone: "positive",
     } as const;
   }
 
   if (wallet.holdingBalanceCents > 0) {
     return {
-      badge: "Pending transfer",
+      badge: "Spot balance available",
       description:
-        "Approved work is waiting in Pending. Move it into your withdrawal wallet before requesting a payout.",
+        "Approved funds are in Spot. Move them into Funding before requesting a payout.",
       tone: "positive",
     } as const;
   }
@@ -71,7 +71,7 @@ function getWalletPulse(wallet: Awaited<ReturnType<typeof LedgerService.getWalle
     return {
       badge: "Paid balance recorded",
       description:
-        "Your approved earnings are recorded here. New funds will show as they move through Pending and into your withdrawal wallet.",
+        "Your approved earnings are recorded here. Available funds will appear in Spot before moving to Funding.",
       tone: "warm",
     } as const;
   }
@@ -79,7 +79,7 @@ function getWalletPulse(wallet: Awaited<ReturnType<typeof LedgerService.getWalle
   return {
     badge: "Wallet ready when you are",
     description:
-      "Approved earnings start in Pending, then move into your withdrawal wallet before payout.",
+      "Approved earnings appear in Spot first, then move into Funding before payout.",
     tone: "warm",
   } as const;
 }
@@ -131,7 +131,7 @@ export default async function WalletPage() {
                 Your wallet
               </h1>
               <p className="mt-1 max-w-xl text-sm leading-6 text-brand-muted">
-                See what is paid, what is pending, and what is ready to withdraw.
+                See your Spot balance, Funding balance, and next transfer at a glance.
               </p>
             </div>
             <Link
@@ -145,7 +145,7 @@ export default async function WalletPage() {
 
           <section
             aria-labelledby="wallet-overview-title"
-            className="grid gap-3 lg:grid-cols-[minmax(0,1.15fr)_minmax(18rem,0.85fr)]"
+            className="grid gap-3 lg:grid-cols-2"
           >
             <article
               className={`relative overflow-hidden rounded-2xl border p-5 shadow-brand-card sm:p-6 ${pulseSurface}`}
@@ -159,27 +159,24 @@ export default async function WalletPage() {
                       className={`h-4 w-4 ${pulseText}`}
                     />
                     <p className={`text-xs font-bold uppercase tracking-[0.14em] ${pulseText}`}>
-                      Paid balance
+                      Spot wallet
                     </p>
                   </div>
                   <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-brand-muted">
-                    Approved earnings
+                    Source wallet
                   </span>
                 </div>
                 <h2
-                  className="mt-5 text-[clamp(2.25rem,6vw,4.5rem)] font-bold leading-none tracking-[-0.07em] text-brand-ink"
+                  className="mt-5 text-[clamp(2.25rem,6vw,4rem)] font-bold leading-none tracking-[-0.07em] text-brand-ink"
                   id="wallet-overview-title"
                 >
-                  {wallet.formattedEarnedAmount}
+                  {wallet.formattedHoldingBalance}
                 </h2>
                 <p className="mt-3 max-w-md text-sm leading-6 text-brand-muted">
-                  Total approved project payouts recorded in your wallet.
+                  Approved funds available to move into your Funding wallet.
                 </p>
                 <div className="mt-6 flex flex-wrap items-end justify-between gap-4 border-t border-brand-ink/10 pt-4">
                   <div>
-                    <p className="text-[11px] font-semibold text-brand-muted">
-                      What happens next
-                    </p>
                     <p className="mt-1 max-w-md text-xs leading-5 text-brand-ink/75">
                       {pulse.description}
                     </p>
@@ -191,38 +188,34 @@ export default async function WalletPage() {
               </div>
             </article>
 
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-              <article className="rounded-2xl border border-brand-sand bg-brand-ivory p-4 shadow-brand-card sm:p-5">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-xs font-semibold text-brand-muted">Pending balance</p>
-                  <Clock3 aria-hidden="true" className="h-4 w-4 text-brand-muted" />
-                </div>
-                <p className="mt-4 text-3xl font-bold tracking-[-0.04em] text-brand-ink">
-                  {wallet.formattedHoldingBalance}
-                </p>
-                <p className="mt-1 text-xs leading-5 text-brand-muted">
-                  Approved work waiting to move into your withdrawal wallet.
-                </p>
-              </article>
-
-              <article
-                className={`rounded-2xl border p-4 shadow-brand-card sm:p-5 ${wallet.fundingBalanceCents > 0 ? "border-emerald-200 bg-emerald-50/75" : "border-brand-sand bg-brand-ivory"}`}
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-xs font-semibold text-brand-muted">Withdrawal wallet</p>
+            <article
+              className={`rounded-2xl border p-5 shadow-brand-card sm:p-6 ${wallet.fundingBalanceCents > 0 ? "border-emerald-200 bg-emerald-50/75" : "border-brand-sand bg-brand-ivory"}`}
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
                   <WalletCards
                     aria-hidden="true"
                     className={wallet.fundingBalanceCents > 0 ? "h-4 w-4 text-emerald-800" : "h-4 w-4 text-brand-muted"}
                   />
+                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-brand-muted">
+                    Funding wallet
+                  </p>
                 </div>
-                <p className={`mt-4 text-3xl font-bold tracking-[-0.04em] ${wallet.fundingBalanceCents > 0 ? "text-emerald-800" : "text-brand-ink"}`}>
-                  {wallet.formattedFundingBalance}
-                </p>
-                <p className="mt-1 text-xs leading-5 text-brand-muted">
-                  Available for a payout request once the minimum is met.
-                </p>
-              </article>
-            </div>
+                <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-brand-muted">
+                  Payout wallet
+                </span>
+              </div>
+              <p className={`mt-5 text-[clamp(2.25rem,6vw,4rem)] font-bold leading-none tracking-[-0.07em] ${wallet.fundingBalanceCents > 0 ? "text-emerald-800" : "text-brand-ink"}`}>
+                {wallet.formattedFundingBalance}
+              </p>
+              <p className="mt-3 max-w-md text-sm leading-6 text-brand-muted">
+                Funds ready for a payout request once the $10 minimum is met.
+              </p>
+              <div className="mt-6 flex items-center gap-2 border-t border-brand-ink/10 pt-4 text-xs font-semibold text-brand-muted">
+                <Clock3 aria-hidden="true" className="h-3.5 w-3.5" />
+                <span>Transfer from Spot to make funds available here.</span>
+              </div>
+            </article>
           </section>
 
           <section
@@ -236,23 +229,23 @@ export default async function WalletPage() {
                 </div>
                 <div>
                   <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-brand-muted">
-                    Next action
+                    Transfer between wallets
                   </p>
                   <h2 className="mt-1 text-lg font-bold tracking-[-0.02em] text-brand-ink">
-                    Move pending funds when you are ready
+                    Move from Spot to Funding
                   </h2>
                   <p className="mt-1 max-w-2xl text-sm leading-6 text-brand-muted">
-                    Transfer from Pending to your withdrawal wallet, then request a payout using your chosen method.
+                    Transfer approved funds from Spot into Funding, then request a payout using your chosen method.
                   </p>
                 </div>
               </div>
               <div className="grid min-w-[13rem] gap-2 text-xs sm:grid-cols-2 lg:grid-cols-1">
                 <div className="flex items-center justify-between gap-3 rounded-xl border border-brand-sand/80 bg-brand-canvas/55 px-3 py-2.5">
-                  <span className="font-medium text-brand-muted">Pending</span>
+                  <span className="font-medium text-brand-muted">Spot wallet</span>
                   <span className="font-semibold text-brand-ink">{wallet.formattedHoldingBalance}</span>
                 </div>
                 <div className="flex items-center justify-between gap-3 rounded-xl border border-brand-sand/80 bg-brand-canvas/55 px-3 py-2.5">
-                  <span className="font-medium text-brand-muted">Withdrawal wallet</span>
+                  <span className="font-medium text-brand-muted">Funding wallet</span>
                   <span className={wallet.fundingBalanceCents > 0 ? "font-semibold text-emerald-800" : "font-semibold text-brand-ink"}>
                     {wallet.formattedFundingBalance}
                   </span>
@@ -354,7 +347,7 @@ export default async function WalletPage() {
                   </div>
                 ) : (
                   <p className="text-sm leading-6 text-brand-muted">
-                    No payout requests yet. Your withdrawal wallet is ready when you are.
+                    No payout requests yet. Your Funding wallet is ready when you are.
                   </p>
                 )}
               </div>
