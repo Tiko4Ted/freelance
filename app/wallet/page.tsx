@@ -145,120 +145,72 @@ export default async function WalletPage() {
 
           <section
             aria-labelledby="wallet-overview-title"
-            className="grid gap-3 lg:grid-cols-2"
+            className="grid gap-3 lg:grid-cols-[minmax(17rem,0.72fr)_minmax(0,1.28fr)]"
           >
-            <article
-              className={`relative overflow-hidden rounded-2xl border p-5 shadow-brand-card sm:p-6 ${pulseSurface}`}
-            >
-              <div className="pointer-events-none absolute -right-10 -top-12 h-36 w-36 rounded-full border border-white/60 bg-white/20 blur-2xl" />
-              <div className="relative">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2
-                      aria-hidden="true"
-                      className={`h-4 w-4 ${pulseText}`}
-                    />
-                    <p className={`text-xs font-bold uppercase tracking-[0.14em] ${pulseText}`}>
-                      Spot wallet
-                    </p>
-                  </div>
-                  <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-brand-muted">
-                    Source wallet
-                  </span>
+            <div className="grid grid-cols-2 gap-2">
+              <h2 className="sr-only" id="wallet-overview-title">
+                Wallet balances
+              </h2>
+              <article className={`rounded-xl border p-4 shadow-brand-card ${pulseSurface}`}>
+                <div className="flex items-center justify-between gap-2">
+                  <p className={`text-[11px] font-bold uppercase tracking-[0.12em] ${pulseText}`}>
+                    Spot wallet
+                  </p>
+                  <CheckCircle2 aria-hidden="true" className={`h-4 w-4 ${pulseText}`} />
                 </div>
-                <h2
-                  className="mt-5 text-[clamp(2.25rem,6vw,4rem)] font-bold leading-none tracking-[-0.07em] text-brand-ink"
-                  id="wallet-overview-title"
-                >
+                <p className="mt-3 text-2xl font-bold tracking-[-0.05em] text-brand-ink sm:text-3xl">
                   {wallet.formattedHoldingBalance}
-                </h2>
-                <p className="mt-3 max-w-md text-sm leading-6 text-brand-muted">
-                  Approved funds available to move into your Funding wallet.
                 </p>
-                <div className="mt-6 flex flex-wrap items-end justify-between gap-4 border-t border-brand-ink/10 pt-4">
-                  <div>
-                    <p className="mt-1 max-w-md text-xs leading-5 text-brand-ink/75">
-                      {pulse.description}
-                    </p>
-                  </div>
-                  <span className={`text-xs font-bold ${pulseText}`}>
-                    {pulse.badge}
-                  </span>
-                </div>
-              </div>
-            </article>
+                <p className="mt-1 text-[11px] font-medium text-brand-muted">Available to transfer</p>
+              </article>
 
-            <article
-              className={`rounded-2xl border p-5 shadow-brand-card sm:p-6 ${wallet.fundingBalanceCents > 0 ? "border-emerald-200 bg-emerald-50/75" : "border-brand-sand bg-brand-ivory"}`}
-            >
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
+              <article className={`rounded-xl border p-4 shadow-brand-card ${wallet.fundingBalanceCents > 0 ? "border-emerald-200 bg-emerald-50/75" : "border-brand-sand bg-brand-ivory"}`}>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-brand-muted">
+                    Funding wallet
+                  </p>
                   <WalletCards
                     aria-hidden="true"
                     className={wallet.fundingBalanceCents > 0 ? "h-4 w-4 text-emerald-800" : "h-4 w-4 text-brand-muted"}
                   />
-                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-brand-muted">
-                    Funding wallet
-                  </p>
                 </div>
-                <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-brand-muted">
-                  Payout wallet
-                </span>
-              </div>
-              <p className={`mt-5 text-[clamp(2.25rem,6vw,4rem)] font-bold leading-none tracking-[-0.07em] ${wallet.fundingBalanceCents > 0 ? "text-emerald-800" : "text-brand-ink"}`}>
-                {wallet.formattedFundingBalance}
-              </p>
-              <p className="mt-3 max-w-md text-sm leading-6 text-brand-muted">
-                Funds ready for a payout request once the $10 minimum is met.
-              </p>
-              <div className="mt-6 flex items-center gap-2 border-t border-brand-ink/10 pt-4 text-xs font-semibold text-brand-muted">
-                <Clock3 aria-hidden="true" className="h-3.5 w-3.5" />
-                <span>Transfer from Spot to make funds available here.</span>
-              </div>
-            </article>
-          </section>
+                <p className={`mt-3 text-2xl font-bold tracking-[-0.05em] sm:text-3xl ${wallet.fundingBalanceCents > 0 ? "text-emerald-800" : "text-brand-ink"}`}>
+                  {wallet.formattedFundingBalance}
+                </p>
+                <p className="mt-1 text-[11px] font-medium text-brand-muted">Available for payout</p>
+              </article>
+            </div>
 
-          <section
-            className="rounded-2xl border border-brand-sand bg-brand-ivory p-5 shadow-brand-card sm:p-6"
-            id="move-and-withdraw"
-          >
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--color-accent-soft)] text-brand-gold-strong">
-                  <ShieldCheck aria-hidden="true" className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-brand-muted">
-                    Transfer between wallets
-                  </p>
-                  <h2 className="mt-1 text-lg font-bold tracking-[-0.02em] text-brand-ink">
-                    Move from Spot to Funding
-                  </h2>
-                  <p className="mt-1 max-w-2xl text-sm leading-6 text-brand-muted">
-                    Transfer approved funds from Spot into Funding, then request a payout using your chosen method.
-                  </p>
-                </div>
-              </div>
-              <div className="grid min-w-[13rem] gap-2 text-xs sm:grid-cols-2 lg:grid-cols-1">
-                <div className="flex items-center justify-between gap-3 rounded-xl border border-brand-sand/80 bg-brand-canvas/55 px-3 py-2.5">
-                  <span className="font-medium text-brand-muted">Spot wallet</span>
-                  <span className="font-semibold text-brand-ink">{wallet.formattedHoldingBalance}</span>
-                </div>
-                <div className="flex items-center justify-between gap-3 rounded-xl border border-brand-sand/80 bg-brand-canvas/55 px-3 py-2.5">
-                  <span className="font-medium text-brand-muted">Funding wallet</span>
-                  <span className={wallet.fundingBalanceCents > 0 ? "font-semibold text-emerald-800" : "font-semibold text-brand-ink"}>
-                    {wallet.formattedFundingBalance}
-                  </span>
+            <section
+              className="rounded-2xl border border-brand-sand bg-brand-ivory p-4 shadow-brand-card sm:p-5"
+              id="move-and-withdraw"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--color-accent-soft)] text-brand-gold-strong">
+                    <ShieldCheck aria-hidden="true" className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold tracking-[-0.02em] text-brand-ink">
+                      Move or withdraw funds
+                    </h2>
+                    <p className="mt-1 max-w-xl text-sm leading-6 text-brand-muted">
+                      Transfer approved funds from Spot into Funding, then request a payout.
+                    </p>
+                    <p className={`mt-2 text-xs font-semibold ${pulseText}`}>
+                      {pulse.badge}. {pulse.description}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="mt-4 border-t border-brand-sand/70 pt-4">
-              <WithdrawalForm
-                fundingBalanceCents={wallet.fundingBalanceCents}
-                holdingBalanceCents={wallet.holdingBalanceCents}
-                isFreelanceVerified={Boolean(wallet.freelanceVerification)}
-              />
-            </div>
+              <div className="mt-4 border-t border-brand-sand/70 pt-4">
+                <WithdrawalForm
+                  fundingBalanceCents={wallet.fundingBalanceCents}
+                  holdingBalanceCents={wallet.holdingBalanceCents}
+                  isFreelanceVerified={Boolean(wallet.freelanceVerification)}
+                />
+              </div>
+            </section>
           </section>
 
           <section
