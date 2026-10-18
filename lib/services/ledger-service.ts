@@ -133,27 +133,49 @@ export const LedgerService = {
       throw new Error("USER_NOT_FOUND");
     }
 
-    let holdingBalanceCents = user.holdingBalanceCents;
-    let fundingBalanceCents = user.fundingBalanceCents;
+    const shouldClaimPayouts = isOnboardingReviewApproved(
+      user.onboarding?.completedAt,
+    );
 
-    if (isOnboardingReviewApproved(user.onboarding?.completedAt)) {
+    if (shouldClaimPayouts) {
       await claimEligibleCandidatePayouts(userId, user.email);
-      const updatedUser = await prisma.user.findUniqueOrThrow({
-        where: { id: userId },
-        select: {
-          holdingBalanceCents: true,
-          fundingBalanceCents: true,
-        },
-      });
-      holdingBalanceCents = updatedUser.holdingBalanceCents;
-      fundingBalanceCents = updatedUser.fundingBalanceCents;
     }
 
+    const updatedUserPromise = shouldClaimPayouts
+      ? prisma.user.findUniqueOrThrow({
+          where: { id: userId },
+          select: {
+            holdingBalanceCents: true,
+            fundingBalanceCents: true,
+          },
+        })
+      : Promise.resolve({
+          holdingBalanceCents: user.holdingBalanceCents,
+          fundingBalanceCents: user.fundingBalanceCents,
+        });
+
+    const [updatedUser, paidPayouts] = await Promise.all([
+      updatedUserPromise,
+      prisma.ledgerEntry.aggregate({
+        where: {
+          userId,
+          account: LedgerAccount.HOLDING,
+          reason: "JOB_PAYOUT_HOLDING",
+          amountCents: { gt: 0 },
+        },
+        _sum: { amountCents: true },
+      }),
+    ]);
+
+    const amountPaidCents = paidPayouts._sum.amountCents ?? 0;
+
     return {
-      holdingBalanceCents,
-      fundingBalanceCents,
-      formattedHoldingBalance: formatCurrency(holdingBalanceCents),
-      formattedFundingBalance: formatCurrency(fundingBalanceCents),
+      holdingBalanceCents: updatedUser.holdingBalanceCents,
+      fundingBalanceCents: updatedUser.fundingBalanceCents,
+      amountPaidCents,
+      formattedAmountPaid: formatCurrency(amountPaidCents),
+      formattedHoldingBalance: formatCurrency(updatedUser.holdingBalanceCents),
+      formattedFundingBalance: formatCurrency(updatedUser.fundingBalanceCents),
     };
   },
 

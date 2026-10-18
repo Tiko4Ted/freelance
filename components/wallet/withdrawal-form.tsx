@@ -201,7 +201,19 @@ export function WithdrawalForm({
 
   return (
     <div className="space-y-4">
-      <form className="space-y-2" onSubmit={requestTransfer}>
+      <form
+        aria-busy={state.status === "submitting"}
+        className="space-y-2"
+        onSubmit={requestTransfer}
+      >
+        <div>
+          <h3 className="text-sm font-semibold text-brand-ink">
+            Move approved earnings
+          </h3>
+          <p className="mt-1 text-xs leading-5 text-brand-muted">
+            Transfer an amount from Holding to Funding after verification.
+          </p>
+        </div>
         <div>
           <label
             className="text-sm font-medium text-brand-ink"
@@ -226,11 +238,23 @@ export function WithdrawalForm({
           disabled={state.status === "submitting"}
           type="submit"
         >
-          {state.status === "submitting" ? "Loading..." : "Transfer"}
+          {state.status === "submitting" ? "Checking wallet..." : "Move to Funding"}
         </button>
       </form>
 
-      <form className="space-y-2" onSubmit={requestWithdrawal}>
+      <form
+        aria-busy={state.status === "submitting"}
+        className="space-y-2 border-t border-brand-sand/70 pt-4"
+        onSubmit={requestWithdrawal}
+      >
+        <div>
+          <h3 className="text-sm font-semibold text-brand-ink">
+            Request a withdrawal
+          </h3>
+          <p className="mt-1 text-xs leading-5 text-brand-muted">
+            Funding is available for payout requests once the minimum is met.
+          </p>
+        </div>
         <div>
           <label className="text-sm font-medium text-brand-ink" htmlFor="amountDollars">
             Withdraw from Funding
@@ -248,8 +272,13 @@ export function WithdrawalForm({
             type="number"
           />
         </div>
+        <label className="text-sm font-medium text-brand-ink" htmlFor="payoutMethod">
+          Payout method
+        </label>
         <select
           className="h-9 w-full rounded-lg border border-brand-sand bg-brand-ivory px-3 text-sm outline-none focus:border-brand-gold focus:ring-1 focus:ring-brand-gold"
+          id="payoutMethod"
+          name="payoutMethod"
           onChange={(event) => setPayoutMethod(event.target.value as PayoutMethod)}
           value={payoutMethod}
         >
@@ -277,11 +306,13 @@ export function WithdrawalForm({
 
       {state.message ? (
         <p
+          aria-live="polite"
           className={
             state.status === "error"
               ? "text-sm font-medium text-red-700"
               : "text-sm font-medium text-emerald-700"
           }
+          role={state.status === "error" ? "alert" : "status"}
         >
           {state.message}
         </p>
@@ -289,10 +320,15 @@ export function WithdrawalForm({
 
       {showVerification ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-brand-ink/70 px-4">
-          <div className="w-full max-w-md rounded-xl border border-brand-sand bg-brand-ivory p-5 shadow-xl">
+          <div
+            aria-labelledby="complete-transfer-title"
+            aria-modal="true"
+            className="w-full max-w-md rounded-xl border border-brand-sand bg-brand-ivory p-5 shadow-xl"
+            role="dialog"
+          >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h3 className="text-lg font-semibold text-brand-ink">
+                <h3 className="text-lg font-semibold text-brand-ink" id="complete-transfer-title">
                   Complete transfer
                 </h3>
                 <p className="mt-2 text-sm leading-6 text-brand-muted">
@@ -314,7 +350,8 @@ export function WithdrawalForm({
                 </div>
               </div>
               <button
-                className="text-xl leading-none text-brand-muted transition hover:text-brand-ink"
+                aria-label="Close verification dialog"
+                className="rounded-md px-1 text-xl leading-none text-brand-muted transition hover:text-brand-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold"
                 onClick={() => setShowVerification(false)}
                 type="button"
               >
