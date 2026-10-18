@@ -208,7 +208,7 @@ export function WithdrawalForm({
           <div>
             <p className="text-sm font-semibold text-brand-ink">Transfer funds</p>
             <p className="mt-1 text-xs leading-5 text-brand-muted">
-              Move pending earnings into your withdrawal wallet.
+              Move funds from Spot to Funding.
             </p>
           </div>
           <button
@@ -236,10 +236,10 @@ export function WithdrawalForm({
           >
             <div>
               <h3 className="text-sm font-semibold text-brand-ink">
-                Move pending balance
+                Transfer from Spot wallet
               </h3>
               <p className="mt-1 text-xs leading-5 text-brand-muted">
-                Transfer from Pending to your withdrawal wallet after verification.
+                Move approved funds into Funding after verification.
               </p>
             </div>
             <div>
@@ -266,7 +266,7 @@ export function WithdrawalForm({
               disabled={state.status === "submitting"}
               type="submit"
             >
-              {state.status === "submitting" ? "Checking wallet..." : "Move to withdrawal wallet"}
+              {state.status === "submitting" ? "Checking wallet..." : "Move to Funding"}
             </button>
           </form>
 
@@ -280,7 +280,7 @@ export function WithdrawalForm({
                 Request a payout
               </h3>
               <p className="mt-1 text-xs leading-5 text-brand-muted">
-                Use your withdrawal wallet once it reaches the $10 minimum.
+                Use Funding once it reaches the $10 minimum.
               </p>
             </div>
             <div>
@@ -367,7 +367,7 @@ export function WithdrawalForm({
                 </h3>
                 <p className="mt-2 text-sm leading-6 text-brand-muted">
                   Enter your Freelance ID and serial number to complete this
-                  transfer from Holding to Funding.
+                  transfer from Spot to Funding.
                 </p>
                 <div className="mt-3 rounded-lg border border-brand-gold/30 bg-[var(--color-accent-soft)] p-3">
                   <p className="text-xs leading-5 text-brand-muted">
