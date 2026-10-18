@@ -299,7 +299,7 @@ test("dashboard UI renders application and payment state", () => {
 
   assert.match(markup, /AI Reviewer/);
   assert.match(markup, /Ready to start/);
-  assert.match(markup, /Total tasks/);
+  assert.match(markup, /Tasks completed/);
   assert.match(markup, /\$25\.00/);
   assert.match(markup, /Applied/);
   assert.match(markup, /Download materials/);
@@ -619,7 +619,7 @@ test("dashboard renders flagged database projects as summary cards", () => {
   );
 
   assert.match(markup, /Featured projects/);
-  assert.match(markup, /grid grid-cols-1 gap-4 md:grid-cols-2/);
+  assert.match(markup, /grid grid-cols-1 gap-3 md:grid-cols-2/);
   assert.doesNotMatch(markup, /xl:grid-cols-4/);
   assert.match(markup, /AI Quality Review/);
   assert.match(markup, /\$50 per task/);
@@ -633,8 +633,7 @@ test("dashboard renders flagged database projects as summary cards", () => {
   );
   assert.doesNotMatch(markup, /spots left/);
   assert.doesNotMatch(markup, /High demand/);
-  assert.match(markup, /View terms/);
-  assert.match(markup, /Copy referral link/);
+  assert.match(markup, /Copy link/);
   assert.match(markup, /Try Versus/);
   assert.match(markup, /href="\/apply"/);
   assert.doesNotMatch(markup, /Start task/);
